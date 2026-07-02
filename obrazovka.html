@@ -97,6 +97,15 @@ body.detailopen .backbtn{right:calc(min(54vw,920px) + 44px)}
 .ph-tab{font-family:var(--fm);font-size:10.5px;padding:5px 12px;border-radius:99px;background:rgba(7,9,18,.62);
   color:var(--text-mid);border:1px solid rgba(139,145,221,.3);cursor:pointer;backdrop-filter:blur(4px);transition:all .2s}
 .ph-tab.on{background:var(--amber-500);color:#0B0E1A;border-color:var(--amber-500);font-weight:600}
+/* prepínač času v detaile */
+.ttabs{display:flex;gap:8px;margin:16px 0 2px}
+.tt{flex:1;min-height:48px;border-radius:13px;border:1px solid var(--glass-border);background:rgba(24,29,55,.5);
+  font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;color:var(--text-mid);cursor:pointer;transition:all .2s}
+.tt:hover{color:var(--text-hi)}
+.tt.on{background:var(--amber-500);color:#0B0E1A;font-weight:700;border-color:var(--amber-500)}
+.cntwrap{display:flex;gap:18px;align-items:center;margin:6px 0 12px}
+.cntbig{font-family:var(--fd);font-size:46px;font-weight:700;color:var(--warm-100);line-height:1;min-width:70px;text-align:center}
+.cntbig small{display:block;font-family:var(--fm);font-size:9.5px;color:var(--text-low);letter-spacing:.12em;margin-top:4px}
 /* detail — foto + sekcie minulosť/dnes/budúcnosť */
 .dphoto{position:relative;border-radius:16px;overflow:hidden;margin:4px 0 16px;background:var(--night-700);aspect-ratio:2/1}
 .dphoto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -435,8 +444,13 @@ const P=i=>FEATS[i].properties;
 const N_PLAN=FEATS.filter(f=>f.properties.plan).length, N_SLEEP=113-N_PLAN,
       N_A=FEATS.filter(f=>f.properties.cls==='A').length;
 
+/* hlasy: {id:{byvanie:n,park:n,skola:n,kultura:n}} — každý ťuk = 1 hlas (expozičná logika) */
 let votes={}; try{votes=JSON.parse(localStorage.getItem('zazni-votes')||'{}');}catch(e){}
+Object.keys(votes).forEach(k=>{if(typeof votes[k]==='string')votes[k]={[votes[k]]:1};}); /* migrácia starého formátu */
 function saveVotes(){try{localStorage.setItem('zazni-votes',JSON.stringify(votes));}catch(e){}}
+function voteTotal(i){const o=votes[i];return o?Object.values(o).reduce((a,b)=>a+b,0):0;}
+function voteTop(i){const o=votes[i];if(!o)return null;let best=null,bn=0;
+  for(const k in o)if(o[k]>bn){bn=o[k];best=k;}return best;}
 
 /* bboxy pre fitBounds */
 const BBOX=FEATS.map(f=>{
@@ -590,7 +604,7 @@ let pulseVal=.7;
 /* systematika očí: PULZ a OBJAV = realita registra (bdie len so známym zámerom);
    VÍZIA = realita + hlasy návštevníkov */
 function oborExpr(){
-  const voted=Object.keys(votes).map(Number);
+  const voted=Object.keys(votes).filter(k=>voteTotal(k)>0).map(Number);
   const real=['case',['==',['get','plan'],1],'awake','sleep'];
   const wake=(mode==='vizia'&&voted.length)
     ?['case',['in',['get','id'],['literal',voted]],'awake',['==',['get','plan'],1],'awake','sleep']
@@ -600,7 +614,10 @@ function oborExpr(){
 function colorExpr(){
   if(mode==='vizia'){
     const voteCases=[];
-    Object.entries(votes).forEach(([id,v])=>{voteCases.push(['==',['get','id'],+id]);voteCases.push(VOTEC[v]);});
+    Object.keys(votes).forEach(id=>{
+      const tv=voteTop(id);if(!tv)return;
+      voteCases.push(['==',['get','id'],+id]);voteCases.push(VOTEC[tv]);
+    });
     const base= year<1998 ? C.alive :
       ['case',['>=',year,['get','wy']],C.alive,['>=',year,['-',['get','wy'],3]],C.plan,C.sleeping];
     return voteCases.length?['case',...voteCases,base]:base;
@@ -852,69 +869,84 @@ function storyOf(p){
   };
 }
 
+let dtab='dnes',lastDetail=null;
+function detailPane(i){
+  const p=P(i),total=voteTotal(i),top=voteTop(i);
+  if(dtab==='past')return `
+    <div class="dsec" style="border:none">
+      <h4>MINULOSŤ <i>· čím miesto bolo, kým zaspalo</i></h4>
+      <p style="font-size:14px"><b style="color:var(--text-hi)">${p.typLabel||TYPL[p.typ]}.</b></p>
+      <p style="margin-top:10px;font-size:14px;max-width:60ch">${storyOf(p).past}</p>
+      ${p.sez?'<p style="margin-top:10px;color:var(--risk-300);font-size:13.5px">Prevádzka zanechala evidovanú environmentálnu záťaž — jazvu, ktorú treba pred novým životom vyliečiť.</p>':''}
+      <p class="mono" style="margin-top:12px;font-size:11px;color:var(--text-low)">tip: v karuseli hore prepni na ORTOFOTO SR — staršie snímkovanie územia</p>
+    </div>`;
+  if(dtab==='fut')return `
+    <div class="dsec" style="border:none">
+      <h4>BUDÚCNOSŤ <i>· tri vrstvy: plán mesta → zámer vlastníka → hlas verejnosti</i></h4>
+      ${p.nfunk?`<p style="margin-bottom:9px"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">1 · ÚZEMNÝ PLÁN URČUJE</span><br><b style="color:var(--text-hi);font-size:14px">${p.nfunk}</b></p>`:''}
+      <p style="font-size:13.5px"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">2 · ZÁMER VLASTNÍKA</span><br>${p.plan?p.zamer:'Žiadny známy — presne tu má podľa Koncepcie zmysel dočasné využitie: kultúra, komunita, šport.'}</p>
+      ${storyOf(p).future?`<p style="margin-top:8px;font-size:13.5px;color:var(--text-mid)">${storyOf(p).future}</p>`:''}
+      <div style="margin-top:16px"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">3 · HLAS VEREJNOSTI — ★ Prebuď obra</span></div>
+      <div class="cntwrap">
+        <div class="cntbig">${total}<small>HLASOV</small></div>
+        <div style="flex:1">
+          ${Object.keys(VOTEL).map(k=>{
+            const n=(votes[i]&&votes[i][k])||0;
+            return `<div class="rbar" style="margin:5px 0"><div class="lbl" style="font-size:11.5px"><span>${VOTEL[k]}</span><span>${n}</span></div>
+              <div class="track" style="height:7px"><div class="fill" style="width:${total?Math.round(n/total*100):0}%;background:${VOTEC[k]}"></div></div></div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="vote-grid" style="max-width:520px">
+        ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${top===k?'picked':''}" data-v="${k}">＋ ${VOTEL[k]}</button>`).join('')}
+      </div>
+      <p class="mono" style="margin-top:10px;font-size:11px;color:${total?'var(--amber-300)':'var(--text-low)'}">${total?`obor sa zobudí vo VÍZII — v registri spí, kým sa zámer nestane skutočnosťou`:`každý ťuk = jeden hlas návštevníka · výsledky svietia vo VÍZII a sú vstupom pre MIB`}</p>
+    </div>`;
+  /* dnes */
+  return `
+    <div class="dsec" style="border:none">
+      <h4>DNES <i>· stav podľa registra MIB (2022)</i></h4>
+      <div class="frows" style="max-width:520px">
+        <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
+        <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
+        <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
+        <div class="frow"><span class="k">Potenciál (CABERNET)</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
+        <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
+        <div class="frow"><span class="k">Mestská časť</span><span class="v">${p.mc}</span></div>
+      </div>
+    </div>`;
+}
 function stackDetail(i){
-  const p=P(i),voted=votes[i];
+  const p=P(i),total=voteTotal(i);
+  if(lastDetail!==i){dtab='dnes';lastDetail=i;}
   return `<div class="card glass scroll" style="overflow-y:auto;flex:1">
     <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
-      <div class="obor-face ${(p.plan||voted)?'awake':''}" id="oborFace">
+      <div class="obor-face ${(p.plan||total)?'awake':''}" id="oborFace">
         <span class="ob-s">${oborArt(p.typ,false,66)}</span>
         <span class="ob-a">${oborArt(p.typ,true,66)}</span>
       </div>
       <div>
         <span class="dchip">${p.plan?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${p.cls||'—'}</span>
+        ${total?`<span class="dchip" style="border-color:var(--amber-500);color:var(--amber-300)">★ ${total} hlasov</span>`:''}
         <div class="dtitle">${p.n||'Bez názvu'}</div>
         <div class="dsub">${p.mc} · obor ${TYPL[p.typ]} · ${p.ha} ha</div>
       </div>
     </div>
     ${aerial(i)}
-
-    <div class="dcols">
-      <div class="dsec">
-        <h4>MINULOSŤ <i>· kým zaspalo</i></h4>
-        <p><b style="color:var(--text-hi)">${p.typLabel||TYPL[p.typ]}.</b></p>
-        <p style="margin-top:8px">${storyOf(p).past}</p>
-        ${p.sez?'<p style="margin-top:8px;color:var(--risk-300)">Prevádzka zanechala evidovanú environmentálnu záťaž — jazvu, ktorú treba pred novým životom vyliečiť.</p>':''}
-      </div>
-
-      <div class="dsec">
-        <h4>DNES <i>· register MIB 2022</i></h4>
-        <div class="frows">
-          <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
-          <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
-          <div class="frow"><span class="k">Stav</span><span class="v">${p.plan?'So známym zámerom':'Bez zámeru'}</span></div>
-          <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
-          <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
-        </div>
-      </div>
-
-      <div class="dsec">
-        <h4>BUDÚCNOSŤ <i>· plán a hlas</i></h4>
-        ${p.nfunk?`<p style="margin-bottom:9px"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">ÚZEMNÝ PLÁN URČUJE</span><br><b style="color:var(--text-hi)">${p.nfunk}</b></p>`:''}
-        <p>${p.plan?('<b style="color:var(--warm-100)">Známy zámer:</b> '+p.zamer):'Bez známeho zámeru — presne tu má podľa Koncepcie zmysel dočasné využitie: kultúra, komunita, šport.'}</p>
-        ${storyOf(p).future?`<p style="margin-top:8px">${storyOf(p).future}</p>`:''}
-      </div>
+    <div class="ttabs">
+      <button class="tt ${dtab==='past'?'on':''}" data-t="past">MINULOSŤ</button>
+      <button class="tt ${dtab==='dnes'?'on':''}" data-t="dnes">DNES</button>
+      <button class="tt ${dtab==='fut'?'on':''}" data-t="fut">BUDÚCNOSŤ ${total?'· '+total+' ★':''}</button>
     </div>
-
-    <div class="dsec">
-      <div class="mini-tl" style="max-width:520px">
-        <div><b>MINULOSŤ</b><span>${TYPL[p.typ]}</span></div>
-        <div class="hot"><b>DNES</b><span>${p.plan?'zámer v príprave':'spí v registri'}</span></div>
-        <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
-      </div>
-      <h3 style="font-size:15px;margin:6px 0 10px">★ Prebuď obra — čo tu má vyrásť?</h3>
-      <div class="vote-grid" style="max-width:520px">
-        ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
-      </div>
-      <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Tvoj hlas zaznamenaný ✓ Obor sa zobudí vo VÍZII — v registri spí ďalej, kým sa zámer nestane skutočnosťou.</div>
-    </div>
+    <div id="tpane">${detailPane(i)}</div>
   </div>`;
 }
 function stackVizia(){
   const counts={byvanie:0,park:0,skola:0,kultura:0};
-  Object.values(votes).forEach(v=>{if(counts[v]!=null)counts[v]++});
+  Object.values(votes).forEach(o=>{for(const k in o)if(counts[k]!=null)counts[k]+=o[k];});
   const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
-  const nvotes=Object.values(votes).length;
+  const nvotes=Object.keys(votes).filter(k=>voteTotal(k)>0).length;
   return `<div class="card glass">
     <h3>Hlas verejnosti</h3><div class="sub">${nvotes} prebudených obrov na tomto zariadení</div>
     ${Object.keys(VOTEL).map(k=>`
@@ -1097,14 +1129,27 @@ function bindStack(){
   if(goD)goD.addEventListener('click',()=>{const i=selIdx;setMode('objav',false);selIdx=i;renderStack();repaint();zoomTo(i);});
   const goL=document.getElementById('goList');
   if(goL)goL.addEventListener('click',()=>setMode('objav'));
-  document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{
+  bindPane();
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{
+    dtab=b.dataset.t;
+    document.querySelectorAll('.tt').forEach(t=>t.classList.toggle('on',t.dataset.t===dtab));
+    const pane=document.getElementById('tpane');
+    if(pane&&selIdx!=null){pane.innerHTML=detailPane(selIdx);bindPane();}
+  }));
+}
+/* hlasovanie: každý ťuk = +1 hlas, pane sa prekreslí s novým počítadlom */
+function bindPane(){
+  document.querySelectorAll('#tpane [data-v]').forEach(b=>b.addEventListener('click',()=>{
     if(selIdx==null)return;
-    votes[selIdx]=b.dataset.v;saveVotes();
-    document.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('picked'));
-    b.classList.add('picked');
+    if(!votes[selIdx])votes[selIdx]={};
+    votes[selIdx][b.dataset.v]=(votes[selIdx][b.dataset.v]||0)+1;
+    saveVotes();
     const face=document.getElementById('oborFace');if(face)face.classList.add('awake');
-    const th=document.getElementById('voteThanks');if(th)th.style.display='block';
     sndChime();repaint();
+    const pane=document.getElementById('tpane');
+    if(pane){pane.innerHTML=detailPane(selIdx);bindPane();}
+    const tb=document.querySelector('.tt[data-t="fut"]');
+    if(tb)tb.innerHTML=`BUDÚCNOSŤ · ${voteTotal(selIdx)} ★`;
   }));
 }
 function clickBF(i){

@@ -71,6 +71,9 @@ ok('karusel snímok (Z NEBA/OKOLIE/ORTOFOTO SR)',OBR.includes('ORTOFOTO SR')&&OB
 ok('skutočné fotky z Commons (geosearch + cache + fallback)',OBR.includes('commons.wikimedia.org')&&OBR.includes('PHCACHE')&&OBR.includes('img.onerror'));
 ok('kurátorské príbehy + šablóny typológií',OBR.includes('Dynamitfabrik')&&OBR.includes('konskej železnice')&&OBR.includes('PAST_T'));
 ok('klik do prázdnej mapy zatvára detail',OBR.includes(`queryRenderedFeatures(e.point,{layers:['bf-fill']})`));
+ok('prepínač času MINULOSŤ/DNES/BUDÚCNOSŤ',OBR.includes('data-t="past"')&&OBR.includes('data-t="fut"')&&OBR.includes('detailPane'));
+ok('počítadlo hlasov (počty, nie 1 hlas)',OBR.includes('voteTotal')&&OBR.includes('(votes[selIdx][b.dataset.v]||0)+1')&&OBR.includes('cntbig'));
+ok('budúcnosť = 3 vrstvy (ÚPN → zámer → hlas)',OBR.includes('1 · ÚZEMNÝ PLÁN URČUJE')&&OBR.includes('2 · ZÁMER VLASTNÍKA')&&OBR.includes('3 · HLAS VEREJNOSTI'));
 ok('každá typológia obrov má telo v OBODY',(()=>{
   const bodies=[...OBR.matchAll(/^\s{2}(\w+):\{b:'/gm)].map(m=>m[1]);
   return [...new Set(big.map(f=>f.typ))].every(t=>bodies.includes(t));
