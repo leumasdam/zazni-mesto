@@ -526,7 +526,10 @@ map.on('load',()=>{
           filter:['>=',['get','ha'],8],
           layout:{
             'icon-image':oborExpr(),
-            'icon-size':['interpolate',['linear'],['zoom'],9.5,.34,12,.55,15,.95],
+            'icon-size':['interpolate',['linear'],['zoom'],
+              9.5,['case',['>=',['get','ha'],60],.24,.17],
+              12,['case',['>=',['get','ha'],60],.36,.26],
+              15,['case',['>=',['get','ha'],60],.58,.42]],
             'icon-allow-overlap':true,'icon-ignore-placement':true
           }});
         repaint();
@@ -550,14 +553,15 @@ map.on('load',()=>{
 let pulseVal=.7;
 
 /* ---------- prekreslenie vrstiev ---------- */
-/* obor na mape sa zobudí známym zámerom ALEBO hlasom návštevníka */
+/* systematika očí: PULZ a OBJAV = realita registra (bdie len so známym zámerom);
+   VÍZIA = realita + hlasy návštevníkov */
 function oborExpr(){
   const voted=Object.keys(votes).map(Number);
-  return ['concat','obor-',['get','typ'],'-',
-    ['case',
-      ['in',['get','id'],['literal',voted]],'awake',
-      ['==',['get','plan'],1],'awake',
-      'sleep']];
+  const real=['case',['==',['get','plan'],1],'awake','sleep'];
+  const wake=(mode==='vizia'&&voted.length)
+    ?['case',['in',['get','id'],['literal',voted]],'awake',['==',['get','plan'],1],'awake','sleep']
+    :real;
+  return ['concat','obor-',['get','typ'],'-',wake];
 }
 function colorExpr(){
   if(mode==='vizia'){
@@ -687,7 +691,7 @@ function stackDetail(i){
   return `<div class="card glass scroll" style="overflow-y:auto">
     <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
-      <div class="obor-face ${voted?'awake':''}" id="oborFace">
+      <div class="obor-face ${(p.plan||voted)?'awake':''}" id="oborFace">
         <span class="ob-s">${oborArt(p.typ,false,66)}</span>
         <span class="ob-a">${oborArt(p.typ,true,66)}</span>
       </div>
@@ -714,7 +718,7 @@ function stackDetail(i){
     <div class="vote-grid">
       ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
     </div>
-    <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Obor sa zobudil ✓ Tvoj hlas svieti vo Vízii.</div>
+    <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Tvoj hlas zaznamenaný ✓ Obor sa zobudí vo VÍZII — v registri spí ďalej, kým sa zámer nestane skutočnosťou.</div>
   </div>`;
 }
 function stackVizia(){
@@ -809,7 +813,7 @@ function renderLayersPop(){
       ${chk('b3d','▲ 3D budovy mesta')}
       ${chk('obri','☻ Spiaci obri (8+ ha)')}
     </div>
-    <div class="clearrow"><span>prekryvy sa sčítavajú s farbou aj filtrami</span></div>`;
+    <div class="clearrow"><span>oči obra: zavreté = bez zámeru · otvorené = známy zámer<br>vo VÍZII sa budia aj hlasmi návštevníkov</span></div>`;
   el.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>{
     O[b.dataset.o]=!O[b.dataset.o];
     renderLayersPop();repaint();
