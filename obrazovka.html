@@ -569,7 +569,7 @@ map.on('load',()=>{
 
   /* spiaci obri na mape — silueta typológie s očami (územia ≥ 8 ha)
      zavreté oči = spí (bez zámeru) · otvorené = má zámer ALEBO ho zobudil hlas návštevníka */
-  const oborTypes=[...new Set(FEATS.filter(f=>f.properties.ha>=8).map(f=>f.properties.typ))];
+  const oborTypes=[...new Set(FEATS.map(f=>f.properties.typ))];
   let oborLoaded=0;
   oborTypes.forEach(typ=>['sleep','awake'].forEach(st=>{
     const svg=oborArt(typ,st==='awake',300,true);
@@ -577,6 +577,7 @@ map.on('load',()=>{
     img.onload=()=>{
       map.addImage(`obor-${typ}-${st}`,img,{pixelRatio:2});
       if(++oborLoaded===oborTypes.length*2){
+        /* veľkí obri (≥ 8 ha) — viditeľní už z diaľky */
         map.addLayer({id:'bf-obri',type:'symbol',source:'bf',
           filter:['>=',['get','ha'],8],
           layout:{
@@ -585,6 +586,14 @@ map.on('load',()=>{
               9.5,['case',['>=',['get','ha'],60],.24,.17],
               12,['case',['>=',['get','ha'],60],.36,.26],
               15,['case',['>=',['get','ha'],60],.58,.42]],
+            'icon-allow-overlap':true,'icon-ignore-placement':true
+          }});
+        /* každý brownfield je obor — pri priblížení dostanú tvár všetci */
+        map.addLayer({id:'bf-obri-all',type:'symbol',source:'bf',minzoom:13.2,
+          filter:['<',['get','ha'],8],
+          layout:{
+            'icon-image':oborExpr(),
+            'icon-size':['interpolate',['linear'],['zoom'],13.2,.2,16,.4],
             'icon-allow-overlap':true,'icon-ignore-placement':true
           }});
         repaint();
@@ -669,10 +678,12 @@ function repaint(){
   map.setLayoutProperty('zone-labels','visibility',O.labels?'visible':'none');
   map.setLayoutProperty('bf-labels','visibility',O.labels?'visible':'none');
   if(map.getLayer('b3d'))map.setLayoutProperty('b3d','visibility',O.b3d?'visible':'none');
-  if(map.getLayer('bf-obri')){
-    map.setLayoutProperty('bf-obri','visibility',O.obri?'visible':'none');
-    map.setLayoutProperty('bf-obri','icon-image',oborExpr());
-  }
+  ['bf-obri','bf-obri-all'].forEach(id=>{
+    if(map.getLayer(id)){
+      map.setLayoutProperty(id,'visibility',O.obri?'visible':'none');
+      map.setLayoutProperty(id,'icon-image',oborExpr());
+    }
+  });
   map.setFilter('bf-sel',['==',['get','id'],selIdx==null?-1:selIdx]);
 }
 
@@ -1062,7 +1073,7 @@ function renderLayersPop(){
       ${chk('sez','⚠ Envirozáťaže (šrafy)')}
       ${chk('labels','◎ Menovky území a zón')}
       ${chk('b3d','▲ 3D budovy mesta')}
-      ${chk('obri','☻ Spiaci obri (8+ ha)')}
+      ${chk('obri','☻ Spiaci obri (zblízka všetci)')}
     </div>
     <div class="clearrow"><span>oči obra: zavreté = bez zámeru · otvorené = známy zámer<br>vo VÍZII sa budia aj hlasmi návštevníkov</span></div>`;
   el.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>{

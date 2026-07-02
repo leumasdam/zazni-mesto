@@ -59,7 +59,7 @@ ok(`štatistika „13 území nad 8 ha"`,OBR.includes('<b>13</b>území nad 8 ha
 ok(`splash „113 / 580 ha / 15"`,OBR.includes('<b>113</b>')&&OBR.includes('<b>580 ha</b>')&&OBR.includes('<b>15</b>'));
 
 console.log('\n— D · PRAVIDLÁ ZOBRAZENIA (invarianty v kóde) —');
-ok('obri len ha ≥ 8 (filter vrstvy)',OBR.includes(`filter:['>=',['get','ha'],8]`));
+ok('obri: veľkí z diaľky (≥8 ha), zblízka všetci',OBR.includes(`filter:['>=',['get','ha'],8]`)&&OBR.includes(`bf-obri-all`)&&OBR.includes(`filter:['<',['get','ha'],8]`));
 ok('OBJAV/PULZ: bdie len plan==1 (realita registra)',/const real=\['case',\['==',\['get','plan'\],1\],'awake','sleep'\]/.test(OBR));
 ok('hlasy budia obra LEN vo VÍZII',/mode==='vizia'&&voted\.length/.test(OBR));
 ok('avatar v karte = LEN realita registra (plan)',OBR.includes(`obor-face \${p.plan?'awake':''}`)&&!OBR.includes(`(p.plan||total)?'awake'`)&&!OBR.includes(`face.classList.add('awake')`));
