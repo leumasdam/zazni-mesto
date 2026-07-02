@@ -1,7 +1,8 @@
 # ZAŽNI MESTO — preslov (scroll-story)
 
-**Forma:** prezentacia.html je kroková story — 11 stupňov, jeden swipe/šípka = jeden stupeň.
+**Forma:** prezentacia.html je kroková story — 13 stupňov, jeden swipe/šípka = jeden stupeň.
 Prechod sa vždy doplaví sám (vlna ~5 s — nechaj ju dobehnúť, film ~3 s a posunie sa sám); bodky vpravo = skok.
+Deep-link na stupeň: `?step=N` (0–12) — hodí sa pri skúšaní aj zdieľaní.
 **Čas: ~6–8 min príbeh + 3–5 min živé demo prototypu.**
 
 ## Dramaturgia
@@ -42,30 +43,40 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 
 *(nechaj dobehnúť na „113 / 113 svieti")*
 
-## medzihry · LEGENDA → OBOR → VIDEO → TU-BA → ŠKÁLOVATEĽNOSŤ
+## medzihry · LEGENDA → OBOR → OTOČKA → VRSTVY → VIDEO → TU-BA → ŠKÁLOVATEĽNOSŤ
 
-**LEGENDA** *(karty vystúpajú zdola)*
+**LEGENDA** *(biely panel zľava, karty vystúpajú zdola)*
 > Tu je celý slovník: štyri stavy svetla — spí, drieme, prebúdza sa, žije — a päť kanálov,
 > ktoré sa nikdy nebijú: farba, ikona, vzor, obrys, mierka. Nič sa nefarbí ručne, všetko číta register.
 
-**OBOR** *(KLIKNÚŤ — zobudí sa + chime)*
+**OBOR** *(KLIKNÚŤ — zobudí sa + chime; vpravo pláva clay štúdia)*
 > Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
-> Toto na expozícii urobí hlas návštevníka.
+> Toto na expozícii urobí hlas návštevníka. Na tabuli vpravo je sochárska štúdia:
+> spí — bez zámeru, zíva — drieme, bdie — zámer v registri. Realita a želanie sa nemiešajú.
 
-**VIDEO** *(mesto sa rozplynie do filmu — nechaj bežať ~10 s)*
+**OTOČKA** *(model sa sám otočí o 360° — dá sa aj potiahnuť rukou, HUD ukazuje stupne)*
+> Expozícia z každej strany: model, tablety, dotyková obrazovka pri hrane, návštevník.
+> Pokojne si ju otočte — obraz sa dá ťahať.
+
+**VRSTVY SVETLA** *(biely panel sprava; render sa odkrýva zdola nahor — svetlo stúpa vrstvami)*
+> Anatómia projekcie: tri dátové vrstvy svetla nad fyzickým mestom. Stavy sú svetlo,
+> riziko sú šrafy, typológia sú ikony s menovkami. Každá vrstva má vlastný grafický atribút —
+> preto sa dajú ľubovoľne kombinovať a nikdy sa nebijú. Projektory kreslia len dáta.
+
+**VIDEO** *(panel odíde, mesto sa rozplynie do filmu — nechaj bežať ~10 s)*
 > A takto to vyzerá v priestore: projektory kreslia presne tie dáta, ktorými sme práve prešli, na fyzický model.
 
-**TU-BA foto + MÉDIÁ** *(karty sa stierajú zhora, za nimi reálna fotka plnej miestnosti)*
-> Toto nie je render — to je plná miestnosť TU-BA na talku o brownfieldoch. Roly sú prísne:
-> model je mapa, obrazovka dirigent, tablet ďalekohľad — a web, na ktorom sme, je pokračovanie.
+**TU-BA + MÉDIÁ** *(film sa rozostrí, nad ním anotovaný render priestoru + karty rolí)*
+> Priestor TU-BA v jednom obraze: projektory, fyzický model, tablety, dotyková obrazovka, stena budúcnosti.
+> Roly sú prísne: model je mapa, obrazovka dirigent, tablet ďalekohľad — a web, na ktorom sme, je pokračovanie.
 
-**ŠKÁLOVATEĽNOSŤ** *(biely panel sa vyrolluje sprava — svetlá bodka na záver)*
+**ŠKÁLOVATEĽNOSŤ** *(biely panel zľava — svetlá bodka na záver)*
 > Prečo sa to nerozpadne: nové dáta = nový kanál, jeden zdroj pravdy, aktualizuje sa samo,
 > zajtra unesie inú tému. Nekúpili by ste si výstavu — kúpili by ste si nástroj.
 
 *(scroll do prototypu — živé demo priamo v stránke)*
 
-## 5 · ZAPOJ SA
+## 5 · ZAPOJ SA *(pozadie: nočná TU-BA, hrad v okne, projektory nad modelom)*
 
 > Rozsvietili sme mesto scrollom. Na expozícii to návštevník urobí dotykom a hlasom —
 > a každý hlas svieti na modeli a stáva sa dátami pre MIB. Web, ktorý práve vidíte,

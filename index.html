@@ -434,6 +434,34 @@ footer{
 }
 footer a{color:#fff}
 footer img{border-radius:0!important}
+
+/* rendre ako exponáty na papieri */
+.renders{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-top:var(--sp-3)}
+@media(max-width:860px){.renders{grid-template-columns:1fr}}
+.render-card{margin:0;background:#fff;border:1.5px solid var(--mib);box-shadow:6px 6px 0 rgba(51,47,158,.10);padding:10px 10px 6px;
+  transition:transform .25s ease,box-shadow .25s ease}
+.render-card:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 rgba(51,47,158,.14)}
+.render-card img{display:block;width:100%}
+.render-card figcaption{font-family:var(--font-mono);font-size:10.5px;color:#4a4d66;letter-spacing:.05em;line-height:1.65;padding:10px 4px 6px}
+
+/* otočka — interaktívny exponát */
+.turnstage{position:relative;display:flex;align-items:center;justify-content:center;
+  cursor:grab;user-select:none;touch-action:pan-y;padding:26px 0 34px;overflow:hidden}
+.turnstage.grab{cursor:grabbing}
+.turnstage img{width:min(60vh,640px);max-width:94%;pointer-events:none;
+  filter:drop-shadow(0 26px 44px rgba(0,0,0,.5))}
+.turnstage .deghud{position:absolute;top:14px;right:18px;font-family:var(--font-mono);
+  font-size:12px;color:var(--amber-300);letter-spacing:.12em}
+.turnstage .turnhint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-low)}
+
+nav{scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+
+/* scroll reveal — rýchly a presný, žiadny bounce */
+.mrev{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.mrev.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.mrev{opacity:1;transform:none;transition:none}}
 </style>
 </head>
 <body>
@@ -808,6 +836,14 @@ footer img{border-radius:0!important}
       </div>
     </div>
     <p class="mono" style="margin-top:var(--sp-2)">Gramatika tváre: oči = stav (čiarka / jedno oko / bodky) · ústa = energia · aura = jas okolia. Tvár sa vždy kreslí DO siluety typológie, nikdy mimo — obor ostáva budovou.</p>
+
+    <h3 style="margin-top:var(--sp-6)">Clay štúdia — obri v hmote</h3>
+    <p class="lead">Rovnaká gramatika prenesená do 3D: podklad pre fyzické artefakty expozície —
+    figúrky pri modeli, foto-point, suveníry. Telo je vždy mesto (strechy, veže, stromy), mení sa len tvár.</p>
+    <div class="renders">
+      <figure class="render-card"><img src="assets/typologie.png" alt="8 clay typológií obrov" loading="lazy"><figcaption>8 typológií v hline — jedna rodina, jeden vizuálny jazyk</figcaption></figure>
+      <figure class="render-card"><img src="assets/obri-clay.png" alt="Clay obor v troch stavoch: spí, zíva, bdie" loading="lazy"><figcaption>tri stavy viečok: SPÍ = bez zámeru · ZÍVA = drieme (dočasné využitie) · BDIE = zámer v registri</figcaption></figure>
+    </div>
   </div>
 </section>
 
@@ -997,6 +1033,19 @@ footer img{border-radius:0!important}
     </div>
     <p style="margin-top:var(--sp-2)"><a href="obrazovka.html" target="_blank" class="copy-btn" style="display:inline-block;text-decoration:none">Otvoriť na celú obrazovku ↗</a></p>
     <p class="mono">Ergonomika: ciele min. 56 px, panel vrstiev vľavo (pravák stojí bokom, netieni modelu), časová os na spodnej hrane = najbližšie k rukám. Hlasovania sa ukladajú — expozícia zbiera preferencie verejnosti pre MIB (fáza 1: participácia).</p>
+
+    <h3 style="margin-top:var(--sp-6)">Priestor — otočka okolo expozície</h3>
+    <p class="lead">Expozícia z každej strany: fyzický model s projekciou, tablety na ramenách,
+    dotyková obrazovka pri hrane. 25 snímok, 360° — <strong>ťahaj obraz a otoč si ju sám</strong>, inak sa točí sama.</p>
+    <div class="stage turnstage" id="mturn">
+      <img id="mturnimg" src="assets/seq/turn/frame-0.png" alt="Otočný pohľad na model expozície TU-BA" draggable="false">
+      <span class="deghud" id="mturnDeg">0°</span>
+      <span class="turnhint">✋ ťahaj — otočíš</span>
+    </div>
+    <div class="renders">
+      <figure class="render-card"><img src="assets/tuba-priestor.png" alt="Anotovaný render priestoru TU-BA" loading="lazy"><figcaption>jedna scéna, štyri vrstvy zážitku: projektory · fyzický model · tablety/AR · dotyková obrazovka · stena budúcnosti</figcaption></figure>
+      <figure class="render-card"><img src="assets/tablet-ar.png" alt="Tablet nad modelom so spiacim územím" loading="lazy"><figcaption>tablet = ďalekohľad — minulosť · dnes · vízia nad konkrétnym spiacim územím; scénu neprepíše, vie len poprosiť „ukáž na modeli"</figcaption></figure>
+    </div>
   </div>
 </section>
 
@@ -1337,6 +1386,45 @@ function sndTick(){
   }
   addEventListener('scroll',onScroll,{passive:true});
   onScroll();
+})();
+</script>
+<script>
+/* ---------- otočka expozície: auto spin + drag-rotate ---------- */
+(function(){
+  const st=document.getElementById('mturn');if(!st)return;
+  const img=document.getElementById('mturnimg'),deg=document.getElementById('mturnDeg');
+  const N=25,IMS=[];let f=0,drag=null;
+  for(let i=0;i<N;i++){const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;IMS[i]=im;}
+  function show(i){
+    f=((Math.round(i)%N)+N)%N;
+    if(IMS[f].complete)img.src=IMS[f].src;
+    deg.textContent=Math.round(f/(N-1)*360)+'°';
+  }
+  st.addEventListener('pointerdown',e=>{drag={x:e.clientX,f};st.classList.add('grab');st.setPointerCapture(e.pointerId);});
+  st.addEventListener('pointermove',e=>{if(drag)show(drag.f-(e.clientX-drag.x)/26);});
+  addEventListener('pointerup',()=>{drag=null;st.classList.remove('grab');});
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    setInterval(()=>{
+      const r=st.getBoundingClientRect();
+      if(!drag&&r.bottom>0&&r.top<innerHeight)show(f+1);
+    },240);
+  }
+})();
+/* ---------- scroll reveal: karty a nadpisy nabiehajú presne, bez bounce ---------- */
+(function(){
+  const Q=new URL(location).searchParams;
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&!Q.get('flat')){
+    const els=document.querySelectorAll('section h2,section .lead,section .card,section .icon-cell,section .render-card');
+    els.forEach((el,i)=>{el.classList.add('mrev');el.style.transitionDelay=((i%4)*70)+'ms';});
+    const io=new IntersectionObserver(en=>en.forEach(x=>{
+      if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}
+    }),{threshold:.1,rootMargin:'0px 0px -5% 0px'});
+    els.forEach(el=>io.observe(el));
+  }
+  const g=Q.get('go');
+  if(g)setTimeout(()=>{const el=document.getElementById(g);if(el)el.scrollIntoView({behavior:'instant',block:'start'});},80);
+  const pk=Q.get('peek'); /* náhľad sekcie bez scrollu (headless raster) */
+  if(pk)setTimeout(()=>{const el=document.getElementById(pk);if(el)document.body.style.transform=`translateY(${-el.offsetTop}px)`;},200);
 })();
 </script>
 </body>
