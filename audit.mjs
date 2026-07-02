@@ -87,7 +87,7 @@ ok('slajd 580 sedí so sumou',PRE.includes('num:n3:580')&&Math.round(sumHa)>=579
 ok('slajd 15 = sez',PRE.includes('num:n4:15'));
 ok('slajd 56 = súkromní',PRE.includes('num:n5:56')&&own.private===56);
 ok('mapové režimy big/sez/private existujú',['m3:big','m4:sez','m5:private'].every(s=>PRE.includes(s)));
-ok('simulátor modelu: 6 scén projekcie',['ambient','stavy','zataze','vyber','cas','hlas'].every(s=>PRE.includes(`data-s="${s}"`))&&PRE.includes('msim:ambient'));
+ok('simulátor modelu: príbeh návštevníka v 5 krokoch',['pride','vyberie','vrstva','cas','hlas'].every(s=>PRE.includes(`data-s="${s}"`))&&PRE.includes('msim:pride')&&PRE.includes('NÁVŠTEVNÍK'));
 
 console.log(`\n${'='.repeat(46)}\nVÝSLEDOK: ${pass} ✓ · ${fail} ✗\n`);
 process.exit(fail?1:0);
