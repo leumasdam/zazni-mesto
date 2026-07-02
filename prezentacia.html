@@ -686,15 +686,16 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
   ovl.style.pointerEvents=vis>.15?'auto':'none';
   const deck=ovl.querySelector('.deck');
   if(deck)deck.style.transform=`translateY(${((1-Math.min(1,ap*2))*14).toFixed(2)}vh)`;
+  /* všetko dokončené presne v bode dojazdu kroku (ap = 0.5) */
   if(mode==='wipeR'||mode==='wipeL'||mode==='wipeD'){
-    const wipe=clamp(ap*1.45)*130;
+    const wipe=clamp(ap*2.3)*130;
     const dir=mode==='wipeR'?'to right':mode==='wipeL'?'to left':'to bottom';
     const m=`linear-gradient(${dir}, black ${wipe}%, transparent ${wipe+18}%)`;
     grid.style.maskImage=m;grid.style.webkitMaskImage=m;
   }else{
     grid.style.maskImage='none';grid.style.webkitMaskImage='none';
     grid.querySelectorAll('.card').forEach((c,i)=>{
-      const local=clamp(ap*2.4-i*.16);
+      const local=clamp(ap*3.4-i*.06);
       if(mode==='rise'){c.style.opacity=local;c.style.transform=`translateY(${(1-local)*46}px)`;}
       else{c.style.opacity=local;c.style.transform=`scale(${.9+local*.1})`;}
     });
@@ -702,7 +703,7 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
   /* count-up čísel viazaný na progres (scrub-friendly) */
   grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
     const tgt=+el.dataset.n;
-    const local=clamp(ap*2.2-i*.28);
+    const local=clamp(ap*2.6-i*.18);
     const val=Math.round(tgt*(1-Math.pow(1-local,3)));
     const small=el.querySelector('small');
     el.childNodes[0].nodeValue=val;
