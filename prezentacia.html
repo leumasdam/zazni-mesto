@@ -27,7 +27,14 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 /* ============ filmové pozadie — scrub 4K videa scrollom ============ */
 #vidbg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
 #vidbg .seq{position:absolute;inset:-6% 0;background-size:cover;background-position:center;will-change:transform}
-#vidbg .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,18,.62),rgba(7,9,18,.38) 45%,rgba(7,9,18,.72))}
+#vidbg .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,18,.62),rgba(7,9,18,.38) 45%,rgba(7,9,18,.72));transition:opacity .9s ease}
+/* čisté video medzislajdy — film dostane celú obrazovku */
+.vpauza{min-height:100vh}
+.vpauza .cap{
+  position:absolute;left:50%;bottom:54px;transform:translateX(-50%);
+  font-family:var(--fm);font-size:11px;letter-spacing:.26em;color:var(--warm-300);text-transform:uppercase;
+  text-shadow:0 2px 12px rgba(7,9,18,.9);
+}
 
 /* ============ sekcie ============ */
 .slide{
@@ -211,7 +218,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 </head>
 <body>
 
-<div id="vidbg" aria-hidden="true"><div class="seq" id="vseq"></div><div class="veil"></div></div>
+<div id="vidbg" aria-hidden="true"><canvas class="seq" id="vseq"></canvas><div class="veil" id="vveil"></div></div>
 <div class="topbar"><i id="bar"></i></div>
 <span class="brand">ZAŽNI <em>MESTO</em></span>
 <span class="tubamark" aria-label="TU-BA">TU<i></i>BA</span>
@@ -227,6 +234,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <p class="line mono" style="font-size:13px">vpravo živý register MIB (113 polygónov) · za textom expozícia TU-BA — kamera stojí v miestnosti a scrollom ňou preletíš</p>
     <p class="backnote"><b>backend</b> · ArcGIS FeatureServer BF_aktualizácia_2022 → generátor → GeoJSON → mapa · polia: NAZOV · VYMERA_HA · DRUH_VLA · P_VYUZITIE · ZAMER · KONTAMIN · KLASIFIKAC</p>
   </div>
+</section>
+
+<!-- VIDEO · miestnosť -->
+<section class="slide vpauza" data-dot="Expozícia">
+  <span class="cap">expozícia TU-BA · scroll = kamera</span>
 </section>
 
 <!-- 02 · 113 -->
@@ -364,6 +376,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   </div>
 </section>
 
+<!-- VIDEO · let ponad model -->
+<section class="slide vpauza" data-dot="Let ponad model">
+  <span class="cap">let ponad rozsvietené štvrte · presne toto kreslia projektory</span>
+</section>
+
 <!-- 10 · OBOR -->
 <section class="slide" data-dot="Spiaci obri">
   <div class="oborwrap">
@@ -460,6 +477,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="m frag" style="border:none"><b>Zajtra iná téma.</b><span>nájomné bývanie · zeleň · doprava — jazyk ostáva</span></div>
   </div>
   <p class="backnote frag"><b>kvalita</b> · konzistenciu dát, čísel v UI a pravidiel zobrazenia stráži automatický audit — 47 kontrol pri každej zmene (node audit.mjs) · vrátane invariantu „obor bdie len zámerom z registra"</p>
+</section>
+
+<!-- VIDEO · stúpanie do svetla -->
+<section class="slide vpauza" data-dot="Do svetla">
+  <span class="cap">kamera stúpa do svetla projektora</span>
 </section>
 
 <!-- 16 · FINÁLE -->
@@ -658,15 +680,33 @@ function wakeObor(){
 }
 
 /* ============ landing engine: video scrub + aktívna sekcia + reveal ============ */
-/* jeden prejazd: začiatok stránky = frame 0, koniec stránky = posledný frame */
-const VSEQ={dir:'assets/seq/hero',count:121};
+/* jeden prejazd: začiatok stránky = frame 0, koniec stránky = posledný frame
+   render cez canvas — framy sa kreslia preddekódované, žiadne sekanie */
+const VSEQ={dir:'assets/seq/hero',count:241};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const slides=[...document.querySelectorAll('.slide')];
 const vseq=document.getElementById('vseq');
-const vcache={};
-const vurl=i=>`${VSEQ.dir}/frame-${i}.jpg`;
-function vpre(i){const u=vurl(i);if(!vcache[u]){const im=new Image();im.src=u;vcache[u]=im;}return u;}
-vseq.style.backgroundImage=`url(${vpre(0)})`;
+const vctx=vseq.getContext('2d');
+const vcache=[];
+function vpre(i){
+  if(!vcache[i]){const im=new Image();im.src=`${VSEQ.dir}/frame-${i}.jpg`;vcache[i]=im;}
+  return vcache[i];
+}
+function sizeCanvas(){
+  const dpr=Math.min(devicePixelRatio||1,1.5);
+  vseq.width=Math.round(vseq.clientWidth*dpr);
+  vseq.height=Math.round(vseq.clientHeight*dpr);
+}
+function drawFrame(i){
+  const img=vcache[i];
+  if(!img||!img.complete||!img.naturalWidth)return false;
+  const cw=vseq.width,ch=vseq.height,iw=img.naturalWidth,ih=img.naturalHeight;
+  const s=Math.max(cw/iw,ch/ih),dw=iw*s,dh=ih*s;
+  vctx.drawImage(img,(cw-dw)/2,(ch-dh)/2,dw,dh);
+  return true;
+}
+sizeCanvas();
+vpre(0).onload=()=>drawFrame(0);
 
 /* bodky navigácie */
 const dotsEl=document.getElementById('dots');
@@ -681,10 +721,13 @@ const dotBtns=[...dotsEl.children];
 /* plynulý dobeh framov — pri skoku na sekciu film „prejde" celý kus, nie skok */
 let curF=0,targetF=0,animRun=false,shownF=-1;
 function animFrames(){
-  if(Math.abs(targetF-curF)<.5){curF=targetF;animRun=false;}
-  else{curF+=(targetF-curF)*.09;animRun=true;}
+  if(Math.abs(targetF-curF)<.4){curF=targetF;animRun=false;}
+  else{curF+=(targetF-curF)*.14;animRun=true;}
   const f=Math.max(0,Math.min(VSEQ.count-1,Math.round(curF)));
-  if(f!==shownF){shownF=f;vseq.style.backgroundImage=`url(${vpre(f)})`;}
+  if(f!==shownF){
+    if(drawFrame(f))shownF=f;
+    else vpre(f).onload=()=>{if(Math.round(curF)===f){drawFrame(f);shownF=f;}};
+  }
   if(animRun)requestAnimationFrame(animFrames);
 }
 let curIdx=-1,ticking=false;
@@ -724,6 +767,8 @@ function onScroll(){
       curIdx=idx;
       dotBtns.forEach((d,j)=>d.classList.toggle('on',j===idx));
       if(simTimer&&!slides[idx].querySelector('#msim')){clearInterval(simTimer);simTimer=null;}
+      /* na čistých video slajdoch stiahni závoj — film dostane celú obrazovku */
+      document.getElementById('vveil').style.opacity=slides[idx].classList.contains('vpauza')?.28:1;
       runFx(slides[idx].dataset.enter);
       history.replaceState(null,'','#'+(idx+1));
     }
@@ -764,7 +809,7 @@ document.addEventListener('keydown',e=>{
 /* preload celej sekvencie postupne */
 addEventListener('load',()=>{let i=0;(function next(){if(i>=VSEQ.count)return;for(let k=0;k<5&&i<VSEQ.count;k++,i++)vpre(i);setTimeout(next,60);})();});
 addEventListener('scroll',onScroll,{passive:true});
-addEventListener('resize',onScroll);
+addEventListener('resize',()=>{sizeCanvas();shownF=-1;drawFrame(Math.round(curF));onScroll();});
 
 /* štart na hash sekcii */
 const h=parseInt(location.hash.slice(1));
