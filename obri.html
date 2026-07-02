@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAŽNI MESTO · Spiaci obri — character sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0E1A;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;padding:40px 16px;gap:20px}
+#poster{max-width:1040px;width:100%;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.bar{display:flex;gap:12px;align-items:center}
+.btn{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;cursor:pointer;
+  background:#F59E0B;color:#0B0E1A;border:none;border-radius:99px;padding:13px 26px;transition:all .25s;
+}
+.btn:hover{background:#FFB94A;box-shadow:0 0 28px rgba(245,158,11,.4)}
+.note{color:#767A9C;font-size:12.5px;font-family:'JetBrains Mono',monospace}
+a{color:#8B91DD}
+</style>
+</head>
+<body>
+<div id="mount"></div>
+<div class="bar">
+  <button class="btn" onclick="dl()">Stiahnuť PNG (2×)</button>
+  <span class="note">poster je čistý kód — jedna silueta na obra, dva stavy · <a href="index.html">← manuál</a></span>
+</div>
+
+<script>
+/* ============================================================
+   SPIACI OBRI — generovaný character sheet
+   Princíp: každý obor = JEDNA silueta (path).
+   Stav nemení kresbu, len paletu + tvár + auru:
+     spí   → indigo, oči čiarky, zzz
+     bdie  → amber, oči bodky, úsmev, lúče
+   ============================================================ */
+const PAL={
+  bg:'#F4F2EE', ink:'#0B0E1A', sub:'#5C5F78',
+  sleep:{body:'#3B4285', line:'#232A5E', face:'#B9BEF0', zzz:'#8B91DD'},
+  awake:{body:'#F59E0B', line:'#C77800', face:'#FFF6E3', ray:'#F59E0B'}
+};
+
+/* siluety obrov — viewBox 0 0 120 120, telo končí na y=112 */
+const GIANTS=[
+ {n:'FABRIKA', body:'M16 112 V54 L44 34 v20 L72 34 v20 L100 34 v78 Z M26 44 V16 h13 v19',
+  eyes:[[46,80],[72,80]], mouth:[59,95]},
+ {n:'STANICA', body:'M16 112 V62 Q60 28 104 62 V112 Z M46 112 V90 Q60 76 74 90 V112',
+  eyes:[[38,78],[82,78]], mouth:[60,97], extra:'M60 46 m-7 0 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 M60 42 v4 h3'},
+ {n:'KASÁREŇ', body:'M28 112 V34 h12 v-9 h11 v9 h18 v-9 h11 v9 h12 v78 Z',
+  eyes:[[47,76],[73,76]], mouth:[60,91],
+  extra:'M60 47 l3.2 6.6 7 .8 -5.1 5 1.2 7 -6.3 -3.4 -6.3 3.4 1.2 -7 -5.1 -5 7 -.8 Z'},
+ {n:'SILO', body:'M20 112 V52 a16 16 0 0 1 32 0 V112 Z M62 112 V64 a13 13 0 0 1 26 0 V112 Z M20 68 h32',
+  eyes:[[29,80],[43,80]], mouth:[36,94]}
+];
+
+function face(g,awake){
+  const p=awake?PAL.awake:PAL.sleep;
+  let s='';
+  g.eyes.forEach(([x,y])=>{
+    s+= awake
+      ? `<circle cx="${x}" cy="${y}" r="4.6" fill="${p.face}"/>`
+      : `<path d="M${x-5} ${y} q5 4.5 10 0" stroke="${p.face}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  });
+  const [mx,my]=g.mouth;
+  s+= awake
+    ? `<path d="M${mx-6} ${my} q6 5.5 12 0" stroke="${p.face}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    : `<path d="M${mx-3.5} ${my} q3.5 2.6 7 0" stroke="${p.face}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  return s;
+}
+function aura(awake){
+  if(!awake)return `<text x="96" y="26" font-family="'JetBrains Mono',monospace" font-size="12" fill="${PAL.sleep.zzz}">z</text>
+    <text x="104" y="15" font-family="'JetBrains Mono',monospace" font-size="15" fill="${PAL.sleep.zzz}">z</text>`;
+  /* lúče okolo tela */
+  const cx=60,cy=64,r1=58,r2=70;let s='';
+  for(let a=-160;a<=20;a+=36){
+    const rad=a*Math.PI/180;
+    s+=`<line x1="${(cx+Math.cos(rad)*r1).toFixed(1)}" y1="${(cy+Math.sin(rad)*r1).toFixed(1)}"
+         x2="${(cx+Math.cos(rad)*r2).toFixed(1)}" y2="${(cy+Math.sin(rad)*r2).toFixed(1)}"
+         stroke="${PAL.awake.ray}" stroke-width="4" stroke-linecap="round" opacity=".75"/>`;
+  }
+  return s;
+}
+function giant(g,awake){
+  const p=awake?PAL.awake:PAL.sleep;
+  return `<g>
+    ${aura(awake)}
+    <path d="${g.body}" fill="${p.body}" stroke="${p.line}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${g.extra?`<path d="${g.extra}" fill="none" stroke="${p.face}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`:''}
+    ${face(g,awake)}
+  </g>`;
+}
+
+/* ---------- kompozícia posteru ---------- */
+const CELL=214, GX=64, TOP=196;
+const W=GX*2+CELL*4, H=TOP+2*CELL+150;
+const FD=`'Space Grotesk','Arial',sans-serif`, FM=`'JetBrains Mono','Courier New',monospace`;
+
+let cells='';
+GIANTS.forEach((g,col)=>{
+  [false,true].forEach((awake,row)=>{
+    const x=GX+col*CELL, y=TOP+row*CELL;
+    cells+=`<g transform="translate(${x+(CELL-150)/2},${y}) scale(1.25)">${giant(g,awake)}</g>`;
+  });
+  cells+=`<text x="${GX+col*CELL+CELL/2}" y="${TOP+2*CELL+38}" text-anchor="middle"
+    font-family="${FD}" font-weight="700" font-size="19" letter-spacing="3" fill="${PAL.ink}">${g.n}</text>`;
+});
+
+const svg=`<svg id="poster" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="${FD}">
+  <rect width="${W}" height="${H}" fill="${PAL.bg}"/>
+  <text x="${GX}" y="74" font-family="${FM}" font-size="14" letter-spacing="4" fill="${PAL.awake.body}">ZAŽNI MESTO · ILUSTRAČNÁ VRSTVA</text>
+  <text x="${GX}" y="128" font-family="${FD}" font-weight="700" font-size="52" fill="${PAL.ink}">Spiaci obri</text>
+  <text x="${GX}" y="160" font-size="17" fill="${PAL.sub}">Každý brownfield je obor, ktorý zaspal. Oči = stav · ústa = energia · aura = jas okolia.</text>
+
+  <text x="${W-GX}" y="${TOP+CELL*0.5}" text-anchor="end" transform="rotate(90 ${W-GX+18} ${TOP+CELL*0.5})"
+    font-family="${FM}" font-size="12" letter-spacing="3" fill="${PAL.sleep.body}"></text>
+  <text x="${GX-22}" y="${TOP+CELL*0.55}" text-anchor="middle" transform="rotate(-90 ${GX-22} ${TOP+CELL*0.55})"
+    font-family="${FM}" font-size="13" letter-spacing="4" fill="${PAL.sleep.body}">SPÍ · INDIGO</text>
+  <text x="${GX-22}" y="${TOP+CELL*1.55}" text-anchor="middle" transform="rotate(-90 ${GX-22} ${TOP+CELL*1.55})"
+    font-family="${FM}" font-size="13" letter-spacing="4" fill="${PAL.awake.line}">BDIE · AMBER</text>
+
+  <line x1="${GX}" y1="${TOP+2*CELL+66}" x2="${W-GX}" y2="${TOP+2*CELL+66}" stroke="#D9D5CC" stroke-width="2"/>
+  <text x="${GX}" y="${TOP+2*CELL+108}" font-family="${FD}" font-weight="600" font-size="24" fill="${PAL.ink}">113 spiacich obrov Bratislavy</text>
+  <text x="${W-GX}" y="${TOP+2*CELL+108}" text-anchor="end" font-family="${FM}" font-size="13" fill="${PAL.sub}">register BF · MIB 2022 · 580 ha</text>
+</svg>`;
+
+document.getElementById('mount').innerHTML=svg;
+
+/* ---------- export PNG ---------- */
+function dl(){
+  const el=document.getElementById('poster');
+  const data=new XMLSerializer().serializeToString(el);
+  const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const img=new Image();
+  img.onload=()=>{
+    const cv=document.createElement('canvas');
+    cv.width=W*2;cv.height=H*2;
+    const ctx=cv.getContext('2d');ctx.scale(2,2);ctx.drawImage(img,0,0,W,H);
+    const a=document.createElement('a');
+    a.download='zazni-mesto-spiaci-obri.png';a.href=cv.toDataURL('image/png');a.click();
+    URL.revokeObjectURL(url);
+  };
+  img.src=url;
+}
+</script>
+</body>
+</html>
