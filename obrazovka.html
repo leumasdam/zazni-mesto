@@ -929,11 +929,13 @@ function detailPane(i){
       <div class="frows" style="max-width:520px">
         <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
         <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
-        <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
+        <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom ↓':'Nevyužívané, bez zámeru'}</span></div>
         <div class="frow"><span class="k">Potenciál (CABERNET)</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
         <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
         <div class="frow"><span class="k">Mestská časť</span><span class="v">${p.mc}</span></div>
       </div>
+      ${p.plan?`<p style="margin-top:12px;font-size:13.5px;max-width:60ch"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">ZNÁMY ZÁMER</span><br><b style="color:var(--warm-100)">${p.zamer}</b></p>`:''}
+      <p class="mono" style="margin-top:10px;font-size:11px;color:var(--text-low);max-width:64ch">„Zámer" = investičný alebo územnoplánovací krok evidovaný pri terénnom mapovaní registra — napr. ohlásený projekt, urbanistická súťaž či prebiehajúca zmena územného plánu. ${p.plan?'Čo hovorí územný plán a verejnosť → karta BUDÚCNOSŤ.':'Práve bez zámeru je územie kandidát na dočasné využitie.'}</p>
     </div>`;
 }
 function stackDetail(i){
@@ -942,7 +944,7 @@ function stackDetail(i){
   return `<div class="card glass scroll" style="overflow-y:auto;flex:1">
     <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
-      <div class="obor-face ${(p.plan||total)?'awake':''}" id="oborFace">
+      <div class="obor-face ${p.plan?'awake':''}" id="oborFace">
         <span class="ob-s">${oborArt(p.typ,false,66)}</span>
         <span class="ob-a">${oborArt(p.typ,true,66)}</span>
       </div>
@@ -977,6 +979,11 @@ function stackVizia(){
     <p style="font-size:12px;color:var(--text-low);margin-top:12px;line-height:1.6">
       Expozícia zbiera preferencie návštevníkov ako participatívny vstup pre MIB —
       1. fáza revitalizácie podľa Koncepcie je práve participácia.</p>
+    ${localStorage.getItem('zazni-votes-sim')?'<p class="mono" style="font-size:10.5px;color:var(--amber-300);margin-top:8px">⚠ obsahuje simulované hlasy (demo)</p>':''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="fopt" id="simVotes" style="flex:1">🎲 Simulovať návštevníkov</button>
+      <button class="fopt" id="clrVotes" style="flex:1">✕ Vynulovať hlasy</button>
+    </div>
   </div>
   <div class="card glass">
     <h3 style="font-size:15px">Ako čítať čas</h3>
@@ -1167,13 +1174,34 @@ function bindPane(){
     if(!votes[selIdx])votes[selIdx]={};
     votes[selIdx][b.dataset.v]=(votes[selIdx][b.dataset.v]||0)+1;
     saveVotes();
-    const face=document.getElementById('oborFace');if(face)face.classList.add('awake');
+    /* obor v karte sa NEBUDÍ — bdie len realita registra; hlas vidno v počítadle a vo VÍZII */
     sndChime();repaint();
     const pane=document.getElementById('tpane');
     if(pane){pane.innerHTML=detailPane(selIdx);bindPane();}
     const tb=document.querySelector('.tt[data-t="fut"]');
     if(tb)tb.innerHTML=`BUDÚCNOSŤ · ${voteTotal(selIdx)} ★`;
   }));
+  /* simulácia návštevníckych hlasov (demo pre VÍZIU) + vynulovanie */
+  const sv=document.getElementById('simVotes');
+  if(sv)sv.addEventListener('click',()=>{
+    let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+    FEATS.forEach(f=>{
+      if(rnd()>0.38)return;
+      const o=votes[f.properties.id]||(votes[f.properties.id]={});
+      const n=1+Math.floor(rnd()*7);
+      for(let k=0;k<n;k++){
+        const opt=['byvanie','park','skola','kultura'][Math.floor(rnd()*4)];
+        o[opt]=(o[opt]||0)+1;
+      }
+    });
+    saveVotes();localStorage.setItem('zazni-votes-sim','1');
+    renderStack();repaint();
+  });
+  const cv=document.getElementById('clrVotes');
+  if(cv)cv.addEventListener('click',()=>{
+    votes={};saveVotes();localStorage.removeItem('zazni-votes-sim');
+    renderStack();repaint();
+  });
 }
 function clickBF(i){
   if(mode==='pulz'){selIdx=i;renderStack();repaint();}
