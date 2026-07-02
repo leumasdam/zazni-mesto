@@ -31,8 +31,7 @@ a{color:inherit}
   background:radial-gradient(ellipse 105% 90% at 50% 42%,transparent 55%,rgba(5,7,15,.85));}
 #pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
 /* kapitolové pozadia — video a fotky, nabiehajú podľa aktu */
-#chapvid,#chapimg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity}
-#chapimg{filter:blur(9px) brightness(.5) saturate(1.15)}
+#chapvid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity,filter}
 /* biele panely — vyrollujú sa z boku (litvanyi/zenko štýl) */
 .wpanel{
   position:fixed;inset:0;background:#F4F2EE;z-index:5;visibility:hidden;
@@ -238,7 +237,6 @@ body.lightmode .dots i.on{background:#C77800}
 
 <canvas id="city"></canvas>
 <video id="chapvid" muted loop playsinline preload="metadata" src="assets/hero.mp4"></video>
-<img id="chapimg" src="assets/tuba-live-1.jpg" alt="">
 <div id="panelL" class="wpanel"></div>
 <div id="panelR" class="wpanel"></div>
 <div id="vignette"></div>
@@ -399,7 +397,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy vedie presne na túto stránku — mesto si rozsvietiš doma. Hlasy sa ukladajú ako dataset pre MIB.</p><span class="src">1. fáza metodiky: participácia</span></div>
     </div>
   </div>
-  <span class="chapcap" style="bottom:auto;top:96px">TU<i></i>BA · plná miestnosť na MIB talku o brownfieldoch — fotografia z priestoru</span>
+  <span class="chapcap" style="bottom:auto;top:96px">TU<i></i>BA · expozícia beží ďalej za obsahom — jedna scéna, štyri vrstvy</span>
 </div>
 
 <!-- 10 · ŠKÁLOVATEĽNOSŤ -->
@@ -711,7 +709,7 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
   });
 }
 
-const chapvid=document.getElementById('chapvid'),chapimg=document.getElementById('chapimg');
+const chapvid=document.getElementById('chapvid');
 function chores(t){
   const p=Ps;
   bar.style.width=(p*100)+'%';
@@ -771,18 +769,18 @@ function chores(t){
   document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
   document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
 
-  const vv=wnd('video');
+  /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
+  const vSpan=clamp((Ps-ACT.video[0])/(ACT.tuba[1]-ACT.video[0]));
+  const vv=Math.max(0,Math.min(1,vSpan*3.4,(1-vSpan)*3.4));
+  const blurK=clamp(aP('tuba')*2.2);
   chapvid.style.opacity=vv.toFixed(3);
-  chapvid.style.transform=`scale(${(1.02+aP('video')*.06).toFixed(3)})`;
+  chapvid.style.filter=`blur(${(blurK*10).toFixed(1)}px) brightness(${(1-.42*blurK).toFixed(2)}) saturate(1.08)`;
+  chapvid.style.transform=`scale(${(1.02+vSpan*.06).toFixed(3)})`;
   if(!REDUCED){
     if(vv>.04){if(chapvid.paused)chapvid.play().catch(()=>{});}
     else if(!chapvid.paused)chapvid.pause();
   }
-  document.getElementById('ovlVideo').style.opacity=vv.toFixed(3);
-
-  const tv=wnd('tuba');
-  chapimg.style.opacity=tv.toFixed(3);
-  chapimg.style.transform=`scale(${(1.05+aP('tuba')*.07).toFixed(3)}) translateY(${((aP('tuba')-.5)*-3).toFixed(2)}%)`;
+  document.getElementById('ovlVideo').style.opacity=wnd('video').toFixed(3);
 
   /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
   const pr=wnd('proto');
