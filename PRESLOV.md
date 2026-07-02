@@ -3,6 +3,8 @@
 **Forma:** prezentacia.html je kroková story — 13 stupňov, jeden swipe/šípka = jeden stupeň.
 Prechod sa vždy doplaví sám (vlna ~5 s — nechaj ju dobehnúť, film ~3 s a posunie sa sám); bodky vpravo = skok.
 Deep-link na stupeň: `?step=N` (0–12) — hodí sa pri skúšaní aj zdieľaní.
+Kiosková slučka: `?auto=1` (4,2 s/krok) alebo `?auto=8` (vlastné sekundy) — prezentácia sa prehráva
+sama dokola; ideálne nechať bežať v TU-BA na obrazovke, dotyk ju kedykoľvek preruší a pokračuje sama.
 **Čas: ~6–8 min príbeh + 3–5 min živé demo prototypu.**
 
 ## Dramaturgia
