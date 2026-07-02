@@ -64,6 +64,7 @@ ok('OBJAV/PULZ: bdie len plan==1 (realita registra)',/const real=\['case',\['=='
 ok('hlasy budia obra LEN vo VÍZII',/mode==='vizia'&&voted\.length/.test(OBR));
 ok('avatar v karte = plan ∨ hlas',OBR.includes(`\${(p.plan||voted)?'awake':''}`));
 ok('šrafy viazané na sez==1',OBR.includes(`filter:['==',['get','sez'],1]`));
+ok('zoznam OBJAV používa obrov (nie staré ikony)',OBR.includes('oborArt(p.typ,p.plan===1,34')&&!OBR.includes('aveyes'));
 ok('každá typológia obrov má telo v OBODY',(()=>{
   const bodies=[...OBR.matchAll(/^\s{2}(\w+):\{b:'/gm)].map(m=>m[1]);
   return [...new Set(big.map(f=>f.typ))].every(t=>bodies.includes(t));

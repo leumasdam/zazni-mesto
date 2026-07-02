@@ -136,12 +136,8 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 }
 .bfitem:hover{border-color:var(--indigo-300);transform:translateX(-2px)}
 .bfitem.sel{border-color:var(--amber-500);background:rgba(245,158,11,.1)}
-.bfitem .av{width:44px;height:48px;border-radius:13px;background:rgba(59,66,133,.4);flex:0 0 auto;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.aveyes{display:flex;gap:5px;align-items:center;height:5px}
-.aveyes i{display:block;width:5.5px;height:2px;border-radius:99px;background:var(--indigo-300)}
-.aveyes.awake i{width:4.5px;height:4.5px;background:var(--amber-300);box-shadow:0 0 4px rgba(255,185,74,.8)}
-.bfitem .av svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.bfitem .av{width:46px;height:46px;border-radius:13px;background:rgba(11,14,26,.55);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center}
 .bfitem .nm{font-family:var(--fd);font-weight:600;font-size:14.5px;line-height:1.2}
 .bfitem .meta{font-size:11.5px;color:var(--text-low);margin-top:2px}
 .bfitem .tags{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}
@@ -376,10 +372,23 @@ const OBODY={
   recreation:{b:'M20 112 V82 a40 40 0 0 1 80 0 V112 Z',e:[[46,88],[74,88]],m:[60,100]},
   other:{b:'M26 112 V50 q0-14 14-14 h40 q14 0 14 14 V112 Z',e:[[46,80],[74,80]],m:[60,94]}
 };
-function oborArt(typ,awake,size=160,halo=false){
+function oborArt(typ,awake,size=160,halo=false,effects=true){
   const g=OBODY[typ]||OBODY.other;
   const P=awake?{f:'#F59E0B',s:'#C77800',face:'#FFF6E3'}:{f:'#454CA0',s:'#8B91DD',face:'#C9CDF4'};
   let fx='';
+  if(!effects){
+    /* mini verzia bez zzz/lúčov — tesný výrez pre zoznamy */
+    const eyesM=g.e.map(([x,y])=>awake
+      ?`<circle cx="${x}" cy="${y}" r="5" fill="${P.face}"/>`
+      :`<path d="M${x-6} ${y} q6 5 12 0" stroke="${P.face}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`).join('');
+    const mouthM=awake
+      ?`<path d="M${g.m[0]-7} ${g.m[1]} q7 6 14 0" stroke="${P.face}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`
+      :`<path d="M${g.m[0]-4} ${g.m[1]} q4 3 8 0" stroke="${P.face}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size*104/100)}" viewBox="10 12 100 104">
+      <path d="${g.b}" fill="${P.f}" stroke="${P.s}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${g.x?`<path d="${g.x}" fill="none" stroke="${P.face}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`:''}
+      ${eyesM}${mouthM}</svg>`;
+  }
   if(awake){
     for(let a=-160;a<=20;a+=36){const r=a*Math.PI/180;
       fx+=`<line x1="${(60+Math.cos(r)*62).toFixed(1)}" y1="${(66+Math.sin(r)*62).toFixed(1)}" x2="${(60+Math.cos(r)*76).toFixed(1)}" y2="${(66+Math.sin(r)*76).toFixed(1)}" stroke="#FFB94A" stroke-width="5" stroke-linecap="round" opacity=".85"/>`;}
@@ -672,7 +681,7 @@ function stackList(){
     <div class="bflist scroll">
       ${list.map(p=>`
       <button class="bfitem ${selIdx===p.id?'sel':''}" data-i="${p.id}">
-        <span class="av">${iconSvg(p.typ,22)}<span class="aveyes ${p.plan?'awake':''}"><i></i><i></i></span></span>
+        <span class="av">${oborArt(p.typ,p.plan===1,34,false,false)}</span>
         <span style="min-width:0">
           <span class="nm">${p.n||'Bez názvu'}</span>
           <span class="meta">${p.mc} · ${p.ha} ha · ${TYPL[p.typ]}</span>
