@@ -67,6 +67,9 @@ ok('šrafy viazané na sez==1',OBR.includes(`filter:['==',['get','sez'],1]`));
 ok('zoznam OBJAV používa obrov (nie staré ikony)',OBR.includes('oborArt(p.typ,p.plan===1,34')&&!OBR.includes('aveyes'));
 ok('nfunk (ÚPN) vyplnené pre všetkých 113',F.every(f=>f.nfunk&&f.nfunk.length>3));
 ok('detail má leteckú snímku + sekcie M/D/B',OBR.includes('World_Imagery/MapServer/export')&&OBR.includes('MINULOSŤ <i>')&&OBR.includes('BUDÚCNOSŤ <i>'));
+ok('karusel 3 snímok (DNES/OKOLIE/ORTOFOTO SR)',OBR.includes('ORTOFOTO SR')&&OBR.includes('data-ph')&&OBR.includes('zbgis_ortofoto_wms'));
+ok('kurátorské príbehy + šablóny typológií',OBR.includes('Dynamitfabrik')&&OBR.includes('konskej železnice')&&OBR.includes('PAST_T'));
+ok('klik do prázdnej mapy zatvára detail',OBR.includes(`queryRenderedFeatures(e.point,{layers:['bf-fill']})`));
 ok('každá typológia obrov má telo v OBODY',(()=>{
   const bodies=[...OBR.matchAll(/^\s{2}(\w+):\{b:'/gm)].map(m=>m[1]);
   return [...new Set(big.map(f=>f.typ))].every(t=>bodies.includes(t));

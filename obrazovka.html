@@ -90,8 +90,13 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   display:flex;flex-direction:column;gap:14px;pointer-events:none;
   transition:width .45s cubic-bezier(.2,.9,.3,1);
 }
-.stack.wide{width:600px}
-body.detailopen .backbtn{right:640px}
+.stack.wide{width:min(54vw,920px)}
+body.detailopen .backbtn{right:calc(min(54vw,920px) + 44px)}
+.dcols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 28px}
+.ph-tabs{position:absolute;left:10px;bottom:8px;display:flex;gap:6px}
+.ph-tab{font-family:var(--fm);font-size:10.5px;padding:5px 12px;border-radius:99px;background:rgba(7,9,18,.62);
+  color:var(--text-mid);border:1px solid rgba(139,145,221,.3);cursor:pointer;backdrop-filter:blur(4px);transition:all .2s}
+.ph-tab.on{background:var(--amber-500);color:#0B0E1A;border-color:var(--amber-500);font-weight:600}
 /* detail — foto + sekcie minulosť/dnes/budúcnosť */
 .dphoto{position:relative;border-radius:16px;overflow:hidden;margin:4px 0 16px;background:var(--night-700);aspect-ratio:2/1}
 .dphoto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -561,7 +566,13 @@ map.on('load',()=>{
     img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
   }));
 
-  map.on('click','bf-fill',e=>{if(e.features.length)clickBF(e.features[0].properties.id);});
+  /* klik na územie = výber; klik do prázdnej mapy = zavri detail */
+  map.on('click',e=>{
+    const hits=map.queryRenderedFeatures(e.point,{layers:['bf-fill']});
+    if(hits.length)clickBF(hits[0].properties.id);
+    else if(mode==='objav'&&selIdx!=null){selIdx=null;renderStack();repaint();}
+    else if(mode==='pulz'&&selIdx!=null){selIdx=null;renderStack();repaint();}
+  });
   map.on('mouseenter','bf-fill',()=>map.getCanvas().style.cursor='pointer');
   map.on('mouseleave','bf-fill',()=>map.getCanvas().style.cursor='');
 
@@ -637,7 +648,8 @@ function repaint(){
 
 /* ---------- navigácia mapy ---------- */
 function zoomTo(i){
-  map.fitBounds(BBOX[i],{padding:{top:140,bottom:140,left:120,right:680},maxZoom:15.8,pitch:55,duration:1100});
+  const rp=Math.min(window.innerWidth*.54,920)+60;
+  map.fitBounds(BBOX[i],{padding:{top:130,bottom:130,left:90,right:rp},maxZoom:15.8,pitch:55,duration:1100});
   document.getElementById('backMap').classList.add('vis');
 }
 function resetView(){
@@ -709,34 +721,95 @@ function stackList(){
     </div>
   </div>`;
 }
-/* letecká snímka územia + obrys parcely nad ňou */
-function aerial(i){
-  const b=BBOX[i];if(!b)return '';
-  const padX=(b[1][0]-b[0][0])*.45+.0012, padY=(b[1][1]-b[0][1])*.45+.0006;
-  /* pomer 2:1 — dorovnaj bbox na pomer obrázka (šírka v ° korigovaná cos φ) */
+/* ---------- fotky územia: karusel DNES / OKOLIE / ORTOFOTO SR, každá s obrysom parcely ---------- */
+function photoBox(i,padF){
+  const b=BBOX[i];
+  const padX=(b[1][0]-b[0][0])*padF+.0012, padY=(b[1][1]-b[0][1])*padF+.0006;
   let w=b[0][0]-padX,e=b[1][0]+padX,s=b[0][1]-padY,n=b[1][1]+padY;
   const k=Math.cos(48.15*Math.PI/180);
-  const spanX=(e-w)*k, spanY=(n-s), want=spanY*2/k; /* cieľ: spanX_deg = 2*spanY/k */
+  const want=(n-s)*2/k;
   if(e-w<want){const c=(e+w)/2;w=c-want/2;e=c+want/2;}
   else{const c=(n+s)/2,half=(e-w)*k/4;s=c-half;n=c+half;}
-  const url=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${w.toFixed(5)},${s.toFixed(5)},${e.toFixed(5)},${n.toFixed(5)}&bboxSR=4326&imageSR=4326&size=760,380&format=jpg&f=image`;
-  /* obrys parcely v súradniciach bboxu (y prevrátené) */
   const g=FEATS[i].geometry;
   const rings=g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);
   const path=rings.map(r=>'M'+r.map(c=>`${c[0].toFixed(5)} ${(n+s-c[1]).toFixed(5)}`).join(' L')+'Z').join(' ');
+  return {w,s,e,n,path,vb:`${w.toFixed(5)} ${s.toFixed(5)} ${(e-w).toFixed(5)} ${(n-s).toFixed(5)}`};
+}
+const esriUrl=b=>`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${b.w.toFixed(5)},${b.s.toFixed(5)},${b.e.toFixed(5)},${b.n.toFixed(5)}&bboxSR=4326&imageSR=4326&size=880,440&format=jpg&f=image`;
+const gkuUrl=b=>`https://zbgisws.skgeodesy.sk/zbgis_ortofoto_wms/service.svc/get?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=1&STYLES=&CRS=EPSG:4326&BBOX=${b.s.toFixed(5)},${b.w.toFixed(5)},${b.n.toFixed(5)},${b.e.toFixed(5)}&WIDTH=880&HEIGHT=440&FORMAT=image/jpeg`;
+let PH=[];
+function aerial(i){
+  if(!BBOX[i])return '';
+  const close=photoBox(i,.45), wide=photoBox(i,2.4);
+  PH=[
+    {lab:'DNES · detail',url:esriUrl(close),vb:close.vb,path:close.path,credit:'Esri World Imagery'},
+    {lab:'OKOLIE · kontext',url:esriUrl(wide),vb:wide.vb,path:wide.path,credit:'Esri World Imagery'},
+    {lab:'ORTOFOTO SR',url:gkuUrl(close),vb:close.vb,path:close.path,credit:'GKÚ Bratislava · ortofotomozaika SR'}
+  ];
+  const p=PH[0];
   return `<div class="dphoto">
-    <img src="${url}" alt="Letecká snímka" loading="lazy">
-    <svg viewBox="${w.toFixed(5)} ${s.toFixed(5)} ${(e-w).toFixed(5)} ${(n-s).toFixed(5)}" preserveAspectRatio="none">
-      <path d="${path}" fill="rgba(245,158,11,.14)" stroke="#FFB94A" stroke-width="2.6" stroke-dasharray="8 5"
+    <img id="phImg" src="${p.url}" alt="Snímka územia" loading="lazy">
+    <svg id="phSvg" viewBox="${p.vb}" preserveAspectRatio="none">
+      <path d="${p.path}" fill="rgba(245,158,11,.13)" stroke="#FFB94A" stroke-width="2.6" stroke-dasharray="8 5"
         vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
     </svg>
-    <span class="credit">letecká snímka · Esri World Imagery</span>
+    <div class="ph-tabs">${PH.map((x,k)=>`<button class="ph-tab ${k===0?'on':''}" data-ph="${k}">${x.lab}</button>`).join('')}</div>
+    <span class="credit" id="phCredit">${p.credit}</span>
   </div>`;
+}
+function phSet(k){
+  const p=PH[k];if(!p)return;
+  document.getElementById('phImg').src=p.url;
+  const svg=document.getElementById('phSvg');
+  svg.setAttribute('viewBox',p.vb);
+  svg.querySelector('path').setAttribute('d',p.path);
+  document.getElementById('phCredit').textContent=p.credit;
+  document.querySelectorAll('.ph-tab').forEach((t,j)=>t.classList.toggle('on',j===k));
+}
+
+/* ---------- príbehy: kurátorské pre známe areály, šablóna podľa typológie pre ostatné ---------- */
+const STORIES=[
+  {re:/dynamitka|istrochem/i,
+   past:'Založená v roku 1873 ako Dynamitfabrik Alfreda Nobela — jedna z najstarších chemických tovární strednej Európy. Neskôr CHZJD a Istrochem; chémia sa tu vyrábala vyše sto rokov a zanechala rozsiahlu kontamináciu.',
+   future:'Najväčšia rozvojová rezerva Nového Mesta — každú premenu podmieňuje sanácia envirozáťaže.'},
+  {re:/gumon/i, past:'Gumon (zal. 1912) — továreň na gumené a elektroizolačné materiály pri Mlynských nivách, súčasť priemyselného pásu pri prístave.'},
+  {re:/matador/i, past:'Matador (zal. 1905) — gumárenská fabrika, srdce slovenského gumárenstva a symbol industriálnej Petržalky.'},
+  {re:/pko|park kult/i, past:'Park kultúry a oddychu — od 50. rokov kultúrna obývačka mesta pri Dunaji: koncerty, veľtrhy, tanečné zábavy.'},
+  {re:/amfite/i, past:'Letný amfiteáter z 50. rokov — kino pod holým nebom pre tisíce Bratislavčanov.'},
+  {re:/fili[aá]lka/i,
+   past:'Filiálka — stanica na trase konskej železnice do Trnavy (1846), jednej z najstarších v Uhorsku. Neskôr nákladná stanica, dnes zarastené koľajisko v srdci mesta.',
+   future:'Dlhodobo zvažovaná ako stanica budúceho železničného uzla Bratislava.'},
+  {re:/jan[ií]kov/i, past:'Betónový skelet v Janíkovom dvore — pozostatok nedostavanej petržalskej rýchlodráhy z 80. rokov, memento veľkých plánov.'},
+  {re:/raketov/i, past:'Bývalá raketová základňa protivzdušnej obrany z čias studenej vojny — areál desaťročia skrytý za plotom.'},
+  {re:/vodn[yý] zdroj/i,
+   past:'Územie v ochrannom pásme vodného zdroja — pitná voda pre mesto je dôvod, prečo tu nikdy nevyrástla bežná zástavba.',
+   future:'Ochrana vody limituje intenzívny rozvoj — priestor skôr pre zeleň a mäkké, dočasné využitie.'},
+  {re:/pr[ií]stav|lodenic/i, past:'Zimný prístav a lodenice — miesto, kde Bratislava žila Dunajom: opravy lodí, žeriavy, sklady.'},
+  {re:/r[aá]zsoch/i, past:'Rázsochy — najznámejšia nedostavaná nemocnica Slovenska; skelet z 80. rokov bol napokon zbúraný.', future:'Štát pripravuje výstavbu novej nemocnice.'},
+];
+const PAST_T={
+  industry:'Priemyselný areál — jedno z miest, okolo ktorých mesto v 20. storočí rástlo. Výroba stíchla a brány sa zavreli.',
+  office:'Administratívny či inštitucionálny areál, ktorý prišiel o svoju funkciu a odvtedy čaká.',
+  transport:'Územie dopravy — koľaje, depá a rampy, po ktorých prestala jazdiť každodenná prevádzka.',
+  military:'Vojenský areál — desaťročia za plotom, mimo očí mesta.',
+  agriculture:'Poľnohospodárska výroba na okraji mesta — dvor, ktorý prestal hospodáriť.',
+  sport:'Športovisko, na ktorom sa prestalo hrať.',
+  housing:'Obytné objekty, ktoré sa časom vyprázdnili.',
+  culture:'Kultúrny stánok — kedysi plný ľudí, dnes ticho.',
+  recreation:'Rekreačný areál, kam mesto chodievalo oddychovať.',
+  other:'Areál technickej vybavenosti, ktorého úloha sa skončila.'
+};
+function storyOf(p){
+  const c=STORIES.find(s=>s.re.test(p.n));
+  return {
+    past:(c?c.past:PAST_T[p.typ]||PAST_T.other),
+    future:c&&c.future?c.future:null
+  };
 }
 
 function stackDetail(i){
   const p=P(i),voted=votes[i];
-  return `<div class="card glass scroll" style="overflow-y:auto">
+  return `<div class="card glass scroll" style="overflow-y:auto;flex:1">
     <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
       <div class="obor-face ${(p.plan||voted)?'awake':''}" id="oborFace">
@@ -751,33 +824,41 @@ function stackDetail(i){
     </div>
     ${aerial(i)}
 
-    <div class="dsec">
-      <h4>MINULOSŤ <i>· čím miesto bolo, kým zaspalo</i></h4>
-      <p><b style="color:var(--text-hi)">${p.typLabel||TYPL[p.typ]}.</b>
-      ${p.sez?' Prevádzka po sebe zanechala evidovanú environmentálnu záťaž — jazvu, ktorú treba pred novým životom vyliečiť.':' Bez evidovanej environmentálnej záťaže z minulej prevádzky.'}</p>
-    </div>
+    <div class="dcols">
+      <div class="dsec">
+        <h4>MINULOSŤ <i>· kým zaspalo</i></h4>
+        <p><b style="color:var(--text-hi)">${p.typLabel||TYPL[p.typ]}.</b></p>
+        <p style="margin-top:8px">${storyOf(p).past}</p>
+        ${p.sez?'<p style="margin-top:8px;color:var(--risk-300)">Prevádzka zanechala evidovanú environmentálnu záťaž — jazvu, ktorú treba pred novým životom vyliečiť.</p>':''}
+      </div>
 
-    <div class="dsec">
-      <h4>DNES <i>· stav podľa registra MIB (2022)</i></h4>
-      <div class="frows">
-        <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
-        <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
-        <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
-        <div class="frow"><span class="k">Potenciál (CABERNET)</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
+      <div class="dsec">
+        <h4>DNES <i>· register MIB 2022</i></h4>
+        <div class="frows">
+          <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
+          <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
+          <div class="frow"><span class="k">Stav</span><span class="v">${p.plan?'So známym zámerom':'Bez zámeru'}</span></div>
+          <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
+          <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
+        </div>
+      </div>
+
+      <div class="dsec">
+        <h4>BUDÚCNOSŤ <i>· plán a hlas</i></h4>
+        ${p.nfunk?`<p style="margin-bottom:9px"><span style="color:var(--text-low);font-size:10.5px;font-family:var(--fm);letter-spacing:.08em">ÚZEMNÝ PLÁN URČUJE</span><br><b style="color:var(--text-hi)">${p.nfunk}</b></p>`:''}
+        <p>${p.plan?('<b style="color:var(--warm-100)">Známy zámer:</b> '+p.zamer):'Bez známeho zámeru — presne tu má podľa Koncepcie zmysel dočasné využitie: kultúra, komunita, šport.'}</p>
+        ${storyOf(p).future?`<p style="margin-top:8px">${storyOf(p).future}</p>`:''}
       </div>
     </div>
 
     <div class="dsec">
-      <h4>BUDÚCNOSŤ <i>· plán mesta a tvoj hlas</i></h4>
-      ${p.nfunk?`<p style="margin-bottom:10px"><span class="k" style="color:var(--text-low);font-size:11.5px;font-family:var(--fm);letter-spacing:.06em">ÚZEMNÝ PLÁN URČUJE</span><br>${p.nfunk}</p>`:''}
-      <p>${p.plan?('<b style="color:var(--warm-100)">Známy zámer:</b> '+p.zamer):'Bez známeho zámeru — presne pre takéto miesta má podľa Koncepcie zmysel dočasné využitie: kultúra, komunita, šport.'}</p>
-      <div class="mini-tl" style="margin-top:14px">
+      <div class="mini-tl" style="max-width:520px">
         <div><b>MINULOSŤ</b><span>${TYPL[p.typ]}</span></div>
         <div class="hot"><b>DNES</b><span>${p.plan?'zámer v príprave':'spí v registri'}</span></div>
         <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
       </div>
       <h3 style="font-size:15px;margin:6px 0 10px">★ Prebuď obra — čo tu má vyrásť?</h3>
-      <div class="vote-grid">
+      <div class="vote-grid" style="max-width:520px">
         ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
       </div>
       <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Tvoj hlas zaznamenaný ✓ Obor sa zobudí vo VÍZII — v registri spí ďalej, kým sa zámer nestane skutočnosťou.</div>
@@ -963,6 +1044,7 @@ function bindStack(){
   document.querySelectorAll('[data-i]').forEach(b=>b.addEventListener('click',()=>{selIdx=+b.dataset.i;renderStack();repaint();zoomTo(selIdx);}));
   const back=document.getElementById('backList');
   if(back)back.addEventListener('click',()=>{selIdx=null;renderStack();repaint();resetView();});
+  document.querySelectorAll('[data-ph]').forEach(b=>b.addEventListener('click',()=>phSet(+b.dataset.ph)));
   const clearF=document.getElementById('clearF');
   if(clearF)clearF.addEventListener('click',()=>{F.sez=null;F.own=null;F.size=0;F.cls=null;renderStack();renderDocks();repaint();});
   const goD=document.getElementById('goDetail');
