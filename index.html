@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAŽNI MESTO · Dizajn manuál v0.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ZAŽNI MESTO — design tokens (zdroj pravdy)
+   Interaktívna expozícia brownfieldov · TU-BA · MIB
+   ============================================================ */
+:root{
+  /* ---------- PRIMITÍVA · farby ---------- */
+  /* Noc — neutrály prifarbené indigom (podklad modelu / miestnosti) */
+  --night-950:#070912;
+  --night-900:#0B0E1A;   /* hlavné pozadie */
+  --night-800:#131729;
+  --night-700:#1C2138;
+  --night-600:#2A3150;   /* kontext mesta na projekcii */
+  --night-500:#3D4568;
+
+  /* Indigo — spiace mesto */
+  --indigo-900:#252A5E;
+  --indigo-700:#3B4285;
+  --indigo-500:#5A61B5;
+  --indigo-300:#8B91DD;  /* text/ikony „spí" na tmavom — ≈6.1:1 */
+
+  /* Teal — dočasný život */
+  --teal-700:#0E7C71;
+  --teal-500:#17B3A3;
+  --teal-300:#3FE0CE;    /* ≈9.4:1 na night-900 */
+
+  /* Amber — premena */
+  --amber-700:#C77800;
+  --amber-500:#F59E0B;
+  --amber-300:#FFB94A;   /* ≈9.6:1 na night-900 */
+
+  /* Warm white — živé mesto */
+  --warm-100:#FFF6E3;    /* ≈17.8:1 na night-900 */
+  --warm-300:#FFE9B8;
+  --warm-500:#F4CE7A;
+
+  /* Magenta — riziko / envirozáťaž */
+  --risk-500:#E84B8A;
+  --risk-300:#FF7EB0;    /* ≈7.2:1 na night-900 */
+
+  /* UI text */
+  --text-hi:#F4F2FF;     /* ≈17:1 */
+  --text-mid:#A9ACC8;    /* ≈7.5:1 */
+  --text-low:#6E7291;    /* len dekor, ≥24px */
+
+  /* ---------- SÉMANTIKA · stavy ---------- */
+  --state-sleeping:var(--indigo-700);
+  --state-sleeping-glow:var(--indigo-500);
+  --state-temporary:var(--teal-500);
+  --state-awakening:var(--amber-500);
+  --state-alive:var(--warm-300);
+  --risk-confirmed:var(--risk-500);
+  --owner-city:solid;
+  --owner-private:dashed;
+
+  /* ---------- PRIMITÍVA · typo ---------- */
+  --font-display:'Space Grotesk',sans-serif;
+  --font-text:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+
+  /* ---------- PRIMITÍVA · space / radius ---------- */
+  --sp-1:8px; --sp-2:16px; --sp-3:24px; --sp-4:32px; --sp-6:48px; --sp-8:64px; --sp-10:80px;
+  --r-s:6px; --r-m:12px; --r-l:20px; --r-full:999px;
+
+  /* ---------- PRIMITÍVA · elevácia (svetlo, nie tieň) ---------- */
+  --glow-s:0 0 12px;
+  --glow-m:0 0 28px;
+  --glow-l:0 0 64px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--night-900);
+  color:var(--text-hi);
+  font-family:var(--font-text);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber-500);color:var(--night-900)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 var(--sp-4)}
+section{padding:var(--sp-10) 0;border-top:1px solid var(--night-700)}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;line-height:1.15}
+h2{font-size:clamp(28px,4vw,44px);margin-bottom:var(--sp-2)}
+h3{font-size:22px;margin:var(--sp-4) 0 var(--sp-2)}
+p.lead{color:var(--text-mid);max-width:68ch;margin-bottom:var(--sp-3)}
+.kicker{
+  font-family:var(--font-mono);font-size:13px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--amber-300);display:block;margin-bottom:var(--sp-2);
+}
+.grid{display:grid;gap:var(--sp-2)}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.card{
+  background:var(--night-800);border:1px solid var(--night-700);
+  border-radius:var(--r-l);padding:var(--sp-3);
+}
+.mono{font-family:var(--font-mono);font-size:13px;color:var(--text-mid)}
+.tag{
+  display:inline-block;font-family:var(--font-mono);font-size:12px;
+  padding:3px 10px;border-radius:var(--r-full);
+  border:1px solid var(--night-500);color:var(--text-mid);margin:2px 4px 2px 0;
+}
+
+/* ---------- hero ---------- */
+header.hero{
+  min-height:92vh;display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;border:none;
+}
+.hero-bg{position:absolute;inset:0;z-index:0;opacity:.9}
+.hero-content{position:relative;z-index:1}
+.hero h1{
+  font-size:clamp(52px,9vw,128px);font-weight:700;letter-spacing:-.02em;
+  text-transform:uppercase;line-height:.95;
+}
+.hero h1 .lit{color:var(--warm-100);text-shadow:var(--glow-l) rgba(255,233,184,.45)}
+.hero h1 .dim{color:var(--indigo-500)}
+.hero .sub{
+  margin-top:var(--sp-3);font-size:18px;color:var(--text-mid);max-width:56ch;
+}
+.hero .meta{margin-top:var(--sp-4)}
+.hero .meta .tag{border-color:var(--indigo-700)}
+
+/* mestské bodky na pozadí hera */
+.citydot{position:absolute;border-radius:50%;background:var(--warm-300);opacity:.5}
+.bfdot{position:absolute;border-radius:50%;background:var(--indigo-500);
+  animation:pulseSleep 4s ease-in-out infinite}
+
+/* ---------- kanály (01) ---------- */
+.channel{display:flex;gap:var(--sp-2);align-items:flex-start}
+.channel .swatchbox{flex:0 0 72px;height:72px;border-radius:var(--r-m);display:flex;align-items:center;justify-content:center}
+.channel h4{font-size:17px;margin-bottom:4px}
+.channel p{font-size:14px;color:var(--text-mid)}
+
+/* ---------- palety (02) ---------- */
+.ramp{display:flex;border-radius:var(--r-m);overflow:hidden;margin-bottom:var(--sp-1)}
+.ramp div{flex:1;height:84px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;font-family:var(--font-mono);font-size:11px}
+.ramp span{opacity:.85}
+
+/* ---------- stavy (03) ---------- */
+.state-card{position:relative;overflow:hidden}
+.state-demo{
+  height:120px;border-radius:var(--r-m);margin-bottom:var(--sp-2);
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.parcel{width:72px;height:72px;border-radius:14px}
+.p-sleeping{background:var(--state-sleeping);animation:pulseSleep 4s ease-in-out infinite}
+.p-temporary{background:var(--state-temporary);box-shadow:var(--glow-s) rgba(23,179,163,.55);animation:flickerTemp 5.5s ease-in-out infinite}
+.p-awakening{background:var(--state-awakening);box-shadow:var(--glow-m) rgba(245,158,11,.5);animation:riseAwake 3s ease-in-out infinite}
+.p-alive{background:var(--state-alive);box-shadow:var(--glow-l) rgba(255,233,184,.55)}
+@keyframes pulseSleep{0%,100%{opacity:.45;transform:scale(.97)}50%{opacity:.8;transform:scale(1)}}
+@keyframes flickerTemp{0%,100%{opacity:.75}12%{opacity:1}20%{opacity:.7}34%{opacity:.95}55%{opacity:.8}70%{opacity:1}}
+@keyframes riseAwake{0%,100%{box-shadow:var(--glow-s) rgba(245,158,11,.35)}50%{box-shadow:var(--glow-m) rgba(245,158,11,.75)}}
+.state-card .eye{font-size:20px;margin-right:6px}
+.state-name{font-family:var(--font-display);font-size:19px;font-weight:600}
+.state-token{display:block;margin-top:var(--sp-1)}
+
+/* ---------- tabuľky ---------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-low);text-align:left;padding:10px 12px;border-bottom:1px solid var(--night-600)}
+td{padding:10px 12px;border-bottom:1px solid var(--night-700);color:var(--text-mid)}
+td:first-child{color:var(--text-hi)}
+td .mono{color:var(--amber-300)}
+
+/* ---------- typo scale (05) ---------- */
+.type-row{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--night-700)}
+.type-row .mono{flex:0 0 220px}
+
+/* ---------- ikony (06) ---------- */
+.icon-cell{display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:var(--night-800);border:1px solid var(--night-700);border-radius:var(--r-l);
+  padding:var(--sp-3) var(--sp-2);text-align:center}
+.icon-cell svg{stroke:var(--warm-300);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.icon-cell .nm{font-family:var(--font-display);font-weight:600;font-size:15px}
+.icon-cell .mono{font-size:11px}
+
+/* obri */
+.obor{
+  cursor:pointer;position:relative;border-radius:var(--r-l);padding:var(--sp-3) var(--sp-2);
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  background:var(--night-800);border:1px solid var(--night-700);
+  transition:background .6s,box-shadow .6s,border-color .6s;
+}
+.obor svg{stroke:var(--indigo-300);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:stroke .6s}
+.obor .eyes{display:flex;gap:14px;height:16px;align-items:center}
+.obor .eyes span{display:block;width:12px;height:2.5px;border-radius:99px;background:var(--indigo-300);transition:all .45s}
+.obor.awake{background:var(--night-700);border-color:var(--amber-700);box-shadow:var(--glow-m) rgba(245,158,11,.25)}
+.obor.awake svg{stroke:var(--amber-300)}
+.obor.awake .eyes span{width:9px;height:9px;background:var(--warm-100);box-shadow:0 0 8px rgba(255,246,227,.8)}
+.obor .nm{font-family:var(--font-display);font-weight:600;font-size:15px}
+.obor .hint{font-size:11px;color:var(--text-low);font-family:var(--font-mono)}
+
+/* ---------- komponenty (07) ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--r-full);
+  border:1.5px solid var(--night-500);background:transparent;color:var(--text-mid);
+  font-family:var(--font-text);font-size:14px;font-weight:500;cursor:pointer;
+  transition:all .25s;margin:0 6px 8px 0;
+}
+.chip:hover{border-color:var(--indigo-300);color:var(--text-hi)}
+.chip.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-900)}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+
+.loc-card{
+  max-width:400px;background:var(--night-800);border:1px solid var(--night-600);
+  border-radius:var(--r-l);overflow:hidden;
+}
+.loc-card .map{height:150px;position:relative;background:var(--night-700);overflow:hidden}
+.loc-card .body{padding:var(--sp-3)}
+.loc-card .state-chip{
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;
+  padding:4px 12px;border-radius:var(--r-full);background:rgba(245,158,11,.14);
+  color:var(--amber-300);border:1px solid rgba(245,158,11,.35);margin-bottom:10px;
+}
+.loc-card h4{font-size:22px;margin-bottom:6px}
+.loc-card .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:var(--sp-2)}
+.loc-card .facts div{font-size:13px;color:var(--text-mid)}
+.loc-card .facts b{display:block;color:var(--text-hi);font-size:15px;font-weight:600}
+.phasebar{display:flex;gap:4px;margin-top:var(--sp-2)}
+.phasebar i{flex:1;height:6px;border-radius:99px;background:var(--night-600)}
+.phasebar i.done{background:var(--amber-500)}
+
+/* timeline */
+.timeline-demo{display:flex;gap:var(--sp-4);align-items:center;flex-wrap:wrap}
+.tl-parcel{
+  width:130px;height:130px;border-radius:var(--r-l);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;transition:all .6s;
+}
+.tl-parcel svg{width:56px;height:56px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:stroke .6s}
+.tl-ctrl{flex:1;min-width:280px}
+.tl-year{font-family:var(--font-display);font-size:44px;font-weight:700}
+.tl-state{font-family:var(--font-mono);font-size:13px;margin-bottom:var(--sp-2);display:block}
+input[type=range]{
+  width:100%;appearance:none;-webkit-appearance:none;height:4px;border-radius:99px;
+  background:linear-gradient(90deg,var(--warm-500),var(--indigo-700) 30%,var(--teal-500) 62%,var(--amber-500) 80%,var(--warm-300));
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--warm-100);border:4px solid var(--night-900);
+  box-shadow:0 0 14px rgba(255,246,227,.7);cursor:grab;
+}
+
+/* legenda */
+.legend{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.legend .li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid)}
+.legend .sw{width:22px;height:22px;border-radius:6px;flex:0 0 auto}
+
+/* ---------- kompozícia (08) ---------- */
+.stage{
+  background:var(--night-950);border:1px solid var(--night-700);border-radius:var(--r-l);
+  padding:var(--sp-2);overflow:hidden;
+}
+.stage svg text{font-family:var(--font-mono);font-size:9px;fill:var(--text-mid);letter-spacing:.08em}
+.pulseA{animation:pulseSleep 4s ease-in-out infinite}
+.pulseB{animation:riseAwake 3s ease-in-out infinite}
+
+/* ---------- JSON (09) ---------- */
+pre{
+  background:var(--night-950);border:1px solid var(--night-700);border-radius:var(--r-m);
+  padding:var(--sp-3);overflow:auto;font-family:var(--font-mono);font-size:12.5px;
+  line-height:1.55;color:var(--text-mid);max-height:480px;
+}
+.copy-btn{
+  font-family:var(--font-display);font-weight:600;font-size:15px;
+  background:var(--amber-500);color:var(--night-900);border:none;border-radius:var(--r-full);
+  padding:12px 28px;cursor:pointer;margin-bottom:var(--sp-2);transition:all .25s;
+}
+.copy-btn:hover{background:var(--amber-300);box-shadow:var(--glow-m) rgba(245,158,11,.4)}
+
+/* ---------- škálovateľnosť (10) ---------- */
+.arg .num{
+  font-family:var(--font-display);font-size:40px;font-weight:700;color:var(--amber-300);
+  display:block;margin-bottom:var(--sp-1);
+}
+
+footer{padding:var(--sp-6) 0;border-top:1px solid var(--night-700);color:var(--text-low);font-size:13px}
+footer a{color:var(--indigo-300)}
+
+/* nav */
+nav{
+  position:sticky;top:0;z-index:50;background:rgba(11,14,26,.85);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--night-700);
+}
+nav .wrap{display:flex;gap:var(--sp-2);align-items:center;padding-top:14px;padding-bottom:14px;overflow-x:auto}
+nav .logo{font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.04em;white-space:nowrap}
+nav .logo em{font-style:normal;color:var(--amber-300)}
+nav a{color:var(--text-mid);text-decoration:none;font-size:13px;font-family:var(--font-mono);white-space:nowrap}
+nav a:hover{color:var(--warm-100)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="logo">ZAŽNI <em>MESTO</em> · manuál v0.2</span>
+    <a href="#princip">01 Princíp</a>
+    <a href="#farby">02 Farby</a>
+    <a href="#stavy">03 Stavy</a>
+    <a href="#kanaly">04 Kanály</a>
+    <a href="#typo">05 Typografia</a>
+    <a href="#ikony">06 Ikony &amp; obri</a>
+    <a href="#komponenty">07 Komponenty</a>
+    <a href="#kompozicia">08 Živá mapa</a>
+    <a href="#motion">09 Motion</a>
+    <a href="#zvuk">10 Zvuk</a>
+    <a href="#obrazovka">11 Obrazovka</a>
+    <a href="#tokeny">12 Tokeny</a>
+    <a href="#skalovatelnost">13 Škálovateľnosť</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="wrap hero-content">
+    <span class="kicker">Dizajn manuál · Interaktívna expozícia brownfieldov · TU-BA · MIB</span>
+    <h1><span class="lit">Zažni</span><br><span class="dim">mesto</span></h1>
+    <p class="sub">Bratislava má <strong style="color:var(--warm-100)">113 zhasnutých miest</strong> s rozlohou 580 hektárov.
+    Tento manuál definuje vizuálny jazyk, ktorým ich fyzický model mesta, projekcia,
+    dotyková obrazovka a tablety spoločne rozprávajú — a rozsvecujú.</p>
+    <div class="meta">
+      <span class="tag">v0.2 · koncept</span>
+      <span class="tag">živé dáta: ArcGIS register BF (113 polygónov)</span>
+      <span class="tag">Figma-ready tokeny ↓</span>
+      <span class="tag"><a href="obrazovka.html" style="color:var(--amber-300);text-decoration:none">mockup obrazovky ↗</a></span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 01 PRINCÍP ============ -->
+<section id="princip">
+  <div class="wrap">
+    <span class="kicker">01 · Princíp</span>
+    <h2>Svetlo je dáta. Každá dimenzia má svoj kanál.</h2>
+    <p class="lead">Projektory nasvecujú model — preto je <strong>svetlo samotná metafora</strong>:
+    brownfield je zhasnuté miesto, revitalizácia ho rozsvieti. Aby sa dáta nebili,
+    každá dátová dimenzia z registra MIB má vyhradený vlastný vizuálny kanál.
+    Kanály sa dajú ľubovoľne kombinovať a systém sa nikdy nerozpadne.</p>
+    <div class="grid g2" style="margin-top:var(--sp-4)">
+      <div class="card channel">
+        <div class="swatchbox" style="background:linear-gradient(135deg,var(--indigo-700),var(--warm-300))"></div>
+        <div><h4>STAV → svetlo &amp; farba</h4><p>Intenzita a teplota svetla = fáza života územia. Od studeného indiga (spí) po teplú bielu (žije). Jediný animovaný kanál.</p></div>
+      </div>
+      <div class="card channel">
+        <div class="swatchbox" style="background:var(--night-700)">
+          <svg width="40" height="40" viewBox="0 0 48 48" style="stroke:var(--warm-300);fill:none;stroke-width:2.4"><path d="M10 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M14 16V8h4v5"/></svg>
+        </div>
+        <div><h4>TYPOLÓGIA → ikona</h4><p>Pôvodné využitie (priemysel, doprava, armáda…) = piktogram. Rovnaká silueta funguje na projekcii, tablete aj ako „spiaci obor".</p></div>
+      </div>
+      <div class="card channel">
+        <div class="swatchbox" style="background:repeating-linear-gradient(45deg,transparent,transparent 5px,var(--risk-500) 5px,var(--risk-500) 7px)"></div>
+        <div><h4>RIZIKO → vzor</h4><p>Envirozáťaž = diagonálne šrafovanie („jazva"), predpokladaná kontaminácia = bodkovanie. Vzor prežije aj čiernobielu tlač.</p></div>
+      </div>
+      <div class="card channel">
+        <div class="swatchbox" style="background:var(--night-700)">
+          <div style="width:44px;height:44px;border-radius:10px;border:2.5px dashed var(--warm-300)"></div>
+        </div>
+        <div><h4>VLASTNÍCTVO → obrys</h4><p>Mesto = plná linka, súkromník = prerušovaná, zmiešané = striedaná. Kľúčové obmedzenie rozvoja čitateľné na prvý pohľad.</p></div>
+      </div>
+      <div class="card channel">
+        <div class="swatchbox" style="background:var(--night-700)">
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:4px;background:var(--warm-300)"></div><div style="width:26px;height:26px;border-radius:8px;background:var(--warm-300)"></div></div>
+        </div>
+        <div><h4>VÝZNAM → mierka</h4><p>16 významných brownfieldov má väčší piktogram a menovku priamo na projekcii. Ostatné sa pomenujú až pri interakcii.</p></div>
+      </div>
+      <div class="card channel">
+        <div class="swatchbox" style="background:var(--night-700);font-size:26px">👁</div>
+        <div><h4>Poistka prístupnosti</h4><p>Stav nikdy nekomunikuje len farba — vždy ho nesie aj animácia, oko obra (zavreté/otvorené) a textový label. Funguje aj pre farboslepých.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 FARBY ============ -->
+<section id="farby">
+  <div class="wrap">
+    <span class="kicker">02 · Farby</span>
+    <h2>Paleta nočného mesta</h2>
+    <p class="lead">Neutrály sú prifarbené indigom (nie čistá sivá) — celá scéna drží pokope ako jedna noc.
+    Pomer 60-30-10: noc je scéna (60 %), indigo/teal informácia (30 %), amber a teplá biela akcent — svetlo (10 %).
+    Kontrasty merané voči <code class="mono">night-900</code>.</p>
+
+    <h3>Noc — podklad (neutrály tónované indigom)</h3>
+    <div class="ramp">
+      <div style="background:var(--night-950);color:var(--text-low)">950<br><span>#070912</span></div>
+      <div style="background:var(--night-900);color:var(--text-low)">900<br><span>#0B0E1A</span></div>
+      <div style="background:var(--night-800);color:var(--text-mid)">800<br><span>#131729</span></div>
+      <div style="background:var(--night-700);color:var(--text-mid)">700<br><span>#1C2138</span></div>
+      <div style="background:var(--night-600);color:var(--text-hi)">600<br><span>#2A3150</span></div>
+      <div style="background:var(--night-500);color:var(--text-hi)">500<br><span>#3D4568</span></div>
+    </div>
+
+    <h3>Indigo — spiace mesto</h3>
+    <div class="ramp">
+      <div style="background:var(--indigo-900);color:var(--indigo-300)">900<br><span>#252A5E</span></div>
+      <div style="background:var(--indigo-700);color:#fff">700 · stav SPÍ<br><span>#3B4285</span></div>
+      <div style="background:var(--indigo-500);color:#fff">500<br><span>#5A61B5</span></div>
+      <div style="background:var(--indigo-300);color:var(--night-900)">300 · text ≈6.1:1<br><span>#8B91DD</span></div>
+    </div>
+
+    <h3>Teal — dočasný život · Amber — premena · Teplá biela — živé mesto</h3>
+    <div class="ramp">
+      <div style="background:var(--teal-700);color:#fff">teal-700<br><span>#0E7C71</span></div>
+      <div style="background:var(--teal-500);color:var(--night-900)">teal-500 · DRIEME<br><span>#17B3A3</span></div>
+      <div style="background:var(--teal-300);color:var(--night-900)">teal-300 ≈9.4:1<br><span>#3FE0CE</span></div>
+      <div style="background:var(--amber-700);color:#fff">amber-700<br><span>#C77800</span></div>
+      <div style="background:var(--amber-500);color:var(--night-900)">amber-500 · PREBÚDZA SA<br><span>#F59E0B</span></div>
+      <div style="background:var(--amber-300);color:var(--night-900)">amber-300 ≈9.6:1<br><span>#FFB94A</span></div>
+      <div style="background:var(--warm-300);color:var(--night-900)">warm-300 · ŽIJE<br><span>#FFE9B8</span></div>
+      <div style="background:var(--warm-100);color:var(--night-900)">warm-100 ≈17.8:1<br><span>#FFF6E3</span></div>
+    </div>
+
+    <h3>Riziko — envirozáťaž</h3>
+    <div class="ramp" style="max-width:400px">
+      <div style="background:var(--risk-500);color:var(--night-900)">risk-500<br><span>#E84B8A</span></div>
+      <div style="background:var(--risk-300);color:var(--night-900)">risk-300 ≈7.2:1<br><span>#FF7EB0</span></div>
+    </div>
+    <p class="mono" style="margin-top:var(--sp-2)">Pravidlo: magenta sa NIKDY nepoužíva ako výplň stavu — len ako vzor (šrafy/bodky) cez stavovú farbu. Preto sa riziko a stav nikdy nebijú.</p>
+  </div>
+</section>
+
+<!-- ============ 03 STAVY ============ -->
+<section id="stavy">
+  <div class="wrap">
+    <span class="kicker">03 · Stavy</span>
+    <h2>Štyri stavy života územia</h2>
+    <p class="lead">Odvodené priamo z polí registra brownfieldov MIB — nie vymyslené.
+    Každý stav = farba + charakteristický pohyb svetla + oko obra + label.
+    Toto je jediný animovaný kanál systému.</p>
+
+    <div class="grid g4" style="margin-top:var(--sp-4)">
+      <div class="card state-card">
+        <div class="state-demo" style="background:var(--night-950)"><div class="parcel p-sleeping"></div></div>
+        <span class="state-name"><span class="eye">😴</span>SPÍ</span>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:6px">Nevyužívané územie v registri. Pomalý pulz — dýcha, nie je mŕtve.</p>
+        <span class="mono state-token">state.sleeping<br>→ indigo-700 · pulz 4s</span>
+      </div>
+      <div class="card state-card">
+        <div class="state-demo" style="background:var(--night-950)"><div class="parcel p-temporary"></div></div>
+        <span class="state-name"><span class="eye">🌙</span>DRIEME</span>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:6px">Dočasné využitie (kultúra, sklady, komunita). Svetlo mihoce — občas sa zobudí.</p>
+        <span class="mono state-token">state.temporary<br>→ teal-500 · flicker</span>
+      </div>
+      <div class="card state-card">
+        <div class="state-demo" style="background:var(--night-950)"><div class="parcel p-awakening"></div></div>
+        <span class="state-name"><span class="eye">🌅</span>PREBÚDZA SA</span>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:6px">Prebieha revitalizácia (fázy 1–7 podľa koncepcie). Žiara postupne rastie.</p>
+        <span class="mono state-token">state.awakening<br>→ amber-500 · rastúca žiara</span>
+      </div>
+      <div class="card state-card">
+        <div class="state-demo" style="background:var(--night-950)"><div class="parcel p-alive"></div></div>
+        <span class="state-name"><span class="eye">☀️</span>ŽIJE</span>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:6px">Vyradené z registra — revitalizované. Stabilné teplé svetlo, splýva s mestom.</p>
+        <span class="mono state-token">state.alive<br>→ warm-300 · statické</span>
+      </div>
+    </div>
+
+    <h3>Mapovanie na dáta registra (dôkaz, že systém je data-driven)</h3>
+    <table>
+      <tr><th>Pole v registri MIB / ArcGIS</th><th>Hodnota</th><th>Token</th></tr>
+      <tr><td>miera využitia</td><td>&lt; 30 %, bez aktivity</td><td><span class="mono">state.sleeping</span></td></tr>
+      <tr><td>dočasné využitie</td><td>áno</td><td><span class="mono">state.temporary</span></td></tr>
+      <tr><td>fáza revitalizácie</td><td>1 – 7</td><td><span class="mono">state.awakening</span> + <span class="mono">progress.phase[n]</span></td></tr>
+      <tr><td>stav v registri</td><td>vyradený (revitalizovaný)</td><td><span class="mono">state.alive</span></td></tr>
+      <tr><td>envirozáťaž</td><td>evidovaná / predpokladaná</td><td><span class="mono">risk.confirmed</span> / <span class="mono">risk.assumed</span></td></tr>
+      <tr><td>vlastníctvo</td><td>mesto / súkromné / mix</td><td><span class="mono">owner.city / owner.private / owner.mixed</span></td></tr>
+      <tr><td>rozsah</td><td>významný BF (16)</td><td><span class="mono">scale.major</span> + menovka</td></tr>
+      <tr><td>pôvodné využitie</td><td>8 typológií</td><td><span class="mono">icon.[typ]</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 04 KANÁLY ============ -->
+<section id="kanaly">
+  <div class="wrap">
+    <span class="kicker">04 · Kanály v praxi</span>
+    <h2>Riziko, vlastníctvo, význam</h2>
+    <div class="grid g3" style="margin-top:var(--sp-4)">
+      <div class="card">
+        <h3 style="margin-top:0">Riziko = vzor</h3>
+        <div style="display:flex;gap:var(--sp-2)">
+          <div>
+            <div style="width:104px;height:104px;border-radius:14px;background:var(--indigo-700);position:relative;overflow:hidden">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 6px,var(--risk-500) 6px,var(--risk-500) 8.5px);opacity:.85"></div>
+            </div>
+            <span class="mono" style="display:block;margin-top:8px">risk.confirmed<br>šrafy 45°</span>
+          </div>
+          <div>
+            <div style="width:104px;height:104px;border-radius:14px;background:var(--indigo-700);position:relative;overflow:hidden">
+              <div style="position:absolute;inset:0;background-image:radial-gradient(var(--risk-300) 1.6px,transparent 1.6px);background-size:11px 11px;opacity:.8"></div>
+            </div>
+            <span class="mono" style="display:block;margin-top:8px">risk.assumed<br>bodkovanie</span>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:var(--sp-2)">Vzor leží VŽDY nad stavovou farbou — 15 evidovaných záťaží a 69 území s možnou kontamináciou ostáva čitateľných v každom stave.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Vlastníctvo = obrys</h3>
+        <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+          <div><div style="width:64px;height:64px;border-radius:12px;border:3px solid var(--warm-300)"></div><span class="mono" style="display:block;margin-top:8px">mesto (13)</span></div>
+          <div><div style="width:64px;height:64px;border-radius:12px;border:3px dashed var(--warm-300)"></div><span class="mono" style="display:block;margin-top:8px">súkromné (56)</span></div>
+          <div><div style="width:64px;height:64px;border-radius:12px;border:3px dotted var(--warm-300)"></div><span class="mono" style="display:block;margin-top:8px">mix (8)</span></div>
+        </div>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:var(--sp-2)">Najväčšia prekážka revitalizácie podľa koncepcie — preto má vlastný, vždy viditeľný kanál.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Význam = mierka</h3>
+        <div style="display:flex;gap:var(--sp-2);align-items:flex-end">
+          <div style="text-align:center"><div style="width:34px;height:34px;border-radius:8px;background:var(--indigo-700);margin:0 auto"></div><span class="mono" style="display:block;margin-top:8px">BF (97)</span></div>
+          <div style="text-align:center">
+            <div style="width:76px;height:76px;border-radius:14px;background:var(--indigo-700);display:flex;align-items:center;justify-content:center">
+              <svg width="34" height="34" viewBox="0 0 48 48" style="stroke:var(--indigo-300);fill:none;stroke-width:2.6"><path d="M10 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M14 16V8h4v5"/></svg>
+            </div>
+            <span class="mono" style="display:block;margin-top:8px">významný BF (16)<br>+ ikona + menovka</span>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--text-mid);margin-top:var(--sp-2)">Hierarchia pozornosti: návštevník najprv stretne 16 hrdinov, zvyšok objaví interakciou.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 TYPOGRAFIA ============ -->
+<section id="typo">
+  <div class="wrap">
+    <span class="kicker">05 · Typografia</span>
+    <h2>Space Grotesk hovorí, Inter vysvetľuje</h2>
+    <p class="lead">Display font má technický, mestský charakter — sedí k modelu a projekcii.
+    Inter nesie dlhší text na tabletoch a webe. JetBrains Mono značí dáta a tokeny.
+    Minimálne veľkosti: projekcia 24 px ekvivalent, dotyková obrazovka 16 px, tablet 14 px.</p>
+    <div style="margin-top:var(--sp-4)">
+      <div class="type-row"><span class="mono">display/hero · SG 700 · 96/0.95</span><span style="font-family:var(--font-display);font-weight:700;font-size:clamp(40px,6vw,72px);text-transform:uppercase">Zažni mesto</span></div>
+      <div class="type-row"><span class="mono">display/h1 · SG 600 · 44/1.15</span><span style="font-family:var(--font-display);font-weight:600;font-size:38px">113 zhasnutých miest</span></div>
+      <div class="type-row"><span class="mono">display/h2 · SG 600 · 28/1.2</span><span style="font-family:var(--font-display);font-weight:600;font-size:26px">Palma sa prebúdza</span></div>
+      <div class="type-row"><span class="mono">body/large · Inter 400 · 18/1.6</span><span style="font-size:18px;color:var(--text-mid)">Bývalý závod na výrobu oleja čaká na novú štvrť.</span></div>
+      <div class="type-row"><span class="mono">body/base · Inter 400 · 16/1.6</span><span style="font-size:16px;color:var(--text-mid)">580 hektárov — približne 800 futbalových ihrísk.</span></div>
+      <div class="type-row"><span class="mono">data/label · JBM 500 · 13/1.4</span><span class="mono" style="color:var(--amber-300)">ROZLOHA 14,3 HA · VLASTNÍK: SÚKROMNÝ · FÁZA 4/8</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 IKONY & OBRI ============ -->
+<section id="ikony">
+  <div class="wrap">
+    <span class="kicker">06 · Ikonografia</span>
+    <h2>8 typológií, jedna rodina</h2>
+    <p class="lead">Geometrická linka 2.4 px, zaoblené konce, mriežka 48 px, jeden akcent na ikonu.
+    Rovnaká silueta funguje v 24 px na tablete aj v 2 m na projekcii.
+    Typológie zodpovedajú kategóriám pôvodného využitia z koncepcie MIB.</p>
+
+    <div class="grid g4" style="margin-top:var(--sp-4)">
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/><circle cx="16" cy="30" r="2.4" style="stroke:var(--amber-300)"/></svg>
+        <span class="nm">Fabrika</span><span class="mono">icon.industry · 32 % BF</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><rect x="12" y="10" width="24" height="24" rx="7"/><path d="M12 26h24"/><rect x="18" y="15" width="12" height="7" rx="2" style="stroke:var(--amber-300)"/><circle cx="18" cy="30" r="1.8"/><circle cx="30" cy="30" r="1.8"/><path d="M14 40l-3 4M34 40l3 4"/></svg>
+        <span class="nm">Stanica</span><span class="mono">icon.transport</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><path d="M14 40V16l10-8 10 8v24z"/><path d="M14 24h20M24 40v-8"/><path d="M24 14l1.6 3.2 3.4.4-2.5 2.4.6 3.4-3.1-1.7-3.1 1.7.6-3.4-2.5-2.4 3.4-.4z" style="stroke:var(--amber-300)"/></svg>
+        <span class="nm">Kasáreň</span><span class="mono">icon.military</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><path d="M10 40V20a7 7 0 0 1 14 0v20z"/><path d="M28 40V24a6 6 0 0 1 12 0v16z"/><path d="M10 30h14" style="stroke:var(--amber-300)"/></svg>
+        <span class="nm">Silo</span><span class="mono">icon.agriculture</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><rect x="12" y="8" width="24" height="32" rx="3"/><path d="M18 15h4M26 15h4M18 22h4M26 22h4M18 29h4" /><rect x="26" y="29" width="4" height="4" style="stroke:var(--amber-300)"/><path d="M20 40v-5h8v5"/></svg>
+        <span class="nm">Kancelária</span><span class="mono">icon.office</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><rect x="10" y="16" width="28" height="24" rx="3"/><path d="M10 24h28"/><path d="M16 16l4 8M24 16l4 8M32 16l4 8"/><circle cx="24" cy="32" r="3.4" style="stroke:var(--amber-300)"/></svg>
+        <span class="nm">Kino</span><span class="mono">icon.culture</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><path d="M8 34c0-9 7-16 16-16s16 7 16 16"/><path d="M8 34h32"/><circle cx="24" cy="27" r="4" style="stroke:var(--amber-300)"/><path d="M14 34v4M34 34v4"/></svg>
+        <span class="nm">Štadión</span><span class="mono">icon.sport</span>
+      </div>
+      <div class="icon-cell">
+        <svg width="48" height="48" viewBox="0 0 48 48"><path d="M10 24L24 12l14 12"/><path d="M14 22v18h20V22"/><rect x="21" y="30" width="6" height="10" style="stroke:var(--amber-300)"/><path d="M30 12v-4h4v8"/></svg>
+        <span class="nm">Dom</span><span class="mono">icon.housing</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:var(--sp-6)">Spiaci obri — hravá vrstva tých istých ikon</h3>
+    <p class="lead">Pre verejný priestor a deti: každá typológia je „obor", ktorý spí.
+    Zavreté oko = spí, otvorené = žije. Klikni / dotkni sa a zobuď ho — presne táto interakcia beží na tabletoch a v hlasovaní.</p>
+    <div class="grid g4">
+      <div class="obor" onclick="this.classList.toggle('awake')">
+        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg>
+        <div class="eyes"><span></span><span></span></div>
+        <span class="nm">Obor Fabrika</span><span class="hint">klikni = zobuď</span>
+      </div>
+      <div class="obor" onclick="this.classList.toggle('awake')">
+        <svg width="56" height="56" viewBox="0 0 48 48"><rect x="12" y="10" width="24" height="24" rx="7"/><path d="M12 26h24"/><rect x="18" y="15" width="12" height="7" rx="2"/><path d="M14 40l-3 4M34 40l3 4"/></svg>
+        <div class="eyes"><span></span><span></span></div>
+        <span class="nm">Obor Stanica</span><span class="hint">klikni = zobuď</span>
+      </div>
+      <div class="obor" onclick="this.classList.toggle('awake')">
+        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M14 40V16l10-8 10 8v24z"/><path d="M14 24h20"/></svg>
+        <div class="eyes"><span></span><span></span></div>
+        <span class="nm">Obor Kasáreň</span><span class="hint">klikni = zobuď</span>
+      </div>
+      <div class="obor" onclick="this.classList.toggle('awake')">
+        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M10 40V20a7 7 0 0 1 14 0v20z"/><path d="M28 40V24a6 6 0 0 1 12 0v16z"/></svg>
+        <div class="eyes"><span></span><span></span></div>
+        <span class="nm">Obor Silo</span><span class="hint">klikni = zobuď</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:var(--sp-6)">Character sheet — tri pózy obra</h3>
+    <p class="lead">Ilustračný smer pre plagáty, vstupný panel a AR: obor = budova s tvárou.
+    Tri pózy zodpovedajú stavom — telo je vždy silueta typológie, mení sa len tvár a aura.
+    Ukázané na Fabrike; rovnaká gramatika platí pre všetkých 8 obrov.</p>
+    <div class="grid g3">
+      <div class="card" style="text-align:center">
+        <svg width="150" height="150" viewBox="0 0 96 96" style="fill:none;stroke-linecap:round;stroke-linejoin:round">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z" stroke="var(--indigo-500)" stroke-width="3"/>
+          <path d="M24 36V22h8v8" stroke="var(--indigo-500)" stroke-width="3"/>
+          <path d="M34 60h7M50 60h7" stroke="var(--indigo-300)" stroke-width="3.4"/>
+          <path d="M42 70q4 3 8 0" stroke="var(--indigo-300)" stroke-width="2.6" opacity=".5"/>
+          <text x="66" y="26" fill="var(--indigo-300)" font-size="11" font-family="var(--font-mono)">z</text>
+          <text x="73" y="17" fill="var(--indigo-300)" font-size="14" font-family="var(--font-mono)">z</text>
+        </svg>
+        <div class="state-name" style="font-size:16px">SPÍ</div>
+        <span class="mono" style="font-size:11px">oči čiarky · zzz · bez aury · dych 4s</span>
+      </div>
+      <div class="card" style="text-align:center">
+        <svg width="150" height="150" viewBox="0 0 96 96" style="fill:none;stroke-linecap:round;stroke-linejoin:round">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z" stroke="var(--teal-500)" stroke-width="3"/>
+          <path d="M24 36V22h8v8" stroke="var(--teal-500)" stroke-width="3"/>
+          <path d="M34 60h7" stroke="var(--teal-300)" stroke-width="3.4"/>
+          <circle cx="53" cy="60" r="3" stroke="var(--teal-300)" stroke-width="2.6"/>
+          <ellipse cx="46" cy="71" rx="4" ry="5.5" stroke="var(--teal-300)" stroke-width="2.6"/>
+          <path d="M24 22q-3-6 2-9M32 22q3-6-2-9" stroke="var(--teal-300)" stroke-width="2" opacity=".6"/>
+        </svg>
+        <div class="state-name" style="font-size:16px">ZÍVA</div>
+        <span class="mono" style="font-size:11px">jedno oko otvorené · ústa O · para z komína</span>
+      </div>
+      <div class="card" style="text-align:center">
+        <svg width="150" height="150" viewBox="0 0 96 96" style="fill:none;stroke-linecap:round;stroke-linejoin:round">
+          <circle cx="48" cy="52" r="40" fill="rgba(245,158,11,.07)"/>
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z" stroke="var(--amber-300)" stroke-width="3"/>
+          <path d="M24 36V22h8v8" stroke="var(--amber-300)" stroke-width="3"/>
+          <circle cx="37" cy="60" r="3.4" fill="var(--warm-100)" stroke="none"/>
+          <circle cx="53" cy="60" r="3.4" fill="var(--warm-100)" stroke="none"/>
+          <path d="M40 70q6 5 12 0" stroke="var(--warm-100)" stroke-width="2.8"/>
+          <path d="M12 40l-6-4M84 40l6-4M48 8v-6M22 16l-4-5M74 16l4-5" stroke="var(--amber-300)" stroke-width="2.4" opacity=".8"/>
+        </svg>
+        <div class="state-name" style="font-size:16px">BDIE</div>
+        <span class="mono" style="font-size:11px">oči bodky + úsmev · lúče · plná aura svetla</span>
+      </div>
+    </div>
+    <p class="mono" style="margin-top:var(--sp-2)">Gramatika tváre: oči = stav (čiarka / jedno oko / bodky) · ústa = energia · aura = jas okolia. Tvár sa vždy kreslí DO siluety typológie, nikdy mimo — obor ostáva budovou.</p>
+  </div>
+</section>
+
+<!-- ============ 07 KOMPONENTY ============ -->
+<section id="komponenty">
+  <div class="wrap">
+    <span class="kicker">07 · Komponenty</span>
+    <h2>Atómy expozície</h2>
+    <p class="lead">Rovnaké komponenty žijú na dotykovej obrazovke, tabletoch aj webe — menia len hustotu.
+    Ukázané sú tri nosné: filter, karta lokality a časová os.</p>
+
+    <h3>Filter vrstiev (dotyková obrazovka — dirigent modelu)</h3>
+    <div style="margin-bottom:var(--sp-4)">
+      <button class="chip on"><span class="dot" style="background:var(--night-900)"></span>Stavy</button>
+      <button class="chip"><span class="dot" style="background:var(--risk-500)"></span>Envirozáťaž</button>
+      <button class="chip"><span class="dot" style="background:var(--warm-300)"></span>Vlastníctvo</button>
+      <button class="chip"><span class="dot" style="background:var(--indigo-300)"></span>História 1990 →</button>
+      <button class="chip"><span class="dot" style="background:var(--teal-300)"></span>Dostupnosť MHD</button>
+      <button class="chip"><span class="dot" style="background:var(--amber-300)"></span>Hlasovanie</button>
+    </div>
+
+    <div class="grid g2">
+      <div>
+        <h3 style="margin-top:0">Karta lokality (tablet / web)</h3>
+        <div class="loc-card">
+          <div class="map">
+            <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice">
+              <rect width="400" height="150" fill="#1C2138"/>
+              <g fill="#2A3150"><rect x="20" y="18" width="52" height="30" rx="3"/><rect x="86" y="12" width="40" height="44" rx="3"/><rect x="20" y="60" width="40" height="36" rx="3"/><rect x="300" y="20" width="70" height="40" rx="3"/><rect x="310" y="76" width="54" height="50" rx="3"/><rect x="140" y="100" width="60" height="34" rx="3"/></g>
+              <path d="M0 140 C120 120 260 150 400 128" stroke="#3D4568" stroke-width="10" fill="none" opacity=".5"/>
+              <g>
+                <path class="pulseB" d="M150 30 L265 36 L258 88 L162 82 Z" fill="var(--amber-500)" opacity=".9"/>
+                <path d="M150 30 L265 36 L258 88 L162 82 Z" fill="none" stroke="var(--warm-100)" stroke-width="2.4" stroke-dasharray="7 5"/>
+              </g>
+            </svg>
+          </div>
+          <div class="body">
+            <span class="state-chip">🌅 PREBÚDZA SA · fáza 4/8</span>
+            <h4>Palma</h4>
+            <p style="font-size:14px;color:var(--text-mid)">Bývalý závod na výrobu rastlinných olejov (1920). Výroba stíchla, územie čaká na novú obytnú štvrť — prebieha zmena územného plánu (ZaD č. 12).</p>
+            <div class="facts">
+              <div><b>14,3 ha</b>rozloha</div>
+              <div><b>Súkromné</b>vlastníctvo ⌇ prerušovaný obrys</div>
+              <div><b>Priemysel</b>typológia · icon.industry</div>
+              <div><b>Bez záťaže</b>envirozáťaž</div>
+            </div>
+            <div class="phasebar"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i><i></i></div>
+            <span class="mono" style="font-size:11px;display:block;margin-top:6px">participácia → analýza → dočasné využitie → plán → súťaž → dokumentácia → realizácia → evaluácia</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="margin-top:0">Časová os (ovláda projekciu na modeli)</h3>
+        <div class="card">
+          <div class="timeline-demo">
+            <div class="tl-parcel" id="tlParcel">
+              <svg viewBox="0 0 48 48" id="tlIcon"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg>
+            </div>
+            <div class="tl-ctrl">
+              <span class="tl-year" id="tlYear">1990</span>
+              <span class="tl-state mono" id="tlState">ŽIJE — fabrika svieti, mesto pracuje</span>
+              <input type="range" min="1990" max="2035" value="1990" id="tlRange" aria-label="Časová os 1990 až 2035">
+              <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--text-low);margin-top:6px">
+                <span>1990</span><span>2005</span><span>2018</span><span>2026</span><span>2035</span>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--text-mid);margin-top:var(--sp-2)">Potiahni. Toto je najsilnejší moment expozície: v 90. rokoch svetlá <em>zhasínajú</em> (deindustrializácia), dnes sa postupne <em>rozsvecujú</em>. Slider na obrazovke preháňa celým modelom vlnu svetla.</p>
+        </div>
+
+        <h3>Legenda (tlačená pri modeli + rohová na projekcii)</h3>
+        <div class="card legend">
+          <div class="li"><div class="sw p-sleeping" style="animation:none;opacity:.7"></div>spí</div>
+          <div class="li"><div class="sw" style="background:var(--teal-500)"></div>drieme</div>
+          <div class="li"><div class="sw" style="background:var(--amber-500)"></div>prebúdza sa</div>
+          <div class="li"><div class="sw" style="background:var(--warm-300)"></div>žije</div>
+          <div class="li"><div class="sw" style="background:repeating-linear-gradient(45deg,var(--indigo-700),var(--indigo-700) 4px,var(--risk-500) 4px,var(--risk-500) 6px)"></div>envirozáťaž</div>
+          <div class="li"><div class="sw" style="background:transparent;border:2px dashed var(--warm-300)"></div>súkromné</div>
+          <div class="li"><div class="sw" style="background:transparent;border:2px solid var(--warm-300)"></div>mestské</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 KOMPOZÍCIA ============ -->
+<section id="kompozicia">
+  <div class="wrap">
+    <span class="kicker">08 · Živá mapa — reálne dáta</span>
+    <h2>Toto už bežia vaše dáta</h2>
+    <p class="lead">Žiadna ilustrácia: <strong style="color:var(--warm-100)">113 skutočných polygónov</strong> načítaných
+    priamo z ArcGIS registra brownfieldov MIB (vrstva BF_aktualizácia_2022), hranica mesta a Dunaj z OpenStreetMap.
+    Envirozáťaže (15) nesú šrafy, spiace územia pulzujú, významné zóny majú menovky.
+    Presne takto sa dáta premietnu na fyzický model.</p>
+    <div class="stage">
+      <svg id="liveMap" width="100%" style="max-height:78vh" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa 113 brownfieldov Bratislavy z registra MIB">
+        <defs>
+          <pattern id="hatchLive" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="transparent"/><rect width="2.6" height="8" fill="#E84B8A" opacity=".9"/>
+          </pattern>
+          <radialGradient id="cityGlow"><stop offset="0%" stop-color="#FFE9B8" stop-opacity=".10"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+        </defs>
+        <g id="lmBase"></g><g id="lmBf"></g><g id="lmLabels"></g>
+      </svg>
+    </div>
+    <p class="mono" style="margin-top:var(--sp-2)">Zdroj: services8.arcgis.com → BF_aktualizácia_2022_WFL1 (polia NAZOV, VYMERA_HA, DRUH_VLA, P_VYUZITIE, SEZ_POPIS, KLASIFIKAC) + OSM hranica a Dunaj. Pravidlo scény: naraz max 1 tematická vrstva + stavy; menovky len významné zóny; kontext mesta max 30 % jasu akcentov. Interaktívnu verziu s vrstvami má <a href="obrazovka.html" style="color:var(--amber-300)">mockup dotykovej obrazovky →</a></p>
+  </div>
+</section>
+
+<!-- ============ 09 MOTION ============ -->
+<section id="motion">
+  <div class="wrap">
+    <span class="kicker">09 · Motion</span>
+    <h2>Choreografia svetla</h2>
+    <p class="lead">Svetlo na modeli sa nikdy nehýbe náhodne — každý pohyb má význam a token.
+    Pravidlo: <strong>ambient je pomalý (sekundy), reakcia na dotyk okamžitá (do 400 ms)</strong>.
+    Vo Figme sa stavy prototypujú ako component varianty so Smart Animate (dim ↔ bright, After delay loop).</p>
+
+    <table style="margin-top:var(--sp-3)">
+      <tr><th>Token</th><th>Trvanie / easing</th><th>Kde</th><th>Význam</th></tr>
+      <tr><td><span class="mono">pulse.slow</span></td><td>4000 ms · ease-in-out · loop</td><td>projekcia</td><td>spiaci BF dýcha</td></tr>
+      <tr><td><span class="mono">flicker.temp</span></td><td>5500 ms · nepravidelné kroky</td><td>projekcia</td><td>drieme — občas sa zobudí</td></tr>
+      <tr><td><span class="mono">glow.rise</span></td><td>3000 ms · ease-in-out · loop</td><td>projekcia</td><td>prebúdzanie — žiara rastie</td></tr>
+      <tr><td><span class="mono">wake.spring</span></td><td>450 ms · spring(1, 80, 12)</td><td>všetko</td><td>obor otvára oči po dotyku</td></tr>
+      <tr><td><span class="mono">wave.sweep</span></td><td>1200 ms/km · lineárne, stagger</td><td>projekcia</td><td>svetelná vlna pri časovej osi</td></tr>
+      <tr><td><span class="mono">focus.zoom</span></td><td>800 ms · ease-out</td><td>projekcia</td><td>výber lokality — okolie stmavne</td></tr>
+      <tr><td><span class="mono">ui.fast / ui.base</span></td><td>150 / 250 ms · ease-out</td><td>obrazovka, tablet</td><td>chips, karty, prepnutia</td></tr>
+    </table>
+
+    <div class="grid g3" style="margin-top:var(--sp-4)">
+      <div class="card">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">Vlna času</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Pri ťahaní časovej osi ide modelom svetelná vlna od východu na západ — presne ako slnko nad mestom. Roky pribúdajú, svetlá sa rozsvecujú v poradí reálnych revitalizácií.</p>
+      </div>
+      <div class="card">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">Sekvencia prebudenia</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Dotyk → oči obra (450 ms) → aura sa rozleje po polygóne (800 ms) → chime. Jedna sekvencia, tri médiá naraz: obrazovka, projekcia, zvuk.</p>
+      </div>
+      <div class="card">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">Pokoj ako default</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Bez interakcie sa hýbu iba pulzy spiacich území. Expozícia nesmie blikať ako reklama — svetlo si musí zaslúžiť pozornosť ticho.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 ZVUK ============ -->
+<section id="zvuk">
+  <div class="wrap">
+    <span class="kicker">10 · Zvuková identita</span>
+    <h2>Mesto počuť, aj keď spí</h2>
+    <p class="lead">Tri zvuky, nič viac. Reproduktor nad modelom, hlasitosť tesne nad prahom vnímania —
+    zvuk potvrdí interakciu, nikdy neruší priestor TU-BA. Klikni a vypočuj si návrhy (syntetizované priamo tu, WebAudio):</p>
+    <div class="grid g3" style="margin-top:var(--sp-4)">
+      <button class="card" style="cursor:pointer;text-align:left;color:inherit;font-family:inherit" onclick="sndAmbient()">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">▶ Ambient — dych mesta</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Hlboký tón, sotva počuteľný, pulzuje spolu so spiacimi územiami. Beží stále.</p>
+        <span class="mono" style="display:block;margin-top:10px">snd.ambient · 55 Hz · slučka</span>
+      </button>
+      <button class="card" style="cursor:pointer;text-align:left;color:inherit;font-family:inherit" onclick="sndChime()">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">▶ Chime — prebudenie obra</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Tri stúpajúce tóny (C–E–G) pri hlasovaní / rozsvietení. Odmena za interakciu.</p>
+        <span class="mono" style="display:block;margin-top:10px">snd.wake · durový rozklad · 1,2 s</span>
+      </button>
+      <button class="card" style="cursor:pointer;text-align:left;color:inherit;font-family:inherit" onclick="sndTick()">
+        <h4 style="font-family:var(--font-display);margin-bottom:8px">▶ Tick — časová os</h4>
+        <p style="font-size:13.5px;color:var(--text-mid)">Jemné tiknutie na každý rok pri ťahaní timeline. Dáva času hmotnosť.</p>
+        <span class="mono" style="display:block;margin-top:10px">snd.tick · 40 ms · pri kroku osi</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 OBRAZOVKA ============ -->
+<section id="obrazovka">
+  <div class="wrap">
+    <span class="kicker">11 · Dotyková obrazovka — dirigent</span>
+    <h2>Jeden pult riadi celý model</h2>
+    <p class="lead">Funkčný mockup na reálnych dátach: vľavo vrstvy s legendou, v strede mapa (na expozícii = fyzický model),
+    dole časová os, po dotyku územia detail karta s hlasovaním „Prebuď obra".
+    Všetko, čo tu preklikáš, by na expozícii premietali projektory na model.</p>
+    <div class="stage" style="padding:0;overflow:hidden">
+      <iframe src="obrazovka.html" title="Mockup dotykovej obrazovky" style="width:100%;height:640px;border:0;display:block"></iframe>
+    </div>
+    <p style="margin-top:var(--sp-2)"><a href="obrazovka.html" target="_blank" class="copy-btn" style="display:inline-block;text-decoration:none">Otvoriť na celú obrazovku ↗</a></p>
+    <p class="mono">Ergonomika: ciele min. 56 px, panel vrstiev vľavo (pravák stojí bokom, netieni modelu), časová os na spodnej hrane = najbližšie k rukám. Hlasovania sa ukladajú — expozícia zbiera preferencie verejnosti pre MIB (fáza 1: participácia).</p>
+  </div>
+</section>
+
+<!-- ============ 12 TOKENY ============ -->
+<section id="tokeny">
+  <div class="wrap">
+    <span class="kicker">12 · Tokeny → Figma</span>
+    <h2>Jeden JSON, štyri médiá</h2>
+    <p class="lead">Formát Tokens Studio — importuješ do Figmy cez plugin Tokens Studio (Figma Tokens)
+    a rovnaký súbor číta projekčná appka, obrazovka, tablet aj web. Toto je jadro obhajoby škálovateľnosti.</p>
+    <button class="copy-btn" onclick="copyTokens(this)">Skopírovať JSON</button>
+    <pre id="tokensJson">{
+  "global": {
+    "color": {
+      "night":  { "950": {"value":"#070912","type":"color"}, "900": {"value":"#0B0E1A","type":"color"}, "800": {"value":"#131729","type":"color"}, "700": {"value":"#1C2138","type":"color"}, "600": {"value":"#2A3150","type":"color"}, "500": {"value":"#3D4568","type":"color"} },
+      "indigo": { "900": {"value":"#252A5E","type":"color"}, "700": {"value":"#3B4285","type":"color"}, "500": {"value":"#5A61B5","type":"color"}, "300": {"value":"#8B91DD","type":"color"} },
+      "teal":   { "700": {"value":"#0E7C71","type":"color"}, "500": {"value":"#17B3A3","type":"color"}, "300": {"value":"#3FE0CE","type":"color"} },
+      "amber":  { "700": {"value":"#C77800","type":"color"}, "500": {"value":"#F59E0B","type":"color"}, "300": {"value":"#FFB94A","type":"color"} },
+      "warm":   { "500": {"value":"#F4CE7A","type":"color"}, "300": {"value":"#FFE9B8","type":"color"}, "100": {"value":"#FFF6E3","type":"color"} },
+      "risk":   { "500": {"value":"#E84B8A","type":"color"}, "300": {"value":"#FF7EB0","type":"color"} },
+      "text":   { "hi": {"value":"#F4F2FF","type":"color"}, "mid": {"value":"#A9ACC8","type":"color"}, "low": {"value":"#6E7291","type":"color"} }
+    },
+    "font": {
+      "display": {"value":"Space Grotesk","type":"fontFamilies"},
+      "text":    {"value":"Inter","type":"fontFamilies"},
+      "data":    {"value":"JetBrains Mono","type":"fontFamilies"}
+    },
+    "size": {
+      "hero": {"value":"96","type":"fontSizes"}, "h1": {"value":"44","type":"fontSizes"},
+      "h2": {"value":"28","type":"fontSizes"}, "bodyLg": {"value":"18","type":"fontSizes"},
+      "body": {"value":"16","type":"fontSizes"}, "label": {"value":"13","type":"fontSizes"}
+    },
+    "space": { "1":{"value":"8","type":"spacing"}, "2":{"value":"16","type":"spacing"}, "3":{"value":"24","type":"spacing"}, "4":{"value":"32","type":"spacing"}, "6":{"value":"48","type":"spacing"}, "8":{"value":"64","type":"spacing"}, "10":{"value":"80","type":"spacing"} },
+    "radius": { "s":{"value":"6","type":"borderRadius"}, "m":{"value":"12","type":"borderRadius"}, "l":{"value":"20","type":"borderRadius"}, "full":{"value":"999","type":"borderRadius"} }
+  },
+  "semantic": {
+    "state": {
+      "sleeping":  {"value":"{color.indigo.700}","type":"color","description":"BF nevyužívaný · pulz 4s · oko zavreté"},
+      "temporary": {"value":"{color.teal.500}","type":"color","description":"dočasné využitie · flicker · oko privreté"},
+      "awakening": {"value":"{color.amber.500}","type":"color","description":"fáza revitalizácie 1–7 · rastúca žiara"},
+      "alive":     {"value":"{color.warm.300}","type":"color","description":"vyradený z registra · statické svetlo"}
+    },
+    "risk": {
+      "confirmed": {"value":"{color.risk.500}","type":"color","description":"evidovaná envirozáťaž · šrafy 45°, len vzor, nikdy výplň"},
+      "assumed":   {"value":"{color.risk.300}","type":"color","description":"predpokladaná kontaminácia · bodkovanie"}
+    },
+    "owner": {
+      "city":    {"value":"solid","type":"other","description":"obrys plný · 13 území"},
+      "private": {"value":"dashed","type":"other","description":"obrys prerušovaný · 56 území"},
+      "mixed":   {"value":"dotted","type":"other","description":"obrys striedaný · 8 území"}
+    },
+    "scale": {
+      "major": {"value":"1.6","type":"other","description":"16 významných BF · väčší piktogram + menovka"}
+    },
+    "motion": {
+      "pulse-slow":  {"value":"4000ms ease-in-out infinite","type":"other","description":"spiaci BF dýcha"},
+      "flicker-temp":{"value":"5500ms steps irregular","type":"other","description":"dočasné využitie mihoce"},
+      "glow-rise":   {"value":"3000ms ease-in-out infinite","type":"other","description":"prebúdzanie — žiara rastie"},
+      "wake-spring": {"value":"450ms spring(1,80,12)","type":"other","description":"obor otvára oči po dotyku"},
+      "wave-sweep":  {"value":"1200ms/km linear stagger","type":"other","description":"svetelná vlna časovej osi V→Z"},
+      "focus-zoom":  {"value":"800ms ease-out","type":"other","description":"výber lokality, okolie stmavne"},
+      "ui-fast":     {"value":"150ms ease-out","type":"other"},
+      "ui-base":     {"value":"250ms ease-out","type":"other"}
+    },
+    "sound": {
+      "ambient": {"value":"55Hz drone, loop, -38 LUFS","type":"other","description":"dych mesta, pulz so spiacimi BF"},
+      "wake":    {"value":"C5-E5-G5 rozklad, 1.2s","type":"other","description":"chime pri prebudení obra"},
+      "tick":    {"value":"40ms click","type":"other","description":"krok časovej osi"}
+    },
+    "surface": {
+      "room":  {"value":"{color.night.900}","type":"color"},
+      "panel": {"value":"{color.night.800}","type":"color"},
+      "cityContext": {"value":"{color.night.600}","type":"color","description":"nesvietiace mesto na projekcii"}
+    }
+  }
+}</pre>
+  </div>
+</section>
+
+<!-- ============ 10 ŠKÁLOVATEĽNOSŤ ============ -->
+<section id="skalovatelnost">
+  <div class="wrap">
+    <span class="kicker">13 · Škálovateľnosť</span>
+    <h2>Prečo sa to nerozpadne</h2>
+    <div class="grid g4" style="margin-top:var(--sp-4)">
+      <div class="card arg">
+        <span class="num">5</span>
+        <h4>kanálov, žiadne kolízie</h4>
+        <p style="font-size:14px;color:var(--text-mid)">Farba = stav, ikona = typológia, vzor = riziko, obrys = vlastníctvo, mierka = význam. Nová dátová dimenzia = nový kanál, nie prerábka.</p>
+      </div>
+      <div class="card arg">
+        <span class="num">1</span>
+        <h4>zdroj pravdy</h4>
+        <p style="font-size:14px;color:var(--text-mid)">Tokeny čítajú projekcia, obrazovka, tablet aj web. Zmena farby stavu = jedna zmena v JSON, prepíše sa všade.</p>
+      </div>
+      <div class="card arg">
+        <span class="num">2r</span>
+        <h4>auto-aktualizácia</h4>
+        <p style="font-size:14px;color:var(--text-mid)">Stavy sú mapované na polia registra ArcGIS. MIB aktualizuje register každé 2 roky — expozícia sa prekreslí sama, bez redizajnu.</p>
+      </div>
+      <div class="card arg">
+        <span class="num">∞</span>
+        <h4>ďalšie témy</h4>
+        <p style="font-size:14px;color:var(--text-mid)">Engine vrstvy → kanály → tokeny je témovo agnostický: zajtra nájomné bývanie, zeleň či doprava — vymení sa dataset a ikonografia, jazyk ostáva.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex;gap:var(--sp-4);align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px">
+      ZAŽNI MESTO · dizajn manuál v0.2 · koncept pre TU-BA / Metropolitný inštitút Bratislavy ·
+      dáta: <a href="https://mib.sk/koncepcia-rozvoja-brownfieldov/">Koncepcia rozvoja brownfieldov (MIB, 2026)</a>,
+      register BF cez ArcGIS (aktualizácia 2022: 113 lokalít / 580 ha) a OpenStreetMap ·
+      typografia: Space Grotesk · Inter · JetBrains Mono ·
+      <a href="obrazovka.html">mockup obrazovky</a>
+    </div>
+    <div style="text-align:center">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=132x132&amp;data=https%3A%2F%2Fleumasdam.github.io%2Fzazni-mesto%2F&amp;color=0B0E1A&amp;bgcolor=FFF6E3&amp;qzone=2"
+           alt="QR kód na živú verziu" width="132" height="132" style="border-radius:12px;display:block">
+      <span class="mono" style="font-size:10.5px;display:block;margin-top:6px">naskenuj — živá verzia</span>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+/* hero: mesto svieti, brownfieldy pulzujú v tme */
+(function(){
+  const bg=document.getElementById('heroBg');
+  const W=window.innerWidth,H=window.innerHeight;
+  for(let i=0;i<170;i++){
+    const d=document.createElement('div');
+    d.className='citydot';
+    const s=1+Math.random()*2.5;
+    d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${.15+Math.random()*.45}`;
+    bg.appendChild(d);
+  }
+  for(let i=0;i<26;i++){
+    const d=document.createElement('div');
+    d.className='bfdot';
+    const s=8+Math.random()*22;
+    d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*4}s;opacity:.3;filter:blur(${s>20?3:1}px)`;
+    bg.appendChild(d);
+  }
+})();
+
+/* timeline demo — príbeh jednej fabriky */
+(function(){
+  const r=document.getElementById('tlRange'),y=document.getElementById('tlYear'),
+        st=document.getElementById('tlState'),p=document.getElementById('tlParcel'),
+        ic=document.getElementById('tlIcon');
+  const stages=[
+    {to:1997, bg:'var(--warm-500)', glow:'0 0 34px rgba(244,206,122,.5)', stroke:'var(--night-900)', label:'ŽIJE — fabrika svieti, mesto pracuje', color:'var(--warm-300)'},
+    {to:2004, bg:'var(--indigo-500)', glow:'none', stroke:'var(--indigo-300)', label:'ZHASÍNA — výroba končí, svetlá zhasínajú', color:'var(--indigo-300)'},
+    {to:2016, bg:'var(--indigo-700)', glow:'none', stroke:'var(--indigo-300)', label:'SPÍ — prázdny areál, pomalý pulz', color:'var(--indigo-300)'},
+    {to:2023, bg:'var(--teal-500)', glow:'0 0 20px rgba(23,179,163,.45)', stroke:'var(--night-900)', label:'DRIEME — dočasná kultúra, komunita, sklady', color:'var(--teal-300)'},
+    {to:2029, bg:'var(--amber-500)', glow:'0 0 34px rgba(245,158,11,.55)', stroke:'var(--night-900)', label:'PREBÚDZA SA — súťaž, plán, výstavba (fázy 1–7)', color:'var(--amber-300)'},
+    {to:2035, bg:'var(--warm-300)', glow:'0 0 54px rgba(255,233,184,.6)', stroke:'var(--night-900)', label:'ŽIJE — nová štvrť, vyradený z registra', color:'var(--warm-100)'}
+  ];
+  function upd(){
+    const v=+r.value; y.textContent=v;
+    const s=stages.find(s=>v<=s.to);
+    p.style.background=s.bg; p.style.boxShadow=s.glow;
+    ic.style.stroke=s.stroke;
+    st.textContent=s.label; st.style.color=s.color;
+    p.classList.toggle('pulseA', s.label.startsWith('SPÍ'));
+  }
+  r.addEventListener('input',upd); upd();
+})();
+
+/* chips demo */
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+}));
+
+/* copy tokens */
+function copyTokens(btn){
+  navigator.clipboard.writeText(document.getElementById('tokensJson').textContent).then(()=>{
+    const t=btn.textContent; btn.textContent='Skopírované ✓';
+    setTimeout(()=>btn.textContent=t,1800);
+  });
+}
+
+/* ---------- živá mapa (08) — reálne dáta z data.js ---------- */
+(function(){
+  if(typeof MAPDATA==='undefined')return;
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('liveMap');
+  svg.setAttribute('viewBox',`0 0 ${MAPDATA.W} ${MAPDATA.H}`);
+  const base=document.getElementById('lmBase'),bfg=document.getElementById('lmBf'),lab=document.getElementById('lmLabels');
+
+  const glow=document.createElementNS(NS,'ellipse');
+  glow.setAttribute('cx',MAPDATA.W*.45);glow.setAttribute('cy',MAPDATA.H*.42);
+  glow.setAttribute('rx',MAPDATA.W*.42);glow.setAttribute('ry',MAPDATA.H*.3);
+  glow.setAttribute('fill','url(#cityGlow)');base.appendChild(glow);
+
+  const b=document.createElementNS(NS,'path');
+  b.setAttribute('d',MAPDATA.boundary);
+  b.setAttribute('fill','#0E1220');b.setAttribute('stroke','#2A3150');b.setAttribute('stroke-width','2');
+  base.appendChild(b);
+
+  MAPDATA.danube.forEach(d=>{
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',d);p.setAttribute('fill','none');
+    p.setAttribute('stroke','#232A4A');p.setAttribute('stroke-width','13');p.setAttribute('stroke-linecap','round');
+    base.appendChild(p);
+  });
+
+  /* mestské svetlá vnútri hranice */
+  let inside; try{inside=(x,y)=>b.isPointInFill(new DOMPoint(x,y));}catch(e){inside=()=>true;}
+  let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  let placed=0,tries=0;
+  while(placed<420&&tries<6000){
+    tries++;
+    const x=rnd()*MAPDATA.W,y=rnd()*MAPDATA.H;
+    const dc=Math.hypot((x-MAPDATA.W*.46)/MAPDATA.W,(y-MAPDATA.H*.40)/MAPDATA.H);
+    if(rnd()<dc*1.9)continue;
+    if(!inside(x,y))continue;
+    const c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));
+    c.setAttribute('r',(0.9+rnd()*1.8).toFixed(1));
+    c.setAttribute('fill','#FFE9B8');c.setAttribute('opacity',(0.06+rnd()*.28).toFixed(2));
+    base.appendChild(c);placed++;
+  }
+
+  MAPDATA.bf.forEach((f,i)=>{
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',f.d);p.setAttribute('fill','#3B4285');
+    p.setAttribute('stroke','#8B91DD');p.setAttribute('stroke-width','1.1');
+    p.setAttribute('class','pulseA');p.style.animationDelay=((i%9)*.45)+'s';
+    const t=document.createElementNS(NS,'title');
+    t.textContent=`${f.n} · ${f.ha} ha · ${f.mc}`;p.appendChild(t);
+    bfg.appendChild(p);
+    if(f.sez){
+      const hz=document.createElementNS(NS,'path');
+      hz.setAttribute('d',f.d);hz.setAttribute('fill','url(#hatchLive)');hz.setAttribute('pointer-events','none');
+      bfg.appendChild(hz);
+    }
+  });
+
+  const FAMOUS=['ISTROCHEM VAJNORSKÁ','MATADOR','FILIÁLKA','NOVÉ LIDO','ZÓNA CHALUPKOVA','NEMOCNICA RÁZSOCHY','JANÍKOV DVOR'];
+  MAPDATA.zones.filter(z=>FAMOUS.includes(z.n)).forEach(z=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',z.cx+10);t.setAttribute('y',z.cy-8);
+    t.textContent=z.n;lab.appendChild(t);
+  });
+})();
+
+/* ---------- zvuková identita (10) — WebAudio návrhy ---------- */
+let _ac;
+function ac(){return _ac||(_ac=new (window.AudioContext||window.webkitAudioContext)());}
+function sndAmbient(){
+  const a=ac(),o=a.createOscillator(),o2=a.createOscillator(),g=a.createGain();
+  o.frequency.value=55;o.type='sine';o2.frequency.value=55.7;o2.type='sine';
+  const lfo=a.createOscillator(),lg=a.createGain();
+  lfo.frequency.value=0.25;lg.gain.value=.05;lfo.connect(lg).connect(g.gain);
+  g.gain.setValueAtTime(0,a.currentTime);
+  g.gain.linearRampToValueAtTime(.12,a.currentTime+1.5);
+  g.gain.linearRampToValueAtTime(0,a.currentTime+7);
+  o.connect(g);o2.connect(g);g.connect(a.destination);
+  o.start();o2.start();lfo.start();
+  o.stop(a.currentTime+7.2);o2.stop(a.currentTime+7.2);lfo.stop(a.currentTime+7.2);
+}
+function sndChime(){
+  const a=ac();
+  [523.25,659.25,783.99].forEach((fq,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.frequency.value=fq;o.type='sine';
+    g.gain.setValueAtTime(0,a.currentTime+i*.09);
+    g.gain.linearRampToValueAtTime(.14,a.currentTime+i*.09+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+i*.09+1.2);
+    o.connect(g).connect(a.destination);o.start(a.currentTime+i*.09);o.stop(a.currentTime+i*.09+1.3);
+  });
+}
+function sndTick(){
+  const a=ac(),o=a.createOscillator(),g=a.createGain();
+  o.frequency.setValueAtTime(1400,a.currentTime);
+  o.frequency.exponentialRampToValueAtTime(700,a.currentTime+.04);
+  g.gain.setValueAtTime(.16,a.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.05);
+  o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.06);
+}
+</script>
+</body>
+</html>
