@@ -302,13 +302,14 @@ section,header.hero,footer{scroll-snap-align:start}
     radial-gradient(ellipse 70% 55% at 85% 100%, rgba(245,158,11,.07), transparent 60%),
     var(--night-900);
 }
-#bgfx>*{position:absolute;left:0;top:-14%;width:100%;height:132%;will-change:transform}
-#bgMid{opacity:.5}
+#bgFar,#bgNear{position:absolute;inset:0;background-repeat:repeat;will-change:background-position}
+#bgMid{position:absolute;left:0;top:-16%;width:100%;height:136%;opacity:.5;will-change:transform}
 #bgNear{
-  background:
-    radial-gradient(circle 360px at 78% 20%, rgba(245,158,11,.12), transparent 70%),
-    radial-gradient(circle 440px at 10% 64%, rgba(90,97,181,.16), transparent 70%),
-    radial-gradient(circle 280px at 56% 96%, rgba(23,179,163,.09), transparent 70%);
+  background-image:
+    radial-gradient(circle 360px at 78% 18%, rgba(245,158,11,.13), transparent 70%),
+    radial-gradient(circle 440px at 10% 58%, rgba(90,97,181,.17), transparent 70%),
+    radial-gradient(circle 280px at 56% 88%, rgba(23,179,163,.10), transparent 70%);
+  background-size:100% 120vh;background-repeat:repeat-y;
   filter:blur(2px);
 }
 #bgVeil{top:0;height:100%;background:radial-gradient(ellipse 100% 80% at 50% 30%, rgba(11,14,26,.22), rgba(11,14,26,.58))}
@@ -1181,17 +1182,23 @@ function sndTick(){
   const far=document.getElementById('bgFar'),mid=document.getElementById('bgMid'),
         near=document.getElementById('bgNear');
   if(!far)return;
-  /* vrstva 1 · mestské svetlá */
+  /* vrstva 1 · mestské svetlá — bezšvová dlaždica (dá sa donekonečna posúvať) */
   function paintFar(){
-    const x=far.getContext('2d');
-    far.width=innerWidth;far.height=Math.round(innerHeight*1.32);
-    x.clearRect(0,0,far.width,far.height);
+    const T=document.createElement('canvas');
+    T.width=Math.min(1600,innerWidth);T.height=900;
+    const x=T.getContext('2d');
     let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
-    const n=Math.floor(far.width*far.height/9000);
+    const n=Math.floor(T.width*T.height/8000);
     for(let i=0;i<n;i++){
-      x.beginPath();x.arc(rnd()*far.width,rnd()*far.height,.6+rnd()*1.6,0,6.283);
-      x.fillStyle=`rgba(255,233,184,${(.05+rnd()*.28).toFixed(2)})`;x.fill();
+      const px=rnd()*T.width,py=rnd()*T.height,r=.6+rnd()*1.6,
+            a=(.05+rnd()*.3).toFixed(2);
+      x.fillStyle=`rgba(255,233,184,${a})`;
+      /* wrap-around kópie pre bezšvové opakovanie */
+      for(const dy of [0,-T.height,T.height])for(const dx of [0,-T.width,T.width]){
+        x.beginPath();x.arc(px+dx,py+dy,r,0,6.283);x.fill();
+      }
     }
+    far.style.backgroundImage=`url(${T.toDataURL()})`;
   }
   /* vrstva 2 · skutočné polygóny registra, dýchajú */
   mid.setAttribute('viewBox',`0 0 ${MAPDATA.W} ${MAPDATA.H}`);
@@ -1210,11 +1217,13 @@ function sndTick(){
     if(tick)return;tick=true;
     requestAnimationFrame(()=>{
       tick=false;
+      const y=scrollY;
       const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
-      const g=Math.min(1,Math.max(0,scrollY/max));
-      far.style.transform=`translateY(${(-g*innerHeight*.10).toFixed(1)}px)`;
-      mid.style.transform=`translateY(${(-g*innerHeight*.20).toFixed(1)}px) scale(1.04)`;
-      near.style.transform=`translateY(${(-g*innerHeight*.32).toFixed(1)}px)`;
+      const g=Math.min(1,Math.max(0,y/max));
+      /* kontinuálny posun po pixeloch — parallax cítiť pri každom potiahnutí */
+      far.style.backgroundPosition=`0 ${(-y*.12).toFixed(1)}px`;
+      near.style.backgroundPosition=`0 ${(-y*.30).toFixed(1)}px`;
+      mid.style.transform=`translateY(${(-g*innerHeight*.34).toFixed(1)}px) scale(1.04)`;
     });
   }
   addEventListener('scroll',onScroll,{passive:true});
