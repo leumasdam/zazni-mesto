@@ -1,9 +1,12 @@
 # ZAŽNI MESTO — zhrnutie projektu
 
 > Koncept interaktívnej expozície brownfieldov pre fyzický model Bratislavy v priestore TU-BA.
-> Zadanie: Metropolitný inštitút Bratislavy (pohovor). Stav: manuál + funkčný prototyp hotové, čaká prezentácia.
+> Zadanie: Metropolitný inštitút Bratislavy (pohovor). Stav: prezentácia + manuál v MIB identite + funkčný prototyp — hotové.
 
-**Live:** https://leumasdam.github.io/zazni-mesto/ (dizajn manuál) · https://leumasdam.github.io/zazni-mesto/obrazovka.html (prototyp obrazovky)
+**Live:**
+- https://leumasdam.github.io/zazni-mesto/prezentacia.html — scroll-story prezentácia (13 stupňov; `?step=N` deep-link, `?auto=1` kiosková slučka)
+- https://leumasdam.github.io/zazni-mesto/ — dizajn manuál vo vizuálnej identite MIB (štvorcový grid, indigo + koral, clay rendre, drag-otočka expozície)
+- https://leumasdam.github.io/zazni-mesto/obrazovka.html — prototyp dotykovej obrazovky (PULZ / OBJAV / VÍZIA)
 
 ---
 
