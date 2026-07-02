@@ -1165,11 +1165,12 @@ const SCENES={
   amber:{img:'assets/bgfx-amber.jpg'},
   risk:{img:'assets/bgfx-risk.jpg'},
   warm:{img:'assets/bgfx-warm.jpg'},
+  bokeh:{frames:{dir:'assets/seq/bokeh',count:100}},   /* nočné svetlá mesta — scrub scrollom */
 };
 const SECTION_SCENE=[
   ['princip','indigo'],['farby','teal'],['stavy','amber'],['kanaly','risk'],
   ['typo','noc'],['ikony','indigo'],['komponenty','teal'],['kompozicia','noc'],
-  ['motion','amber'],['zvuk','indigo'],['obrazovka','teal'],['tokeny','noc'],
+  ['motion','bokeh'],['zvuk','indigo'],['obrazovka','teal'],['tokeny','noc'],
   ['skalovatelnost','warm']
 ];
 (function(){
@@ -1220,6 +1221,21 @@ const SECTION_SCENE=[
     });
   }
   Object.values(SCENES).forEach(s=>{if(s.img){const im=new Image();im.src=s.img;}});
+  /* frame-sekvencie prednačítaj postupne na pozadí (žiadny jank pri prvom scrube) */
+  addEventListener('load',()=>{
+    Object.values(SCENES).forEach(s=>{
+      if(!s.frames)return;
+      let i=0;
+      (function next(){
+        if(i>=s.frames.count)return;
+        for(let k=0;k<4&&i<s.frames.count;k++,i++){
+          const u=`${s.frames.dir}/frame-${i}.jpg`;
+          if(!frameCache[u]){const im=new Image();im.src=u;frameCache[u]=im;}
+        }
+        setTimeout(next,90);
+      })();
+    });
+  });
   addEventListener('scroll',onScroll,{passive:true});
   addEventListener('resize',onScroll);
   onScroll();
