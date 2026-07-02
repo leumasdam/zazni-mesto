@@ -21,198 +21,282 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--night-950);color:var(--text-hi);font-family:var(--ft);overflow:hidden;height:100vh}
+button{font-family:inherit;color:inherit}
 
-.app{display:grid;grid-template-columns:300px 1fr;grid-template-rows:1fr auto;height:100vh}
-
-/* ---------- ľavý panel ---------- */
-aside{
-  grid-row:1/3;background:var(--night-900);border-right:1px solid var(--night-700);
-  padding:24px 20px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;
+/* ---------- top bar ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:64px;z-index:30;
+  display:flex;align-items:center;gap:28px;padding:0 24px;
+  background:rgba(7,9,18,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--night-700);
 }
-.logo{font-family:var(--fd);font-weight:700;font-size:19px;letter-spacing:.03em;margin-bottom:2px}
+.logo{font-family:var(--fd);font-weight:700;font-size:18px;letter-spacing:.03em}
 .logo em{font-style:normal;color:var(--amber-300)}
-.logo-sub{font-family:var(--fm);font-size:10.5px;color:var(--text-low);letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}
-
-.layer-btn{
-  display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:10px 14px;
-  background:var(--night-800);border:1.5px solid var(--night-700);border-radius:14px;
-  color:var(--text-mid);font-family:var(--ft);font-size:15px;font-weight:500;cursor:pointer;
-  transition:all .25s;text-align:left;
+.tabs{display:flex;gap:6px;margin-left:8px}
+.tab{
+  min-height:44px;padding:8px 22px;border-radius:12px;border:1.5px solid transparent;
+  background:transparent;font-family:var(--fd);font-weight:600;font-size:15px;letter-spacing:.08em;
+  color:var(--text-mid);cursor:pointer;transition:all .25s;
 }
-.layer-btn .ic{width:26px;height:26px;border-radius:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-.layer-btn.on{background:var(--night-700);border-color:var(--amber-500);color:var(--text-hi);
+.tab.on{background:var(--night-700);border-color:var(--amber-500);color:var(--warm-100);
   box-shadow:0 0 22px rgba(245,158,11,.18)}
-.layer-btn small{display:block;font-size:11px;color:var(--text-low);font-weight:400}
-
-.legend{margin-top:14px;background:var(--night-800);border:1px solid var(--night-700);border-radius:14px;padding:14px}
-.legend h4{font-family:var(--fm);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:10px}
-.legend .li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:3px 0}
-.legend .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
-
-.note{margin-top:auto;font-family:var(--fm);font-size:10.5px;color:var(--text-low);line-height:1.6;padding-top:16px}
-.note a{color:var(--indigo-300)}
+.tab small{display:block;font-family:var(--ft);font-weight:400;font-size:10.5px;letter-spacing:0;color:var(--text-low)}
+.top-right{margin-left:auto;font-family:var(--fm);font-size:11px;color:var(--text-low);text-align:right;line-height:1.5}
+.top-right a{color:var(--indigo-300)}
 
 /* ---------- mapa ---------- */
-main{position:relative;background:radial-gradient(ellipse 70% 55% at 50% 46%,#10142a 0%,var(--night-950) 75%)}
+main{position:fixed;inset:64px 0 0 0;background:radial-gradient(ellipse 70% 55% at 42% 46%,#10142a 0%,var(--night-950) 75%)}
 main svg{width:100%;height:100%;display:block}
-.bf-shape{cursor:pointer;transition:fill .5s,opacity .5s}
+.bf-shape{cursor:pointer;transition:fill .6s,opacity .6s}
 .bf-shape:hover{stroke:var(--warm-100);stroke-width:2.5}
-.bf-shape.sel{stroke:var(--warm-100)!important;stroke-width:3!important;filter:drop-shadow(0 0 14px rgba(255,246,227,.7))}
+.bf-shape.sel{stroke:var(--warm-100)!important;stroke-width:3!important;filter:drop-shadow(0 0 16px rgba(255,246,227,.75))}
 @keyframes pulseSleep{0%,100%{opacity:.5}50%{opacity:.95}}
 .pulse{animation:pulseSleep 4s ease-in-out infinite}
 .zone-label{font-family:var(--fm);font-size:11px;fill:var(--text-mid);letter-spacing:.1em;pointer-events:none}
-.hud{
-  position:absolute;top:20px;left:24px;font-family:var(--fm);font-size:12px;color:var(--text-mid);
-  background:rgba(11,14,26,.72);border:1px solid var(--night-700);border-radius:10px;padding:10px 16px;
-  backdrop-filter:blur(8px);
+.map-icon{pointer-events:none;opacity:.85}
+.backbtn{
+  position:absolute;top:16px;left:16px;z-index:5;min-height:48px;padding:10px 20px;border-radius:12px;
+  border:1px solid var(--night-500);background:rgba(11,14,26,.8);backdrop-filter:blur(8px);
+  font-size:14px;color:var(--text-mid);cursor:pointer;display:none;
 }
-.hud b{color:var(--amber-300);font-weight:500}
+.backbtn.vis{display:block}
 
-/* ---------- detail karta ---------- */
-.detail{
-  position:absolute;top:20px;right:24px;width:330px;max-height:calc(100% - 140px);overflow-y:auto;
-  background:rgba(19,23,41,.94);border:1px solid var(--night-600);border-radius:18px;padding:22px;
-  backdrop-filter:blur(12px);transform:translateX(370px);transition:transform .4s cubic-bezier(.2,.9,.3,1);
+/* ---------- pravý panel ---------- */
+.panel{
+  position:fixed;top:84px;right:20px;bottom:104px;width:352px;z-index:20;
+  display:flex;flex-direction:column;gap:14px;pointer-events:none;
 }
-.detail.open{transform:none}
-.detail .close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
-  border:1px solid var(--night-500);background:transparent;color:var(--text-mid);font-size:17px;cursor:pointer}
-.detail .chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--fm);font-size:11px;
-  padding:4px 11px;border-radius:99px;border:1px solid;margin:0 6px 8px 0}
-.detail h2{font-family:var(--fd);font-size:22px;line-height:1.15;margin:6px 0 10px}
-.detail .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-.detail .facts div{font-size:12px;color:var(--text-low)}
-.detail .facts b{display:block;color:var(--text-hi);font-size:14.5px;font-weight:600}
-.detail p{font-size:13px;color:var(--text-mid);line-height:1.55}
-.vote{margin-top:14px;border-top:1px solid var(--night-600);padding-top:14px}
-.vote h4{font-family:var(--fd);font-size:15px;margin-bottom:10px}
+.panel>*{pointer-events:auto}
+.pcard{
+  background:rgba(19,23,41,.93);border:1px solid var(--night-600);border-radius:18px;
+  padding:20px;backdrop-filter:blur(12px);
+}
+.pcard h3{font-family:var(--fd);font-size:18px;margin-bottom:4px}
+.pcard .sub{font-size:12.5px;color:var(--text-low);margin-bottom:14px}
+.scrollarea{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
+
+/* donut */
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-num b{font-family:var(--fd);font-size:30px;font-weight:700}
+.donut-num span{font-family:var(--fm);font-size:9.5px;color:var(--text-low);letter-spacing:.12em}
+.dlg{font-size:13px;color:var(--text-mid);display:flex;flex-direction:column;gap:7px}
+.dlg .li{display:flex;align-items:center;gap:9px}
+.dlg .sw{width:11px;height:11px;border-radius:4px;flex:0 0 auto}
+.statrows{margin-top:14px;border-top:1px solid var(--night-600);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.statrows div{font-size:11.5px;color:var(--text-low)}
+.statrows b{display:block;font-family:var(--fd);font-size:19px;font-weight:600;color:var(--text-hi)}
+
+/* legenda */
+.legend .li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:3.5px 0}
+.legend .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
+.legend h4{font-family:var(--fm);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:8px}
+
+/* OBJAV: search + list */
+.search{
+  display:flex;align-items:center;gap:10px;background:var(--night-800);border:1.5px solid var(--night-600);
+  border-radius:12px;padding:12px 14px;margin-bottom:10px;
+}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--text-hi);font-family:var(--ft);font-size:14.5px}
+.search input::placeholder{color:var(--text-low)}
+.fchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.fchip{
+  min-height:38px;padding:7px 14px;border-radius:99px;border:1.5px solid var(--night-500);
+  background:transparent;font-size:12.5px;color:var(--text-mid);cursor:pointer;transition:all .2s;
+}
+.fchip.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
+.bflist{display:flex;flex-direction:column;gap:8px}
+.bfitem{
+  display:flex;gap:12px;align-items:center;text-align:left;width:100%;
+  background:var(--night-800);border:1.5px solid var(--night-700);border-radius:14px;
+  padding:12px 14px;cursor:pointer;transition:all .2s;
+}
+.bfitem:hover{border-color:var(--indigo-500)}
+.bfitem.sel{border-color:var(--amber-500);background:var(--night-700)}
+.bfitem .av{width:44px;height:44px;border-radius:12px;background:var(--night-700);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center}
+.bfitem .av svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.bfitem .nm{font-family:var(--fd);font-weight:600;font-size:14.5px;line-height:1.2}
+.bfitem .meta{font-size:11.5px;color:var(--text-low);margin-top:2px}
+.bfitem .tags{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}
+.tagm{font-family:var(--fm);font-size:9.5px;padding:2px 8px;border-radius:99px;border:1px solid var(--night-500);color:var(--text-mid)}
+.tagm.risk{border-color:var(--risk-500);color:var(--risk-300)}
+.tagm.city{border-color:var(--warm-500);color:var(--warm-300)}
+.listcount{font-family:var(--fm);font-size:11px;color:var(--text-low);margin:8px 0 2px}
+
+/* detail */
+.obor-av{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+.obor-face{
+  width:76px;height:76px;border-radius:18px;background:var(--night-700);flex:0 0 auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  transition:all .8s;border:1px solid var(--night-600);
+}
+.obor-face svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .8s}
+.obor-face .eyes{display:flex;gap:9px;height:9px;align-items:center}
+.obor-face .eyes i{display:block;width:9px;height:2.4px;border-radius:99px;background:var(--indigo-300);transition:all .5s}
+.obor-face.awake{background:var(--night-600);border-color:var(--amber-700);box-shadow:0 0 26px rgba(245,158,11,.3)}
+.obor-face.awake svg{stroke:var(--amber-300)}
+.obor-face.awake .eyes i{width:7px;height:7px;background:var(--warm-100);box-shadow:0 0 7px rgba(255,246,227,.9)}
+.dchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:10.5px;
+  padding:3px 10px;border-radius:99px;border:1px solid var(--indigo-700);color:var(--indigo-300);margin-bottom:6px}
+.dtitle{font-family:var(--fd);font-size:21px;font-weight:600;line-height:1.15}
+.dsub{font-size:12px;color:var(--text-low);margin-top:2px}
+.frows{display:flex;flex-direction:column;margin:12px 0}
+.frow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--night-700);font-size:13px}
+.frow .k{color:var(--text-low)}
+.frow .v{color:var(--text-hi);font-weight:500;text-align:right}
+.dzamer{font-size:12.5px;color:var(--text-mid);line-height:1.55;margin-bottom:12px}
+.mini-tl{display:flex;gap:0;margin:6px 0 14px}
+.mini-tl div{flex:1;text-align:center;position:relative;padding-top:14px}
+.mini-tl div::before{content:'';position:absolute;top:4px;left:0;right:0;height:2px;background:var(--night-600)}
+.mini-tl div::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:var(--night-500)}
+.mini-tl div.hot::after{background:var(--amber-500);box-shadow:0 0 8px rgba(245,158,11,.7)}
+.mini-tl b{font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;color:var(--text-mid);display:block}
+.mini-tl span{font-size:10px;color:var(--text-low);display:block;margin-top:2px}
 .vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .vote-btn{
   min-height:52px;border-radius:12px;border:1.5px solid var(--night-500);background:var(--night-800);
-  color:var(--text-mid);font-family:var(--ft);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;
+  font-size:13.5px;font-weight:500;color:var(--text-mid);cursor:pointer;transition:all .2s;
 }
 .vote-btn:hover{border-color:var(--amber-500);color:var(--text-hi)}
-.vote-thanks{font-family:var(--fm);font-size:12px;color:var(--amber-300);margin-top:10px;display:none}
+.vote-btn.picked{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
+.vote-thanks{font-family:var(--fm);font-size:11.5px;color:var(--amber-300);margin-top:10px;display:none}
 
-/* ---------- spodná lišta / timeline ---------- */
+/* VÍZIA results */
+.rbar{margin:9px 0}
+.rbar .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-mid);margin-bottom:5px}
+.rbar .track{height:9px;border-radius:99px;background:var(--night-700);overflow:hidden}
+.rbar .fill{height:100%;border-radius:99px;transition:width .6s ease-out}
+
+/* ---------- spodná lišta ---------- */
 .bottom{
-  grid-column:2;background:rgba(11,14,26,.92);border-top:1px solid var(--night-700);
-  display:flex;align-items:center;gap:26px;padding:16px 28px;backdrop-filter:blur(10px);
+  position:fixed;left:0;right:392px;bottom:0;z-index:20;
+  background:rgba(7,9,18,.88);border-top:1px solid var(--night-700);backdrop-filter:blur(10px);
+  padding:14px 24px;min-height:84px;display:flex;align-items:center;gap:22px;
 }
-.year{font-family:var(--fd);font-size:40px;font-weight:700;min-width:120px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  min-height:46px;display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:99px;
+  border:1.5px solid var(--night-500);background:transparent;color:var(--text-mid);
+  font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.chip.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
+.chip.on .dot{background:var(--night-950)!important}
+.year{font-family:var(--fd);font-size:36px;font-weight:700;min-width:104px}
 .tl{flex:1}
-.tl-label{font-family:var(--fm);font-size:11px;color:var(--text-low);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:8px}
+.tl-label{font-family:var(--fm);font-size:10.5px;color:var(--text-low);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:7px}
 input[type=range]{
   width:100%;appearance:none;-webkit-appearance:none;height:5px;border-radius:99px;
   background:linear-gradient(90deg,var(--warm-500),var(--indigo-700) 32%,var(--indigo-700) 55%,var(--amber-500) 78%,var(--warm-300));
 }
 input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:34px;height:34px;border-radius:50%;
+  -webkit-appearance:none;width:32px;height:32px;border-radius:50%;
   background:var(--warm-100);border:5px solid var(--night-950);
   box-shadow:0 0 16px rgba(255,246,227,.8);cursor:grab;
 }
-.stat{font-family:var(--fm);font-size:12px;color:var(--text-mid);text-align:right;line-height:1.7}
-.stat b{color:var(--warm-100);font-weight:500;font-size:15px}
+.hint{font-size:13px;color:var(--text-low)}
+
+/* ---------- splash ---------- */
+.splash{
+  position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse 80% 60% at 50% 40%,#10142a 0%,var(--night-950) 80%);
+  display:flex;align-items:center;justify-content:center;transition:opacity .7s,visibility .7s;
+}
+.splash.off{opacity:0;visibility:hidden}
+.splash-in{max-width:860px;padding:32px;text-align:left}
+.kicker{font-family:var(--fm);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber-300)}
+.splash h1{font-family:var(--fd);font-weight:700;font-size:clamp(34px,5.2vw,58px);line-height:1.05;margin:14px 0 16px}
+.splash h1 .lit{color:var(--warm-100);text-shadow:0 0 44px rgba(255,233,184,.4)}
+.splash p{color:var(--text-mid);font-size:16px;max-width:58ch;line-height:1.6}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
+.mode-card{
+  text-align:left;background:var(--night-800);border:1.5px solid var(--night-600);border-radius:16px;
+  padding:18px;cursor:pointer;transition:all .25s;
+}
+.mode-card:hover{border-color:var(--amber-500);transform:translateY(-2px)}
+.mode-card b{font-family:var(--fd);font-size:17px;display:block;margin-bottom:5px}
+.mode-card span{font-size:12.5px;color:var(--text-mid);line-height:1.5;display:block}
+.splash-foot{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.bignum{font-family:var(--fd)}
+.bignum b{font-size:30px;font-weight:700;color:var(--warm-100)}
+.bignum span{font-size:11.5px;color:var(--text-low);display:block}
+.cta{
+  margin-left:auto;min-height:58px;padding:14px 30px;border-radius:99px;border:none;
+  background:var(--amber-500);color:var(--night-950);font-family:var(--fd);font-weight:700;font-size:17px;
+  cursor:pointer;transition:all .25s;box-shadow:0 0 34px rgba(245,158,11,.35);
+}
+.cta:hover{background:var(--amber-300);box-shadow:0 0 54px rgba(245,158,11,.55)}
 </style>
 </head>
 <body>
-<div class="app">
-  <aside>
-    <div class="logo">ZAŽNI <em>MESTO</em></div>
-    <div class="logo-sub">Dirigent modelu · vyber, čo svieti</div>
 
-    <button class="layer-btn on" data-layer="stav">
-      <span class="ic" style="background:linear-gradient(135deg,var(--indigo-700),var(--warm-300))"></span>
-      <span>Stavy<br><small>spí · drieme · prebúdza sa · žije</small></span>
-    </button>
-    <button class="layer-btn" data-layer="typ">
-      <span class="ic" style="background:var(--night-600);color:var(--warm-300);font-size:15px">▦</span>
-      <span>Typológia<br><small>čo tu bývalo — 10 kategórií</small></span>
-    </button>
-    <button class="layer-btn" data-layer="sez">
-      <span class="ic" style="background:repeating-linear-gradient(45deg,var(--night-600),var(--night-600) 3px,var(--risk-500) 3px,var(--risk-500) 5px)"></span>
-      <span>Envirozáťaž<br><small>15 evidovaných záťaží</small></span>
-    </button>
-    <button class="layer-btn" data-layer="own">
-      <span class="ic" style="background:var(--night-600)"><span style="width:16px;height:16px;border-radius:5px;border:2px dashed var(--warm-300);display:block"></span></span>
-      <span>Vlastníctvo<br><small>najväčšia prekážka rozvoja</small></span>
-    </button>
-    <button class="layer-btn" data-layer="cls">
-      <span class="ic" style="background:linear-gradient(90deg,var(--amber-500),var(--indigo-700))"></span>
-      <span>Potenciál A – D<br><small>klasifikácia CABERNET</small></span>
-    </button>
-    <button class="layer-btn" data-layer="vote">
-      <span class="ic" style="background:var(--amber-500);color:var(--night-950);font-size:15px">★</span>
-      <span>Prebuď obra<br><small>hlasuj, čo tu má vyrásť</small></span>
-    </button>
-
-    <div class="legend" id="legend"></div>
-
-    <div class="note">
-      113 brownfieldov · 580 ha<br>
-      dáta: register BF, MIB (aktualizácia 2022)<br>
-      živé čítanie z ArcGIS vrstvy<br><br>
-      <a href="index.html">← dizajn manuál</a>
+<!-- ============ SPLASH ============ -->
+<div class="splash" id="splash">
+  <div class="splash-in">
+    <span class="kicker">ZAŽNI MESTO · interaktívny model Bratislavy · TU-BA</span>
+    <h1>Od nevyužitých území<br><span class="lit">k živým štvrtiam</span></h1>
+    <p>Bratislava má 113 zhasnutých miest. Fyzický model pred tebou ich ukazuje ako tmavé, dýchajúce diery v meste.
+    Preskúmaj ich dáta, príbehy a budúcnosť — a rozsvieť ich vlastným hlasom.</p>
+    <div class="modes">
+      <button class="mode-card" onclick="ignite('pulz')"><b>◉ Pulz</b><span>Sleduj, čo sa deje práve teraz — stavy, záťaže a potenciál celého mesta.</span></button>
+      <button class="mode-card" onclick="ignite('objav')"><b>◎ Objav</b><span>Preskúmaj všetkých 113 území na mape aj v zozname, s detailmi a príbehmi.</span></button>
+      <button class="mode-card" onclick="ignite('vizia')"><b>☀ Vízia</b><span>Potiahni čas, nahliadni do budúcnosti a zahlasuj, čo tu má vyrásť.</span></button>
     </div>
-  </aside>
-
-  <main>
-    <svg id="map" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <pattern id="hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-          <rect width="8" height="8" fill="transparent"/><rect width="2.6" height="8" fill="#E84B8A" opacity=".9"/>
-        </pattern>
-        <radialGradient id="glow"><stop offset="0%" stop-color="#FFE9B8" stop-opacity=".10"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      </defs>
-      <g id="gBase"></g>
-      <g id="gBf"></g>
-      <g id="gLabels"></g>
-    </svg>
-    <div class="hud">MODEL: <b id="hudLayer">STAVY</b> · dotkni sa územia na mape alebo na modeli</div>
-
-    <div class="detail" id="detail">
-      <button class="close" onclick="closeDetail()">✕</button>
-      <div id="detailChips"></div>
-      <h2 id="dName">—</h2>
-      <div class="facts">
-        <div><b id="dHa">—</b>rozloha</div>
-        <div><b id="dMc">—</b>mestská časť</div>
-        <div><b id="dTyp">—</b>pôvodné využitie</div>
-        <div><b id="dOwn">—</b>vlastníctvo</div>
-      </div>
-      <p id="dZamer">—</p>
-      <div class="vote">
-        <h4>★ Prebuď obra — čo tu má vyrásť?</h4>
-        <div class="vote-grid">
-          <button class="vote-btn" onclick="vote(this,'byvanie')">🏠 Bývanie</button>
-          <button class="vote-btn" onclick="vote(this,'park')">🌳 Park</button>
-          <button class="vote-btn" onclick="vote(this,'skola')">🎓 Škola / škôlka</button>
-          <button class="vote-btn" onclick="vote(this,'kultura')">🎭 Kultúra</button>
-        </div>
-        <div class="vote-thanks" id="voteThanks">Obor sa zobudil ✓ Tvoj hlas svieti na modeli.</div>
-      </div>
+    <div class="splash-foot">
+      <div class="bignum"><b>113</b><span>brownfieldov v registri</span></div>
+      <div class="bignum"><b>580 ha</b><span>≈ 800 futbalových ihrísk</span></div>
+      <div class="bignum"><b>15</b><span>s envirozáťažou</span></div>
+      <button class="cta" onclick="ignite('pulz')">☀ Rozsvietiť model →</button>
     </div>
-  </main>
-
-  <div class="bottom">
-    <span class="year" id="yearLabel">2026</span>
-    <div class="tl">
-      <span class="tl-label" id="tlLabel">Časová os — potiahni a rozsvieť budúcnosť (simulácia postupu revitalizácie)</span>
-      <input type="range" id="yearRange" min="1990" max="2035" value="2026" aria-label="Rok">
-    </div>
-    <div class="stat">zhasnutých: <b id="statSleep">113</b> · svieti: <b id="statLive">0</b><br>rozloha v tme: <b id="statHa">580 ha</b></div>
   </div>
 </div>
 
+<!-- ============ TOP BAR ============ -->
+<div class="topbar">
+  <span class="logo">ZAŽNI <em>MESTO</em></span>
+  <div class="tabs">
+    <button class="tab on" data-mode="pulz">PULZ<small>čo sa deje teraz</small></button>
+    <button class="tab" data-mode="objav">OBJAV<small>113 území a príbehov</small></button>
+    <button class="tab" data-mode="vizia">VÍZIA<small>čas a hlasovanie</small></button>
+  </div>
+  <div class="top-right">register BF · MIB 2022 · živé dáta ArcGIS<br><a href="index.html">← dizajn manuál</a></div>
+</div>
+
+<!-- ============ MAPA ============ -->
+<main>
+  <svg id="map" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <pattern id="hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+        <rect width="8" height="8" fill="transparent"/><rect width="2.6" height="8" fill="#E84B8A" opacity=".9"/>
+      </pattern>
+      <radialGradient id="glow"><stop offset="0%" stop-color="#FFE9B8" stop-opacity=".10"/><stop offset="100%" stop-color="transparent"/></radialGradient>
+    </defs>
+    <g id="gBase"></g><g id="gBf"></g><g id="gIcons"></g><g id="gLabels"></g>
+  </svg>
+  <button class="backbtn" id="backMap" onclick="resetZoom()">← celé mesto</button>
+</main>
+
+<!-- ============ PRAVÝ PANEL ============ -->
+<div class="panel">
+  <div class="scrollarea" id="panelContent"></div>
+</div>
+
+<!-- ============ SPODNÁ LIŠTA ============ -->
+<div class="bottom" id="bottomBar"></div>
+
 <script src="data.js"></script>
 <script>
-const SVGNS='http://www.w3.org/2000/svg';
+/* ============================================================
+   ZAŽNI MESTO · dirigent v2 — režimy PULZ / OBJAV / VÍZIA
+   ============================================================ */
+const NS='http://www.w3.org/2000/svg';
 const map=document.getElementById('map');
+const VB={x:0,y:0,w:MAPDATA.W,h:MAPDATA.H};
 map.setAttribute('viewBox',`0 0 ${MAPDATA.W} ${MAPDATA.H}`);
-const gBase=document.getElementById('gBase'),gBf=document.getElementById('gBf'),gLabels=document.getElementById('gLabels');
+const gBase=document.getElementById('gBase'),gBf=document.getElementById('gBf'),
+      gIcons=document.getElementById('gIcons'),gLabels=document.getElementById('gLabels');
 
 const C={
-  sleeping:'#3B4285', temporary:'#17B3A3', awakening:'#F59E0B', alive:'#FFE9B8',
+  sleeping:'#3B4285',plan:'#F59E0B',alive:'#FFE9B8',temporary:'#17B3A3',
   typ:{industry:'#F59E0B',agriculture:'#7BC950',military:'#8B91DD',office:'#5A61B5',culture:'#FF7EB0',
        housing:'#FFE9B8',recreation:'#3FE0CE',sport:'#17B3A3',transport:'#F4CE7A',other:'#6E7291'},
   own:{city:'#FFE9B8',state:'#F4CE7A',private:'#5A61B5',mixed:'#17B3A3',other:'#6E7291'},
@@ -220,189 +304,425 @@ const C={
 };
 const TYPL={industry:'Fabrika',agriculture:'Silo',military:'Kasáreň',office:'Kancelária',culture:'Kino',
   housing:'Dom',recreation:'Rekreácia',sport:'Štadión',transport:'Stanica',other:'Iné'};
-const OWNL={city:'Mesto',state:'Štát',private:'Súkromné',mixed:'Mesto + súkromné',other:'Iné/kombinácia'};
-const OWNDASH={city:'none',state:'2 4',private:'7 5',mixed:'10 4 2 4',other:'1 5'};
+const OWNL={city:'Mesto',state:'Štát',private:'Súkromní vlastníci',mixed:'Mesto + súkromné',other:'Iné / kombinácia'};
+const VOTEC={byvanie:'#FFE9B8',park:'#7BC950',skola:'#F4CE7A',kultura:'#FF7EB0'};
+const VOTEL={byvanie:'🏠 Bývanie',park:'🌳 Park',skola:'🎓 Škola',kultura:'🎭 Kultúra'};
 
-/* podklad: žiara, hranica, Dunaj, mestské svetlá */
+/* ikony typológií (48×48, stroke) */
+const ICONS={
+  industry:'<path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/>',
+  transport:'<rect x="12" y="10" width="24" height="24" rx="7"/><path d="M12 26h24"/><rect x="18" y="15" width="12" height="7" rx="2"/><path d="M14 40l-3 4M34 40l3 4"/>',
+  military:'<path d="M14 40V16l10-8 10 8v24z"/><path d="M14 24h20M24 40v-8"/>',
+  agriculture:'<path d="M10 40V20a7 7 0 0 1 14 0v20z"/><path d="M28 40V24a6 6 0 0 1 12 0v16z"/>',
+  office:'<rect x="12" y="8" width="24" height="32" rx="3"/><path d="M18 15h4M26 15h4M18 22h4M26 22h4M18 29h4M26 29h4"/><path d="M20 40v-5h8v5"/>',
+  culture:'<rect x="10" y="16" width="28" height="24" rx="3"/><path d="M10 24h28"/><path d="M16 16l4 8M24 16l4 8M32 16l4 8"/>',
+  sport:'<path d="M8 34c0-9 7-16 16-16s16 7 16 16"/><path d="M8 34h32"/><circle cx="24" cy="27" r="4"/>',
+  housing:'<path d="M10 24L24 12l14 12"/><path d="M14 22v18h20V22"/><rect x="21" y="30" width="6" height="10"/>',
+  recreation:'<circle cx="24" cy="18" r="9"/><path d="M24 27v13M18 40h12"/>',
+  other:'<rect x="12" y="12" width="24" height="24" rx="7"/><circle cx="24" cy="24" r="3"/>'
+};
+function iconSvg(typ,size){return `<svg width="${size}" height="${size}" viewBox="0 0 48 48">${ICONS[typ]||ICONS.other}</svg>`;}
+
+/* stav odvodený z registra: bez známeho zámeru = spí · so zámerom = prebúdza sa */
+function hasPlan(f){return f.zamer && !/^nezisten/i.test(f.zamer);}
+const N_PLAN=MAPDATA.bf.filter(hasPlan).length, N_SLEEP=113-N_PLAN, N_SEZ=15, N_A=MAPDATA.bf.filter(f=>f.cls==='A').length;
+
+/* hlasy */
+let votes={}; try{votes=JSON.parse(localStorage.getItem('zazni-votes')||'{}');}catch(e){}
+function saveVotes(){try{localStorage.setItem('zazni-votes',JSON.stringify(votes));}catch(e){}}
+
+/* ---------- podklad ---------- */
 (function(){
-  const glow=document.createElementNS(SVGNS,'ellipse');
+  const glow=document.createElementNS(NS,'ellipse');
   glow.setAttribute('cx',MAPDATA.W*.45);glow.setAttribute('cy',MAPDATA.H*.42);
   glow.setAttribute('rx',MAPDATA.W*.42);glow.setAttribute('ry',MAPDATA.H*.3);
   glow.setAttribute('fill','url(#glow)');gBase.appendChild(glow);
-
-  const b=document.createElementNS(SVGNS,'path');
-  b.setAttribute('d',MAPDATA.boundary);
-  b.setAttribute('fill','#0E1220');b.setAttribute('stroke','#2A3150');b.setAttribute('stroke-width','2');
-  gBase.appendChild(b);
-
+  const b=document.createElementNS(NS,'path');
+  b.setAttribute('d',MAPDATA.boundary);b.setAttribute('fill','#0E1220');
+  b.setAttribute('stroke','#2A3150');b.setAttribute('stroke-width','2');gBase.appendChild(b);
   MAPDATA.danube.forEach(d=>{
-    const p=document.createElementNS(SVGNS,'path');
-    p.setAttribute('d',d);p.setAttribute('fill','none');
-    p.setAttribute('stroke','#232A4A');p.setAttribute('stroke-width','13');p.setAttribute('stroke-linecap','round');
-    p.setAttribute('opacity','.9');gBase.appendChild(p);
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#232A4A');
+    p.setAttribute('stroke-width','13');p.setAttribute('stroke-linecap','round');gBase.appendChild(p);
   });
-
-  /* mestské svetlá — bodky vnútri hranice */
-  let inside=null;
-  try{ inside=(x,y)=>b.isPointInFill(new DOMPoint(x,y)); }catch(e){ inside=()=>true; }
-  let seed=42; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  let inside;try{inside=(x,y)=>b.isPointInFill(new DOMPoint(x,y));}catch(e){inside=()=>true;}
+  let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   let placed=0,tries=0;
-  while(placed<520&&tries<6000){
+  while(placed<480&&tries<6500){
     tries++;
     const x=rnd()*MAPDATA.W,y=rnd()*MAPDATA.H;
-    /* hustota vyššia pri centre (Staré Mesto ~ 46 % šírky, 42 % výšky) */
     const dc=Math.hypot((x-MAPDATA.W*.46)/MAPDATA.W,(y-MAPDATA.H*.40)/MAPDATA.H);
     if(rnd()<dc*1.9)continue;
     if(!inside(x,y))continue;
-    const c=document.createElementNS(SVGNS,'circle');
+    const c=document.createElementNS(NS,'circle');
     c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));
-    c.setAttribute('r',(0.9+rnd()*1.9).toFixed(1));
-    c.setAttribute('fill','#FFE9B8');c.setAttribute('opacity',(0.06+rnd()*.3).toFixed(2));
+    c.setAttribute('r',(0.9+rnd()*1.8).toFixed(1));
+    c.setAttribute('fill','#FFE9B8');c.setAttribute('opacity',(0.06+rnd()*.28).toFixed(2));
     gBase.appendChild(c);placed++;
   }
 })();
 
-/* BF polygóny */
+/* ---------- BF polygóny ---------- */
 const shapes=[];
 MAPDATA.bf.forEach((f,i)=>{
-  const p=document.createElementNS(SVGNS,'path');
+  const p=document.createElementNS(NS,'path');
   p.setAttribute('d',f.d);p.setAttribute('class','bf-shape');
-  p.dataset.i=i;
-  p.addEventListener('click',()=>openDetail(i));
+  p.addEventListener('click',()=>selectBF(i,true));
   gBf.appendChild(p);
-  /* hatch overlay pre envirozáťaž */
   let hz=null;
   if(f.sez){
-    hz=document.createElementNS(SVGNS,'path');
+    hz=document.createElementNS(NS,'path');
     hz.setAttribute('d',f.d);hz.setAttribute('fill','url(#hatch)');hz.setAttribute('pointer-events','none');
     gBf.appendChild(hz);
   }
-  shapes.push({p,hz,f,vote:null});
+  shapes.push({p,hz,f,bbox:null});
 });
+/* bboxy po vložení do DOM */
+requestAnimationFrame(()=>shapes.forEach(s=>{try{s.bbox=s.p.getBBox();}catch(e){}}));
 
+/* ikony obrov na najväčších územiach (ha ≥ 8) — kanál typológie priamo na mape */
+MAPDATA.bf.forEach((f,i)=>{
+  if(f.ha<8)return;
+  const g=document.createElementNS(NS,'g');
+  g.setAttribute('class','map-icon');
+  const s=26;
+  g.innerHTML=`<g transform="translate(${f.cx-s/2},${f.cy-s/2}) scale(${s/48})" stroke="#FFE9B8" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[f.typ]||ICONS.other}</g>`;
+  gIcons.appendChild(g);
+});
 /* menovky známych zón */
-const FAMOUS=['ISTROCHEM VAJNORSKÁ','MATADOR','FILIÁLKA','NOVÉ LIDO','ZÓNA CHALUPKOVA','NEMOCNICA RÁZSOCHY','BÝVALÁ RAKETOVÁ ZÁKLADŇA','JANÍKOV DVOR'];
-MAPDATA.zones.filter(z=>FAMOUS.includes(z.n)).forEach(z=>{
-  const t=document.createElementNS(SVGNS,'text');
-  t.setAttribute('x',z.cx+10);t.setAttribute('y',z.cy-8);t.setAttribute('class','zone-label');
+['ISTROCHEM VAJNORSKÁ','MATADOR','FILIÁLKA','NOVÉ LIDO','ZÓNA CHALUPKOVA','NEMOCNICA RÁZSOCHY','JANÍKOV DVOR'].forEach(nm=>{
+  const z=MAPDATA.zones.find(z=>z.n===nm);if(!z)return;
+  const t=document.createElementNS(NS,'text');
+  t.setAttribute('x',z.cx+12);t.setAttribute('y',z.cy-9);t.setAttribute('class','zone-label');
   t.textContent=z.n;gLabels.appendChild(t);
 });
 
-/* --------- vrstvy --------- */
-let layer='stav', year=2026;
-/* deterministický „rok prebudenia" pre simuláciu (v produkcii: fázy registra) */
-function wakeYear(f,i){ let h=0; for(const ch of f.n) h=(h*31+ch.charCodeAt(0))%97; return 2024+((h+i)%12); }
+/* ---------- stavový stroj ---------- */
+let mode='pulz', layer='stav', year=2026, selIdx=null, filters=new Set(), query='';
 
-const LEGENDS={
-  stav:[['spí (v registri)',C.sleeping],['drieme — dočasné využitie',C.temporary],['prebúdza sa — revitalizácia',C.awakening],['žije — rozsvietené',C.alive]],
-  typ:Object.keys(TYPL).map(k=>[TYPL[k],C.typ[k]]),
-  sez:[['s envirozáťažou (15)','hatch'],['bez záťaže (98)',C.sleeping]],
-  own:Object.keys(OWNL).map(k=>[OWNL[k],C.own[k]]),
-  cls:[['A — najvyšší potenciál',C.cls.A],['B',C.cls.B],['C',C.cls.C],['D — rezerva',C.cls.D]],
-  vote:[['🏠 bývanie',C.alive],['🌳 park','#7BC950'],['🎓 škola',C.typ.transport],['🎭 kultúra',C.typ.culture]]
-};
-const VOTEC={byvanie:'#FFE9B8',park:'#7BC950',skola:'#F4CE7A',kultura:'#FF7EB0'};
-
-function renderLegend(){
-  const el=document.getElementById('legend');
-  el.innerHTML='<h4>Legenda</h4>'+LEGENDS[layer].map(([lab,col])=>{
-    const sw=col==='hatch'
-      ?`<span class="sw" style="background:repeating-linear-gradient(45deg,${C.sleeping},${C.sleeping} 3px,#E84B8A 3px,#E84B8A 5px)"></span>`
-      :`<span class="sw" style="background:${col}"></span>`;
-    return `<div class="li">${sw}${lab}</div>`;
-  }).join('');
-}
+function wakeYear(f,i){let h=0;for(const ch of f.n)h=(h*31+ch.charCodeAt(0))%97;return 2024+((h+i)%12);}
 
 function paint(){
-  let sleep=0,live=0,haDark=0;
-  shapes.forEach(({p,hz,f,vote},i)=>{
-    let fill=C.sleeping, op=.85, pulse=false, dash='none', sw=1.2, stroke='#8B91DD';
-    const wy=wakeYear(f,i);
-    const awake=(layer==='stav'||layer==='vote') && year>=wy;
-    const awakening=(layer==='stav'||layer==='vote') && year>=wy-3 && year<wy;
-
-    if(layer==='stav'||layer==='vote'){
-      if(year<1998){ fill=C.alive; op=.9; }               /* história: ešte žilo */
-      else if(awake){ fill=C.alive; op=.95; }
-      else if(awakening){ fill=C.awakening; op=.9; }
-      else { fill=C.sleeping; pulse=true; }
-      if(layer==='vote'&&vote){ fill=VOTEC[vote]; op=1; pulse=false; }
+  shapes.forEach(({p,hz,f},i)=>{
+    let fill=C.sleeping,op=.85,pulse=false,dash='none',sw=1.2,stroke='#8B91DD';
+    if(mode==='vizia'){
+      const wy=wakeYear(f,i);
+      if(year<1998){fill=C.alive;op=.9;}
+      else if(year>=wy){fill=C.alive;op=.95;}
+      else if(year>=wy-3){fill=C.plan;op=.9;}
+      else{fill=C.sleeping;pulse=true;}
+      if(votes[i]){fill=VOTEC[votes[i]];op=1;pulse=false;}
     }
-    else if(layer==='typ'){ fill=C.typ[f.typ]; op=.88; }
-    else if(layer==='sez'){ fill=C.sleeping; op=f.sez?1:.45; pulse=!!f.sez; }
-    else if(layer==='own'){ fill=C.own[f.own]; op=.85; dash=OWNDASH[f.own]; sw=2; stroke='#FFF6E3'; }
-    else if(layer==='cls'){ fill=C.cls[f.cls]||C.sleeping; op=.9; }
-
+    else if(mode==='objav'){
+      const match=matchesFilter(f);
+      fill=hasPlan(f)?C.plan:C.sleeping;
+      op=match?(selIdx===i?1:.8):.18;
+      pulse=match&&!hasPlan(f)&&selIdx==null;
+    }
+    else{ /* pulz + tematické vrstvy */
+      if(layer==='stav'){fill=hasPlan(f)?C.plan:C.sleeping;pulse=!hasPlan(f);op=hasPlan(f)?.9:.85;}
+      else if(layer==='typ'){fill=C.typ[f.typ];op=.88;}
+      else if(layer==='sez'){fill=C.sleeping;op=f.sez?1:.4;pulse=!!f.sez;}
+      else if(layer==='own'){fill=C.own[f.own];op=.85;sw=2;stroke='#FFF6E3';
+        dash={city:'none',state:'2 4',private:'7 5',mixed:'10 4 2 4',other:'1 5'}[f.own];}
+      else if(layer==='cls'){fill=C.cls[f.cls]||C.sleeping;op=.9;}
+    }
     p.setAttribute('fill',fill);p.setAttribute('opacity',op);
-    p.setAttribute('stroke',stroke);p.setAttribute('stroke-width',sw);
-    p.setAttribute('stroke-dasharray',dash);
+    p.setAttribute('stroke',stroke);p.setAttribute('stroke-width',sw);p.setAttribute('stroke-dasharray',dash);
     p.classList.toggle('pulse',pulse);
-    if(hz)hz.setAttribute('opacity',layer==='sez'?1:(layer==='stav'?.55:0));
-
-    const dark=(layer==='stav'||layer==='vote') ? (!awake&&year>=1998) : true;
-    if(dark&&(layer==='stav'||layer==='vote')){sleep++;haDark+=f.ha}else if(layer==='stav'||layer==='vote'){live++}
+    p.classList.toggle('sel',selIdx===i);
+    if(hz)hz.setAttribute('opacity',(mode==='pulz'&&layer==='sez')?1:((mode==='pulz'&&layer==='stav')||mode==='objav'?.5:0));
   });
-  if(layer==='stav'||layer==='vote'){
-    document.getElementById('statSleep').textContent=sleep;
-    document.getElementById('statLive').textContent=live;
-    document.getElementById('statHa').textContent=Math.round(haDark)+' ha';
+  gIcons.style.opacity=(mode==='pulz'&&(layer==='stav'||layer==='typ'))||mode==='objav'?1:0;
+}
+
+/* ---------- zoom ---------- */
+let vbAnim=null;
+function animateVB(to){
+  if(vbAnim)cancelAnimationFrame(vbAnim);
+  const from={...VB},t0=performance.now(),dur=700;
+  (function step(t){
+    const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);
+    ['x','y','w','h'].forEach(a=>VB[a]=from[a]+(to[a]-from[a])*e);
+    map.setAttribute('viewBox',`${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
+    if(k<1)vbAnim=requestAnimationFrame(step);
+  })(t0);
+}
+function zoomTo(i){
+  const b=shapes[i].bbox;if(!b)return;
+  const pad=Math.max(b.width,b.height)*2.2+60;
+  animateVB({x:b.x+b.width/2-pad/2,y:b.y+b.height/2-pad/2,w:pad,h:pad});
+  document.getElementById('backMap').classList.add('vis');
+}
+function resetZoom(){
+  animateVB({x:0,y:0,w:MAPDATA.W,h:MAPDATA.H});
+  document.getElementById('backMap').classList.remove('vis');
+  if(mode==='objav'){selIdx=null;renderPanel();paint();}
+}
+
+/* ---------- filtre (OBJAV) ---------- */
+function matchesFilter(f){
+  if(query&&!(f.n+' '+f.mc).toLowerCase().includes(query.toLowerCase()))return false;
+  if(filters.has('sez')&&!f.sez)return false;
+  if(filters.has('city')&&f.own!=='city'&&f.own!=='mixed')return false;
+  if(filters.has('big')&&f.ha<5)return false;
+  if(filters.has('A')&&f.cls!=='A')return false;
+  return true;
+}
+
+/* ---------- panel ---------- */
+function renderPanel(){
+  const el=document.getElementById('panelContent');
+  if(mode==='pulz')el.innerHTML=panelPulz();
+  else if(mode==='objav')el.innerHTML=(selIdx==null)?panelList():panelDetail(selIdx);
+  else el.innerHTML=panelVizia();
+  bindPanel();
+}
+
+function donutSvg(){
+  const R=52,CIRC=2*Math.PI*R;
+  const segs=[[N_SLEEP,C.sleeping],[N_PLAN,C.plan]];
+  let off=0,paths='';
+  segs.forEach(([n,col])=>{
+    const len=n/113*CIRC;
+    paths+=`<circle cx="64" cy="64" r="${R}" fill="none" stroke="${col}" stroke-width="14"
+      stroke-dasharray="${len-3} ${CIRC-len+3}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;
+    off+=len;
+  });
+  return `<div style="position:relative;width:128px;height:128px;flex:0 0 auto">
+    <svg width="128" height="128" style="transform:rotate(-90deg)">${paths}</svg>
+    <div class="donut-num"><b>113</b><span>ÚZEMÍ</span></div></div>`;
+}
+
+function panelPulz(){
+  const LEG={
+    stav:[['spí — bez známeho zámeru ('+N_SLEEP+')',C.sleeping],['prebúdza sa — so zámerom ('+N_PLAN+')',C.plan]],
+    typ:Object.keys(TYPL).map(k=>[TYPL[k],C.typ[k]]),
+    sez:[['s envirozáťažou (15)','#E84B8A'],['bez záťaže (98)',C.sleeping]],
+    own:Object.keys(OWNL).map(k=>[OWNL[k],C.own[k]]),
+    cls:[['A — najvyšší potenciál (51)',C.cls.A],['B (48)',C.cls.B],['C (11)',C.cls.C],['D — rezerva (3)',C.cls.D]]
+  }[layer];
+  return `<div class="pcard">
+    <h3>Pulz mesta</h3><div class="sub">živý prehľad registra brownfieldov</div>
+    <div class="donut-wrap">${donutSvg()}
+      <div class="dlg">
+        <div class="li"><span class="sw" style="background:${C.sleeping}"></span>${N_SLEEP} spí</div>
+        <div class="li"><span class="sw" style="background:${C.plan}"></span>${N_PLAN} so zámerom</div>
+        <div class="li" style="color:var(--text-low);font-size:11.5px">zámer = známy investičný<br>alebo územný plán</div>
+      </div>
+    </div>
+    <div class="statrows">
+      <div><b>580 ha</b>celková rozloha</div>
+      <div><b>15</b>s envirozáťažou</div>
+      <div><b>${N_A}</b>potenciál A</div>
+      <div><b>13</b>území nad 8 ha</div>
+    </div>
+  </div>
+  <div class="pcard legend"><h4>Legenda — ${ {stav:'stavy',typ:'typológia',sez:'envirozáťaž',own:'vlastníctvo',cls:'potenciál'}[layer] }</h4>
+    ${LEG.map(([l,c])=>`<div class="li"><span class="sw" style="background:${c}"></span>${l}</div>`).join('')}
+    ${layer==='own'?'<div class="li" style="font-size:11px;color:var(--text-low)">obrys: plný = mesto · prerušovaný = súkromné</div>':''}
+  </div>`;
+}
+
+function panelList(){
+  const list=MAPDATA.bf.map((f,i)=>({f,i})).filter(({f})=>matchesFilter(f))
+    .sort((a,b)=>b.f.ha-a.f.ha);
+  return `<div class="pcard" style="display:flex;flex-direction:column;min-height:0;flex:1">
+    <h3>Všetkých 113 území</h3><div class="sub">klikni na kartu alebo priamo do mapy</div>
+    <div class="search">🔍<input id="q" placeholder="Hľadaj názov alebo mestskú časť…" value="${query.replace(/"/g,'&quot;')}"></div>
+    <div class="fchips">
+      <button class="fchip ${filters.has('sez')?'on':''}" data-f="sez">⚠ Kontaminované</button>
+      <button class="fchip ${filters.has('city')?'on':''}" data-f="city">Mestské</button>
+      <button class="fchip ${filters.has('big')?'on':''}" data-f="big">Veľké 5+ ha</button>
+      <button class="fchip ${filters.has('A')?'on':''}" data-f="A">Potenciál A</button>
+    </div>
+    <div class="listcount">zobrazených ${list.length} z 113 · zoradené podľa rozlohy</div>
+    <div class="bflist" style="overflow-y:auto;min-height:0">
+      ${list.map(({f,i})=>`
+      <button class="bfitem ${selIdx===i?'sel':''}" data-i="${i}">
+        <span class="av">${iconSvg(f.typ,26)}</span>
+        <span style="min-width:0">
+          <span class="nm">${f.n||'Bez názvu'}</span>
+          <span class="meta">${f.mc} · ${f.ha} ha · ${TYPL[f.typ]}</span>
+          <span class="tags">
+            ${f.sez?'<span class="tagm risk">envirozáťaž</span>':''}
+            ${(f.own==='city'||f.own==='mixed')?'<span class="tagm city">mestské</span>':''}
+            ${f.cls==='A'?'<span class="tagm">potenciál A</span>':''}
+          </span>
+        </span>
+      </button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function panelDetail(i){
+  const f=MAPDATA.bf[i];
+  const voted=votes[i];
+  return `<div class="pcard">
+    <button class="fchip" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
+    <div class="obor-av">
+      <div class="obor-face ${voted?'awake':''}" id="oborFace">
+        ${iconSvg(f.typ,34)}
+        <span class="eyes"><i></i><i></i></span>
+      </div>
+      <div>
+        <span class="dchip">${hasPlan(f)?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${f.cls||'—'}</span>
+        <div class="dtitle">${f.n||'Bez názvu'}</div>
+        <div class="dsub">${f.mc} · obor ${TYPL[f.typ]}</div>
+      </div>
+    </div>
+    <div class="frows">
+      <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[f.own]}</span></div>
+      <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${f.sez?'var(--risk-300)':'var(--text-hi)'}">${f.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
+      <div class="frow"><span class="k">Súčasný stav</span><span class="v">${hasPlan(f)?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
+      <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[f.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[f.cls]||'—'}</span></div>
+      <div class="frow"><span class="k">Rozloha</span><span class="v">${f.ha} ha</span></div>
+    </div>
+    <div class="mini-tl">
+      <div><b>MINULOSŤ</b><span>${f.typLabel||TYPL[f.typ]}</span></div>
+      <div class="hot"><b>DNES</b><span>${hasPlan(f)?'zámer v príprave':'spí v registri'}</span></div>
+      <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
+    </div>
+    <div class="dzamer">${f.zamer&&hasPlan(f)?('Známy zámer: '+f.zamer):'Bez známeho zámeru — presne pre takéto miesta má zmysel dočasné využitie: kultúra, komunita, šport.'}</div>
+    <h3 style="font-size:15px;margin-bottom:10px">★ Prebuď obra — čo tu má vyrásť?</h3>
+    <div class="vote-grid">
+      ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
+    </div>
+    <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Obor sa zobudil ✓ Tvoj hlas svieti vo Vízii.</div>
+  </div>`;
+}
+
+function panelVizia(){
+  const counts={byvanie:0,park:0,skola:0,kultura:0};
+  Object.values(votes).forEach(v=>{if(counts[v]!=null)counts[v]++});
+  const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
+  const nvotes=Object.values(votes).length;
+  return `<div class="pcard">
+    <h3>Hlas verejnosti</h3><div class="sub">${nvotes} prebudených obrov na tomto zariadení</div>
+    ${Object.keys(VOTEL).map(k=>`
+      <div class="rbar">
+        <div class="lbl"><span>${VOTEL[k]}</span><span>${counts[k]}</span></div>
+        <div class="track"><div class="fill" style="width:${Math.round(counts[k]/total*100)}%;background:${VOTEC[k]}"></div></div>
+      </div>`).join('')}
+    <p style="font-size:12px;color:var(--text-low);margin-top:12px;line-height:1.6">
+      Expozícia zbiera preferencie návštevníkov ako participatívny vstup pre MIB —
+      1. fáza revitalizácie podľa Koncepcie je práve participácia.</p>
+  </div>
+  <div class="pcard legend"><h4>Časová os</h4>
+    <div class="li"><span class="sw" style="background:${C.alive}"></span>žije / rozsvietené</div>
+    <div class="li"><span class="sw" style="background:${C.plan}"></span>prebúdza sa</div>
+    <div class="li"><span class="sw" style="background:${C.sleeping}"></span>spí</div>
+    <div class="li" style="font-size:11px;color:var(--text-low)">1990 → 1998: svetlá zhasínajú (deindustrializácia)<br>2024 → 2035: simulácia postupného prebúdzania</div>
+  </div>`;
+}
+
+/* ---------- spodná lišta ---------- */
+function renderBottom(){
+  const el=document.getElementById('bottomBar');
+  if(mode==='pulz'){
+    el.innerHTML=`<span class="hint" style="flex:0 0 auto">Vrstva:</span><div class="chips">
+      <button class="chip ${layer==='stav'?'on':''}" data-l="stav"><span class="dot" style="background:${C.plan}"></span>Stavy</button>
+      <button class="chip ${layer==='typ'?'on':''}" data-l="typ"><span class="dot" style="background:${C.typ.industry}"></span>Typológia</button>
+      <button class="chip ${layer==='sez'?'on':''}" data-l="sez"><span class="dot" style="background:#E84B8A"></span>Envirozáťaž</button>
+      <button class="chip ${layer==='own'?'on':''}" data-l="own"><span class="dot" style="background:${C.own.city}"></span>Vlastníctvo</button>
+      <button class="chip ${layer==='cls'?'on':''}" data-l="cls"><span class="dot" style="background:${C.cls.A}"></span>Potenciál</button>
+    </div>`;
+    el.querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>{layer=b.dataset.l;renderBottom();renderPanel();paint();}));
+  }
+  else if(mode==='objav'){
+    el.innerHTML=`<span class="hint">Klikni do mapy alebo vyber územie zo zoznamu vpravo — mapa priblíži a model nasvieti vybrané územie.</span>`;
+  }
+  else{
+    el.innerHTML=`<span class="year" id="yearLabel">${year}</span>
+      <div class="tl"><span class="tl-label">Potiahni čas — minulosť aj budúcnosť mesta</span>
+      <input type="range" id="yearRange" min="1990" max="2035" value="${year}" aria-label="Rok"></div>`;
+    const r=el.querySelector('#yearRange');
+    r.addEventListener('input',()=>{
+      const ny=+r.value;
+      if(ny!==year){sndTick();}
+      year=ny;el.querySelector('#yearLabel').textContent=year;paint();
+    });
   }
 }
 
-document.querySelectorAll('.layer-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.layer-btn').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');layer=b.dataset.layer;
-  document.getElementById('hudLayer').textContent=b.textContent.trim().split('\n')[0].toUpperCase();
-  renderLegend();paint();
-}));
-
-const yr=document.getElementById('yearRange');
-yr.addEventListener('input',()=>{year=+yr.value;document.getElementById('yearLabel').textContent=year;paint();});
-
-/* --------- detail --------- */
-let selIdx=null;
-function openDetail(i){
-  if(selIdx!=null)shapes[selIdx].p.classList.remove('sel');
-  selIdx=i;shapes[i].p.classList.add('sel');
-  const f=shapes[i].f;
-  document.getElementById('dName').textContent=f.n||'Bez názvu';
-  document.getElementById('dHa').textContent=f.ha+' ha';
-  document.getElementById('dMc').textContent=f.mc||'—';
-  document.getElementById('dTyp').textContent=TYPL[f.typ]+' · '+(f.typLabel||'');
-  document.getElementById('dOwn').textContent=OWNL[f.own];
-  document.getElementById('dZamer').textContent=f.zamer?('Známy zámer: '+f.zamer):'Bez známeho zámeru — presne pre takéto miesta má zmysel dočasné využitie.';
-  const chips=[];
-  chips.push(`<span class="chip" style="color:#8B91DD;border-color:#3B4285">😴 SPÍ · klasifikácia ${f.cls||'—'}</span>`);
-  if(f.sez)chips.push('<span class="chip" style="color:#FF7EB0;border-color:#E84B8A">⚠ envirozáťaž</span>');
-  document.getElementById('detailChips').innerHTML=chips.join('');
-  document.getElementById('voteThanks').style.display='none';
-  document.getElementById('detail').classList.add('open');
-}
-function closeDetail(){
-  document.getElementById('detail').classList.remove('open');
-  if(selIdx!=null)shapes[selIdx].p.classList.remove('sel');selIdx=null;
-}
-function vote(btn,what){
-  if(selIdx==null)return;
-  shapes[selIdx].vote=what;
-  document.getElementById('voteThanks').style.display='block';
-  /* zvukový chime — koncept zvukovej identity */
-  try{
-    const ac=new (window.AudioContext||window.webkitAudioContext)();
-    [523.25,659.25,783.99].forEach((fq,i)=>{
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.frequency.value=fq;o.type='sine';
-      g.gain.setValueAtTime(0,ac.currentTime+i*.09);
-      g.gain.linearRampToValueAtTime(.12,ac.currentTime+i*.09+.02);
-      g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+i*.09+1.1);
-      o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*.09);o.stop(ac.currentTime+i*.09+1.2);
-    });
-  }catch(e){}
-  if(layer==='vote')paint();
-  else{ document.querySelector('[data-layer=vote]').click(); }
+/* ---------- interakcie ---------- */
+function bindPanel(){
+  const q=document.getElementById('q');
+  if(q){q.addEventListener('input',()=>{query=q.value;
+    /* re-render len zoznam, zachovaj focus */
+    const val=q.value,pos=q.selectionStart;
+    renderPanel();
+    const q2=document.getElementById('q');q2.focus();q2.setSelectionRange(pos,pos);
+    paint();
+  });}
+  document.querySelectorAll('[data-f]').forEach(b=>b.addEventListener('click',()=>{
+    const f=b.dataset.f;filters.has(f)?filters.delete(f):filters.add(f);
+    renderPanel();paint();
+  }));
+  document.querySelectorAll('[data-i]').forEach(b=>b.addEventListener('click',()=>selectBF(+b.dataset.i,true)));
+  const back=document.getElementById('backList');
+  if(back)back.addEventListener('click',()=>{selIdx=null;resetZoom();renderPanel();paint();});
+  document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{
+    if(selIdx==null)return;
+    votes[selIdx]=b.dataset.v;saveVotes();
+    document.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('picked'));
+    b.classList.add('picked');
+    const face=document.getElementById('oborFace');if(face)face.classList.add('awake');
+    const th=document.getElementById('voteThanks');if(th)th.style.display='block';
+    sndChime();paint();
+  }));
 }
 
-renderLegend();paint();
+function selectBF(i,zoom){
+  if(mode!=='objav'){setMode('objav',false);}
+  selIdx=i;renderPanel();paint();
+  if(zoom)zoomTo(i);
+}
+
+function setMode(m,rz=true){
+  mode=m;selIdx=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
+  if(rz)resetZoom();
+  renderPanel();renderBottom();paint();
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setMode(t.dataset.mode)));
+
+/* ---------- splash + ignite ---------- */
+function ignite(m){
+  document.getElementById('splash').classList.add('off');
+  /* zábleskové rozsvietenie: všetko žije → stagger návrat do stavov */
+  shapes.forEach(({p},i)=>{
+    p.style.transition='none';p.setAttribute('fill',C.alive);p.setAttribute('opacity','.95');
+    setTimeout(()=>{p.style.transition='fill .9s, opacity .9s';},30);
+  });
+  sndChime();
+  setTimeout(()=>setMode(m),650);
+}
+
+/* ---------- zvuky ---------- */
+let _ac;function ac(){return _ac||(_ac=new (window.AudioContext||window.webkitAudioContext)());}
+function sndChime(){
+  try{const a=ac();
+  [523.25,659.25,783.99].forEach((fq,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.frequency.value=fq;o.type='sine';
+    g.gain.setValueAtTime(0,a.currentTime+i*.09);
+    g.gain.linearRampToValueAtTime(.13,a.currentTime+i*.09+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+i*.09+1.15);
+    o.connect(g).connect(a.destination);o.start(a.currentTime+i*.09);o.stop(a.currentTime+i*.09+1.25);
+  });}catch(e){}
+}
+function sndTick(){
+  try{const a=ac(),o=a.createOscillator(),g=a.createGain();
+  o.frequency.setValueAtTime(1400,a.currentTime);
+  o.frequency.exponentialRampToValueAtTime(700,a.currentTime+.04);
+  g.gain.setValueAtTime(.1,a.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.05);
+  o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.06);}catch(e){}
+}
+
+/* init */
+renderPanel();renderBottom();paint();
 </script>
 </body>
 </html>
