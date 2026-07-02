@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
 :root{
   --night-950:#070912;--night-900:#0B0E1A;--night-800:#131729;--night-700:#1C2138;
@@ -16,103 +18,125 @@
   --amber-500:#F59E0B;--amber-300:#FFB94A;
   --warm-100:#FFF6E3;--warm-300:#FFE9B8;--warm-500:#F4CE7A;
   --risk-500:#E84B8A;--risk-300:#FF7EB0;
-  --text-hi:#F4F2FF;--text-mid:#A9ACC8;--text-low:#6E7291;
+  --text-hi:#F4F2FF;--text-mid:#B4B7D4;--text-low:#767A9C;
   --fd:'Space Grotesk',sans-serif;--ft:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --glass:rgba(15,19,38,.58);
+  --glass-hi:rgba(24,29,55,.72);
+  --glass-border:rgba(139,145,221,.20);
+  --glass-shadow:0 12px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--night-950);color:var(--text-hi);font-family:var(--ft);overflow:hidden;height:100vh}
-button{font-family:inherit;color:inherit}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+.glass{
+  background:var(--glass);backdrop-filter:blur(26px) saturate(140%);-webkit-backdrop-filter:blur(26px) saturate(140%);
+  border:1px solid var(--glass-border);border-radius:22px;box-shadow:var(--glass-shadow);
+}
 
-/* ---------- top bar ---------- */
+/* ============ top nav ============ */
 .topbar{
-  position:fixed;top:0;left:0;right:0;height:64px;z-index:30;
-  display:flex;align-items:center;gap:28px;padding:0 24px;
-  background:rgba(7,9,18,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--night-700);
+  position:fixed;top:0;left:0;right:0;height:68px;z-index:30;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 26px;
+  background:linear-gradient(rgba(7,9,18,.85),rgba(7,9,18,.35) 80%,transparent);pointer-events:none;
 }
-.logo{font-family:var(--fd);font-weight:700;font-size:18px;letter-spacing:.03em}
+.topbar>*{pointer-events:auto}
+.logo{display:flex;align-items:center;gap:12px;font-family:var(--fd);font-weight:700;font-size:16px;line-height:1.1;letter-spacing:.04em}
 .logo em{font-style:normal;color:var(--amber-300)}
-.tabs{display:flex;gap:6px;margin-left:8px}
+.tabs{display:flex;gap:8px;justify-self:center}
 .tab{
-  min-height:44px;padding:8px 22px;border-radius:12px;border:1.5px solid transparent;
-  background:transparent;font-family:var(--fd);font-weight:600;font-size:15px;letter-spacing:.08em;
-  color:var(--text-mid);cursor:pointer;transition:all .25s;
+  position:relative;display:flex;align-items:center;gap:9px;min-height:48px;padding:10px 20px;
+  font-family:var(--fd);font-weight:600;font-size:14.5px;letter-spacing:.14em;color:var(--text-mid);transition:color .25s;
 }
-.tab.on{background:var(--night-700);border-color:var(--amber-500);color:var(--warm-100);
-  box-shadow:0 0 22px rgba(245,158,11,.18)}
-.tab small{display:block;font-family:var(--ft);font-weight:400;font-size:10.5px;letter-spacing:0;color:var(--text-low)}
-.top-right{margin-left:auto;font-family:var(--fm);font-size:11px;color:var(--text-low);text-align:right;line-height:1.5}
-.top-right a{color:var(--indigo-300)}
+.tab svg{stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.tab::after{
+  content:'';position:absolute;left:20px;right:20px;bottom:4px;height:2.5px;border-radius:99px;
+  background:var(--amber-500);transform:scaleX(0);transition:transform .3s;box-shadow:0 0 12px rgba(245,158,11,.8);
+}
+.tab.on{color:var(--warm-100)}
+.tab.on::after{transform:scaleX(1)}
+.tab:hover{color:var(--text-hi)}
+.about{justify-self:end;display:flex;align-items:center;gap:8px;color:var(--text-mid);
+  font-family:var(--fd);font-weight:600;font-size:13px;letter-spacing:.14em;text-decoration:none;
+  min-height:48px;padding:10px 16px;border-radius:14px;transition:all .25s}
+.about:hover{color:var(--warm-100);background:rgba(255,255,255,.05)}
 
-/* ---------- mapa ---------- */
-main{position:fixed;inset:64px 0 0 0;background:radial-gradient(ellipse 70% 55% at 42% 46%,#10142a 0%,var(--night-950) 75%)}
-main svg{width:100%;height:100%;display:block}
-.bf-shape{cursor:pointer;transition:fill .6s,opacity .6s}
-.bf-shape:hover{stroke:var(--warm-100);stroke-width:2.5}
-.bf-shape.sel{stroke:var(--warm-100)!important;stroke-width:3!important;filter:drop-shadow(0 0 16px rgba(255,246,227,.75))}
-@keyframes pulseSleep{0%,100%{opacity:.5}50%{opacity:.95}}
-.pulse{animation:pulseSleep 4s ease-in-out infinite}
-.zone-label{font-family:var(--fm);font-size:11px;fill:var(--text-mid);letter-spacing:.1em;pointer-events:none}
-.map-icon{pointer-events:none;opacity:.85}
+/* ============ mapa ============ */
+#map{position:fixed;inset:0}
+#map canvas{outline:none}
+.maplibregl-ctrl-top-left{top:82px;left:16px}
+.maplibregl-ctrl-group{
+  background:var(--glass)!important;backdrop-filter:blur(20px);border:1px solid var(--glass-border);
+  border-radius:14px!important;box-shadow:var(--glass-shadow)!important;overflow:hidden;
+}
+.maplibregl-ctrl-group button{width:44px!important;height:44px!important;background:transparent!important}
+.maplibregl-ctrl-group button+button{border-top:1px solid var(--glass-border)!important}
+.maplibregl-ctrl button .maplibregl-ctrl-icon{filter:invert(.85) hue-rotate(180deg)}
+.maplibregl-ctrl-attrib{background:rgba(7,9,18,.6)!important;color:var(--text-low)!important;font-size:10px!important;border-radius:8px}
+.maplibregl-ctrl-attrib a{color:var(--text-low)!important}
 .backbtn{
-  position:absolute;top:16px;left:16px;z-index:5;min-height:48px;padding:10px 20px;border-radius:12px;
-  border:1px solid var(--night-500);background:rgba(11,14,26,.8);backdrop-filter:blur(8px);
-  font-size:14px;color:var(--text-mid);cursor:pointer;display:none;
+  position:fixed;top:86px;right:394px;z-index:25;min-height:48px;padding:11px 20px;
+  font-size:14px;color:var(--text-mid);display:none;align-items:center;gap:8px;
 }
-.backbtn.vis{display:block}
+.backbtn.vis{display:inline-flex}
+.backbtn:hover{color:var(--warm-100)}
+.maperr{
+  position:fixed;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+  color:var(--text-mid);font-size:15px;text-align:center;padding:40px;
+}
 
-/* ---------- pravý panel ---------- */
-.panel{
-  position:fixed;top:84px;right:20px;bottom:104px;width:352px;z-index:20;
+/* ============ pravé plávajúce karty ============ */
+.stack{
+  position:fixed;top:86px;right:22px;bottom:112px;width:356px;z-index:20;
   display:flex;flex-direction:column;gap:14px;pointer-events:none;
 }
-.panel>*{pointer-events:auto}
-.pcard{
-  background:rgba(19,23,41,.93);border:1px solid var(--night-600);border-radius:18px;
-  padding:20px;backdrop-filter:blur(12px);
-}
-.pcard h3{font-family:var(--fd);font-size:18px;margin-bottom:4px}
-.pcard .sub{font-size:12.5px;color:var(--text-low);margin-bottom:14px}
-.scrollarea{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
+.stack>*{pointer-events:auto}
+.card{padding:22px}
+.card h3{font-family:var(--fd);font-size:19px;margin-bottom:3px}
+.card .sub{font-size:12.5px;color:var(--text-low);margin-bottom:14px}
+.scroll{overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:var(--night-500) transparent}
 
-/* donut */
 .donut-wrap{display:flex;align-items:center;gap:18px}
+.donut-box{position:relative;width:126px;height:126px;flex:0 0 auto}
 .donut-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .donut-num b{font-family:var(--fd);font-size:30px;font-weight:700}
-.donut-num span{font-family:var(--fm);font-size:9.5px;color:var(--text-low);letter-spacing:.12em}
-.dlg{font-size:13px;color:var(--text-mid);display:flex;flex-direction:column;gap:7px}
+.donut-num span{font-family:var(--fm);font-size:9.5px;color:var(--text-low);letter-spacing:.14em}
+.dlg{font-size:13.5px;color:var(--text-mid);display:flex;flex-direction:column;gap:8px}
 .dlg .li{display:flex;align-items:center;gap:9px}
-.dlg .sw{width:11px;height:11px;border-radius:4px;flex:0 0 auto}
-.statrows{margin-top:14px;border-top:1px solid var(--night-600);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlg .sw{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+.statrows{margin-top:16px;border-top:1px solid rgba(139,145,221,.15);padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .statrows div{font-size:11.5px;color:var(--text-low)}
 .statrows b{display:block;font-family:var(--fd);font-size:19px;font-weight:600;color:var(--text-hi)}
 
-/* legenda */
-.legend .li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:3.5px 0}
-.legend .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
-.legend h4{font-family:var(--fm);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:8px}
+.selcard .empty{display:flex;align-items:center;gap:10px;color:var(--text-low);font-size:14px}
+.selcard .nm{font-family:var(--fd);font-size:19px;font-weight:600;margin:2px 0}
+.selcard .meta{font-size:12.5px;color:var(--text-low)}
+.gobtn{
+  margin-top:14px;width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-radius:14px;border:1px solid var(--glass-border);
+  background:var(--glass-hi);font-size:14.5px;font-weight:600;transition:all .25s;
+}
+.gobtn:hover{border-color:var(--amber-500);box-shadow:0 0 22px rgba(245,158,11,.25)}
+.gobtn.hot{background:var(--amber-500);color:var(--night-950);border-color:var(--amber-500)}
+.gobtn.hot:hover{background:var(--amber-300)}
 
-/* OBJAV: search + list */
 .search{
-  display:flex;align-items:center;gap:10px;background:var(--night-800);border:1.5px solid var(--night-600);
-  border-radius:12px;padding:12px 14px;margin-bottom:10px;
+  display:flex;align-items:center;gap:10px;background:rgba(7,9,18,.5);
+  border:1px solid var(--glass-border);border-radius:14px;padding:13px 15px;margin-bottom:12px;
 }
 .search input{flex:1;background:none;border:none;outline:none;color:var(--text-hi);font-family:var(--ft);font-size:14.5px}
 .search input::placeholder{color:var(--text-low)}
-.fchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
-.fchip{
-  min-height:38px;padding:7px 14px;border-radius:99px;border:1.5px solid var(--night-500);
-  background:transparent;font-size:12.5px;color:var(--text-mid);cursor:pointer;transition:all .2s;
-}
-.fchip.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
+.listcount{font-family:var(--fm);font-size:11px;color:var(--text-low);margin:2px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.clearf{color:var(--amber-300);font-family:var(--fm);font-size:11px;display:none}
+.clearf.vis{display:inline}
 .bflist{display:flex;flex-direction:column;gap:8px}
 .bfitem{
   display:flex;gap:12px;align-items:center;text-align:left;width:100%;
-  background:var(--night-800);border:1.5px solid var(--night-700);border-radius:14px;
-  padding:12px 14px;cursor:pointer;transition:all .2s;
+  background:rgba(24,29,55,.45);border:1px solid rgba(139,145,221,.13);border-radius:16px;
+  padding:12px 14px;transition:all .2s;
 }
-.bfitem:hover{border-color:var(--indigo-500)}
-.bfitem.sel{border-color:var(--amber-500);background:var(--night-700)}
-.bfitem .av{width:44px;height:44px;border-radius:12px;background:var(--night-700);flex:0 0 auto;
+.bfitem:hover{border-color:var(--indigo-300);transform:translateX(-2px)}
+.bfitem.sel{border-color:var(--amber-500);background:rgba(245,158,11,.1)}
+.bfitem .av{width:44px;height:44px;border-radius:13px;background:rgba(59,66,133,.4);flex:0 0 auto;
   display:flex;align-items:center;justify-content:center}
 .bfitem .av svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .bfitem .nm{font-family:var(--fd);font-weight:600;font-size:14.5px;line-height:1.2}
@@ -121,19 +145,17 @@ main svg{width:100%;height:100%;display:block}
 .tagm{font-family:var(--fm);font-size:9.5px;padding:2px 8px;border-radius:99px;border:1px solid var(--night-500);color:var(--text-mid)}
 .tagm.risk{border-color:var(--risk-500);color:var(--risk-300)}
 .tagm.city{border-color:var(--warm-500);color:var(--warm-300)}
-.listcount{font-family:var(--fm);font-size:11px;color:var(--text-low);margin:8px 0 2px}
 
-/* detail */
 .obor-av{display:flex;gap:16px;align-items:center;margin-bottom:14px}
 .obor-face{
-  width:76px;height:76px;border-radius:18px;background:var(--night-700);flex:0 0 auto;
+  width:78px;height:78px;border-radius:20px;background:rgba(59,66,133,.35);flex:0 0 auto;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  transition:all .8s;border:1px solid var(--night-600);
+  transition:all .8s;border:1px solid var(--glass-border);
 }
 .obor-face svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .8s}
 .obor-face .eyes{display:flex;gap:9px;height:9px;align-items:center}
 .obor-face .eyes i{display:block;width:9px;height:2.4px;border-radius:99px;background:var(--indigo-300);transition:all .5s}
-.obor-face.awake{background:var(--night-600);border-color:var(--amber-700);box-shadow:0 0 26px rgba(245,158,11,.3)}
+.obor-face.awake{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.5);box-shadow:0 0 30px rgba(245,158,11,.35)}
 .obor-face.awake svg{stroke:var(--amber-300)}
 .obor-face.awake .eyes i{width:7px;height:7px;background:var(--warm-100);box-shadow:0 0 7px rgba(255,246,227,.9)}
 .dchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:10.5px;
@@ -141,11 +163,11 @@ main svg{width:100%;height:100%;display:block}
 .dtitle{font-family:var(--fd);font-size:21px;font-weight:600;line-height:1.15}
 .dsub{font-size:12px;color:var(--text-low);margin-top:2px}
 .frows{display:flex;flex-direction:column;margin:12px 0}
-.frow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--night-700);font-size:13px}
+.frow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(139,145,221,.12);font-size:13px}
 .frow .k{color:var(--text-low)}
 .frow .v{color:var(--text-hi);font-weight:500;text-align:right}
 .dzamer{font-size:12.5px;color:var(--text-mid);line-height:1.55;margin-bottom:12px}
-.mini-tl{display:flex;gap:0;margin:6px 0 14px}
+.mini-tl{display:flex;margin:6px 0 14px}
 .mini-tl div{flex:1;text-align:center;position:relative;padding-top:14px}
 .mini-tl div::before{content:'';position:absolute;top:4px;left:0;right:0;height:2px;background:var(--night-600)}
 .mini-tl div::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:var(--night-500)}
@@ -154,37 +176,48 @@ main svg{width:100%;height:100%;display:block}
 .mini-tl span{font-size:10px;color:var(--text-low);display:block;margin-top:2px}
 .vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .vote-btn{
-  min-height:52px;border-radius:12px;border:1.5px solid var(--night-500);background:var(--night-800);
-  font-size:13.5px;font-weight:500;color:var(--text-mid);cursor:pointer;transition:all .2s;
+  min-height:52px;border-radius:14px;border:1px solid var(--glass-border);background:rgba(24,29,55,.5);
+  font-size:13.5px;font-weight:500;color:var(--text-mid);transition:all .2s;
 }
-.vote-btn:hover{border-color:var(--amber-500);color:var(--text-hi)}
+.vote-btn:hover{border-color:var(--amber-500);color:var(--text-hi);transform:translateY(-1px)}
 .vote-btn.picked{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
 .vote-thanks{font-family:var(--fm);font-size:11.5px;color:var(--amber-300);margin-top:10px;display:none}
 
-/* VÍZIA results */
 .rbar{margin:9px 0}
 .rbar .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-mid);margin-bottom:5px}
-.rbar .track{height:9px;border-radius:99px;background:var(--night-700);overflow:hidden}
+.rbar .track{height:10px;border-radius:99px;background:rgba(7,9,18,.6);overflow:hidden}
 .rbar .fill{height:100%;border-radius:99px;transition:width .6s ease-out}
 
-/* ---------- spodná lišta ---------- */
-.bottom{
-  position:fixed;left:0;right:392px;bottom:0;z-index:20;
-  background:rgba(7,9,18,.88);border-top:1px solid var(--night-700);backdrop-filter:blur(10px);
-  padding:14px 24px;min-height:84px;display:flex;align-items:center;gap:22px;
+/* ============ spodné ovládanie ============ */
+.dock{position:fixed;bottom:22px;left:22px;z-index:25;display:flex;gap:10px}
+.dock-c{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:24;max-width:calc(100% - 480px)}
+.dock-r{position:fixed;bottom:22px;right:22px;z-index:25}
+.pill{
+  display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:14px 22px;border-radius:99px;
+  font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--text-mid);transition:all .25s;
 }
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{
-  min-height:46px;display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:99px;
-  border:1.5px solid var(--night-500);background:transparent;color:var(--text-mid);
-  font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;
+.pill:hover{color:var(--warm-100)}
+.pill svg{stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pill .badge{
+  min-width:22px;height:22px;border-radius:99px;background:var(--amber-500);color:var(--night-950);
+  font-family:var(--fm);font-size:11.5px;font-weight:600;display:none;align-items:center;justify-content:center;padding:0 6px;
 }
-.chip .dot{width:9px;height:9px;border-radius:50%}
-.chip.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
-.chip.on .dot{background:var(--night-950)!important}
-.year{font-family:var(--fd);font-size:36px;font-weight:700;min-width:104px}
+.pill .badge.vis{display:inline-flex}
+
+.seg{display:flex;gap:4px;padding:6px;border-radius:99px}
+.seg button{
+  display:flex;align-items:center;gap:8px;min-height:46px;padding:10px 16px;border-radius:99px;
+  font-size:13px;font-weight:500;color:var(--text-mid);transition:all .22s;white-space:nowrap;
+}
+.seg button .dot{width:9px;height:9px;border-radius:50%}
+.seg button.on{background:var(--amber-500);color:var(--night-950);font-weight:600}
+.seg button.on .dot{background:var(--night-950)!important}
+.seg button:not(.on):hover{background:rgba(255,255,255,.06);color:var(--text-hi)}
+
+.tlpill{display:flex;align-items:center;gap:20px;padding:14px 26px;border-radius:26px;min-width:520px}
+.year{font-family:var(--fd);font-size:34px;font-weight:700;min-width:96px}
 .tl{flex:1}
-.tl-label{font-family:var(--fm);font-size:10.5px;color:var(--text-low);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:7px}
+.tl-label{font-family:var(--fm);font-size:10px;color:var(--text-low);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:7px}
 input[type=range]{
   width:100%;appearance:none;-webkit-appearance:none;height:5px;border-radius:99px;
   background:linear-gradient(90deg,var(--warm-500),var(--indigo-700) 32%,var(--indigo-700) 55%,var(--amber-500) 78%,var(--warm-300));
@@ -194,42 +227,62 @@ input[type=range]::-webkit-slider-thumb{
   background:var(--warm-100);border:5px solid var(--night-950);
   box-shadow:0 0 16px rgba(255,246,227,.8);cursor:grab;
 }
-.hint{font-size:13px;color:var(--text-low)}
 
-/* ---------- splash ---------- */
+.pop{
+  position:fixed;bottom:92px;z-index:28;width:334px;padding:20px;
+  opacity:0;visibility:hidden;transform:translateY(10px);transition:all .3s cubic-bezier(.2,.9,.3,1);
+}
+.pop.open{opacity:1;visibility:visible;transform:none}
+#popLayers{left:22px}
+#popFilter{left:22px}
+#popLegend{right:22px;width:290px}
+.pop h4{font-family:var(--fm);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin:14px 0 8px}
+.pop h4:first-child{margin-top:0}
+.fgroup{display:flex;flex-wrap:wrap;gap:6px}
+.fopt{
+  min-height:42px;padding:8px 14px;border-radius:99px;border:1px solid var(--glass-border);
+  background:rgba(24,29,55,.5);font-size:12.5px;color:var(--text-mid);transition:all .2s;
+}
+.fopt:hover{color:var(--text-hi);border-color:var(--indigo-300)}
+.fopt.on{background:var(--amber-500);border-color:var(--amber-500);color:var(--night-950);font-weight:600}
+.fopt.chk.on{background:rgba(245,158,11,.18);color:var(--amber-300);border-color:var(--amber-500)}
+.pop .legend .li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:4px 0}
+.pop .legend .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
+.clearrow{margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+.clearrow button{font-family:var(--fm);font-size:11.5px;color:var(--amber-300)}
+.clearrow span{font-family:var(--fm);font-size:11px;color:var(--text-low)}
+
+/* ============ splash ============ */
 .splash{
   position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse 80% 60% at 50% 40%,#10142a 0%,var(--night-950) 80%);
   display:flex;align-items:center;justify-content:center;transition:opacity .7s,visibility .7s;
 }
 .splash.off{opacity:0;visibility:hidden}
-.splash-in{max-width:860px;padding:32px;text-align:left}
+.splash-in{max-width:880px;padding:32px}
 .kicker{font-family:var(--fm);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber-300)}
 .splash h1{font-family:var(--fd);font-weight:700;font-size:clamp(34px,5.2vw,58px);line-height:1.05;margin:14px 0 16px}
 .splash h1 .lit{color:var(--warm-100);text-shadow:0 0 44px rgba(255,233,184,.4)}
 .splash p{color:var(--text-mid);font-size:16px;max-width:58ch;line-height:1.6}
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}
-.mode-card{
-  text-align:left;background:var(--night-800);border:1.5px solid var(--night-600);border-radius:16px;
-  padding:18px;cursor:pointer;transition:all .25s;
-}
-.mode-card:hover{border-color:var(--amber-500);transform:translateY(-2px)}
-.mode-card b{font-family:var(--fd);font-size:17px;display:block;margin-bottom:5px}
+.mode-card{text-align:left;padding:18px;transition:all .25s;border-radius:18px}
+.mode-card:hover{border-color:var(--amber-500);transform:translateY(-3px)}
+.mode-card b{font-family:var(--fd);font-size:17px;display:flex;gap:9px;align-items:center;margin-bottom:6px}
+.mode-card b svg{stroke:var(--amber-300);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .mode-card span{font-size:12.5px;color:var(--text-mid);line-height:1.5;display:block}
-.splash-foot{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.splash-foot{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 .bignum{font-family:var(--fd)}
 .bignum b{font-size:30px;font-weight:700;color:var(--warm-100)}
 .bignum span{font-size:11.5px;color:var(--text-low);display:block}
 .cta{
-  margin-left:auto;min-height:58px;padding:14px 30px;border-radius:99px;border:none;
+  margin-left:auto;min-height:58px;padding:14px 30px;border-radius:99px;
   background:var(--amber-500);color:var(--night-950);font-family:var(--fd);font-weight:700;font-size:17px;
-  cursor:pointer;transition:all .25s;box-shadow:0 0 34px rgba(245,158,11,.35);
+  transition:all .25s;box-shadow:0 0 34px rgba(245,158,11,.35);
 }
 .cta:hover{background:var(--amber-300);box-shadow:0 0 54px rgba(245,158,11,.55)}
 </style>
 </head>
 <body>
 
-<!-- ============ SPLASH ============ -->
 <div class="splash" id="splash">
   <div class="splash-in">
     <span class="kicker">ZAŽNI MESTO · interaktívny model Bratislavy · TU-BA</span>
@@ -237,9 +290,9 @@ input[type=range]::-webkit-slider-thumb{
     <p>Bratislava má 113 zhasnutých miest. Fyzický model pred tebou ich ukazuje ako tmavé, dýchajúce diery v meste.
     Preskúmaj ich dáta, príbehy a budúcnosť — a rozsvieť ich vlastným hlasom.</p>
     <div class="modes">
-      <button class="mode-card" onclick="ignite('pulz')"><b>◉ Pulz</b><span>Sleduj, čo sa deje práve teraz — stavy, záťaže a potenciál celého mesta.</span></button>
-      <button class="mode-card" onclick="ignite('objav')"><b>◎ Objav</b><span>Preskúmaj všetkých 113 území na mape aj v zozname, s detailmi a príbehmi.</span></button>
-      <button class="mode-card" onclick="ignite('vizia')"><b>☀ Vízia</b><span>Potiahni čas, nahliadni do budúcnosti a zahlasuj, čo tu má vyrásť.</span></button>
+      <button class="mode-card glass" onclick="ignite('pulz')"><b><svg width="18" height="18" viewBox="0 0 24 24"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>Pulz</b><span>Sleduj, čo sa deje práve teraz — stavy, záťaže a potenciál celého mesta.</span></button>
+      <button class="mode-card glass" onclick="ignite('objav')"><b><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Objav</b><span>Preskúmaj všetkých 113 území na 3D mape aj v zozname, s detailmi a príbehmi.</span></button>
+      <button class="mode-card glass" onclick="ignite('vizia')"><b><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>Vízia</b><span>Potiahni čas, nahliadni do budúcnosti a zahlasuj, čo tu má vyrásť.</span></button>
     </div>
     <div class="splash-foot">
       <div class="bignum"><b>113</b><span>brownfieldov v registri</span></div>
@@ -250,53 +303,40 @@ input[type=range]::-webkit-slider-thumb{
   </div>
 </div>
 
-<!-- ============ TOP BAR ============ -->
+<div id="map"></div>
+<div class="maperr" id="maperr">Mapové dlaždice sa nepodarilo načítať — skontroluj pripojenie na internet.<br>Brownfieldy a rozhranie fungujú ďalej.</div>
+<button class="backbtn glass" id="backMap" onclick="resetView()">⌂ celé mesto</button>
+
 <div class="topbar">
-  <span class="logo">ZAŽNI <em>MESTO</em></span>
+  <span class="logo">
+    <svg width="30" height="30" viewBox="0 0 32 32" stroke="#FFE9B8" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 26V12l3-3v3h3v-3l4-4 4 4v3h3V9l3 3v14z"/><path d="M13 26v-6h6v6"/>
+    </svg>
+    <span>ZAŽNI <em>MESTO</em></span>
+  </span>
   <div class="tabs">
-    <button class="tab on" data-mode="pulz">PULZ<small>čo sa deje teraz</small></button>
-    <button class="tab" data-mode="objav">OBJAV<small>113 území a príbehov</small></button>
-    <button class="tab" data-mode="vizia">VÍZIA<small>čas a hlasovanie</small></button>
+    <button class="tab on" data-mode="pulz"><svg width="17" height="17" viewBox="0 0 24 24"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>PULZ</button>
+    <button class="tab" data-mode="objav"><svg width="17" height="17" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>OBJAV</button>
+    <button class="tab" data-mode="vizia"><svg width="17" height="17" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>VÍZIA</button>
   </div>
-  <div class="top-right">register BF · MIB 2022 · živé dáta ArcGIS<br><a href="index.html">← dizajn manuál</a></div>
+  <a class="about" href="index.html">O PROJEKTE</a>
 </div>
 
-<!-- ============ MAPA ============ -->
-<main>
-  <svg id="map" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <pattern id="hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-        <rect width="8" height="8" fill="transparent"/><rect width="2.6" height="8" fill="#E84B8A" opacity=".9"/>
-      </pattern>
-      <radialGradient id="glow"><stop offset="0%" stop-color="#FFE9B8" stop-opacity=".10"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-    </defs>
-    <g id="gBase"></g><g id="gBf"></g><g id="gIcons"></g><g id="gLabels"></g>
-  </svg>
-  <button class="backbtn" id="backMap" onclick="resetZoom()">← celé mesto</button>
-</main>
+<div class="stack" id="stack"></div>
+<div class="dock" id="dockLeft"></div>
+<div class="dock-c" id="dockCenter"></div>
+<div class="dock-r" id="dockRight"></div>
+<div class="pop glass" id="popLayers"></div>
+<div class="pop glass" id="popFilter"></div>
+<div class="pop glass" id="popLegend"></div>
 
-<!-- ============ PRAVÝ PANEL ============ -->
-<div class="panel">
-  <div class="scrollarea" id="panelContent"></div>
-</div>
-
-<!-- ============ SPODNÁ LIŠTA ============ -->
-<div class="bottom" id="bottomBar"></div>
-
-<script src="data.js"></script>
+<script src="geo.js"></script>
 <script>
 /* ============================================================
-   ZAŽNI MESTO · dirigent v2 — režimy PULZ / OBJAV / VÍZIA
+   ZAŽNI MESTO · dirigent v4 — MapLibre 3D + glass UI
    ============================================================ */
-const NS='http://www.w3.org/2000/svg';
-const map=document.getElementById('map');
-const VB={x:0,y:0,w:MAPDATA.W,h:MAPDATA.H};
-map.setAttribute('viewBox',`0 0 ${MAPDATA.W} ${MAPDATA.H}`);
-const gBase=document.getElementById('gBase'),gBf=document.getElementById('gBf'),
-      gIcons=document.getElementById('gIcons'),gLabels=document.getElementById('gLabels');
-
 const C={
-  sleeping:'#3B4285',plan:'#F59E0B',alive:'#FFE9B8',temporary:'#17B3A3',
+  sleeping:'#3B4285',plan:'#F59E0B',alive:'#FFE9B8',
   typ:{industry:'#F59E0B',agriculture:'#7BC950',military:'#8B91DD',office:'#5A61B5',culture:'#FF7EB0',
        housing:'#FFE9B8',recreation:'#3FE0CE',sport:'#17B3A3',transport:'#F4CE7A',other:'#6E7291'},
   own:{city:'#FFE9B8',state:'#F4CE7A',private:'#5A61B5',mixed:'#17B3A3',other:'#6E7291'},
@@ -307,8 +347,6 @@ const TYPL={industry:'Fabrika',agriculture:'Silo',military:'Kasáreň',office:'K
 const OWNL={city:'Mesto',state:'Štát',private:'Súkromní vlastníci',mixed:'Mesto + súkromné',other:'Iné / kombinácia'};
 const VOTEC={byvanie:'#FFE9B8',park:'#7BC950',skola:'#F4CE7A',kultura:'#FF7EB0'};
 const VOTEL={byvanie:'🏠 Bývanie',park:'🌳 Park',skola:'🎓 Škola',kultura:'🎭 Kultúra'};
-
-/* ikony typológií (48×48, stroke) */
 const ICONS={
   industry:'<path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/>',
   transport:'<rect x="12" y="10" width="24" height="24" rx="7"/><path d="M12 26h24"/><rect x="18" y="15" width="12" height="7" rx="2"/><path d="M14 40l-3 4M34 40l3 4"/>',
@@ -323,192 +361,209 @@ const ICONS={
 };
 function iconSvg(typ,size){return `<svg width="${size}" height="${size}" viewBox="0 0 48 48">${ICONS[typ]||ICONS.other}</svg>`;}
 
-/* stav odvodený z registra: bez známeho zámeru = spí · so zámerom = prebúdza sa */
-function hasPlan(f){return f.zamer && !/^nezisten/i.test(f.zamer);}
-const N_PLAN=MAPDATA.bf.filter(hasPlan).length, N_SLEEP=113-N_PLAN, N_SEZ=15, N_A=MAPDATA.bf.filter(f=>f.cls==='A').length;
+const FEATS=BFGEO.features;
+const P=i=>FEATS[i].properties;
+const N_PLAN=FEATS.filter(f=>f.properties.plan).length, N_SLEEP=113-N_PLAN,
+      N_A=FEATS.filter(f=>f.properties.cls==='A').length;
 
-/* hlasy */
 let votes={}; try{votes=JSON.parse(localStorage.getItem('zazni-votes')||'{}');}catch(e){}
 function saveVotes(){try{localStorage.setItem('zazni-votes',JSON.stringify(votes));}catch(e){}}
 
-/* ---------- podklad ---------- */
-(function(){
-  const glow=document.createElementNS(NS,'ellipse');
-  glow.setAttribute('cx',MAPDATA.W*.45);glow.setAttribute('cy',MAPDATA.H*.42);
-  glow.setAttribute('rx',MAPDATA.W*.42);glow.setAttribute('ry',MAPDATA.H*.3);
-  glow.setAttribute('fill','url(#glow)');gBase.appendChild(glow);
-  const b=document.createElementNS(NS,'path');
-  b.setAttribute('d',MAPDATA.boundary);b.setAttribute('fill','#0E1220');
-  b.setAttribute('stroke','#2A3150');b.setAttribute('stroke-width','2');gBase.appendChild(b);
-  MAPDATA.danube.forEach(d=>{
-    const p=document.createElementNS(NS,'path');
-    p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#232A4A');
-    p.setAttribute('stroke-width','13');p.setAttribute('stroke-linecap','round');gBase.appendChild(p);
-  });
-  let inside;try{inside=(x,y)=>b.isPointInFill(new DOMPoint(x,y));}catch(e){inside=()=>true;}
-  let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
-  let placed=0,tries=0;
-  while(placed<480&&tries<6500){
-    tries++;
-    const x=rnd()*MAPDATA.W,y=rnd()*MAPDATA.H;
-    const dc=Math.hypot((x-MAPDATA.W*.46)/MAPDATA.W,(y-MAPDATA.H*.40)/MAPDATA.H);
-    if(rnd()<dc*1.9)continue;
-    if(!inside(x,y))continue;
-    const c=document.createElementNS(NS,'circle');
-    c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));
-    c.setAttribute('r',(0.9+rnd()*1.8).toFixed(1));
-    c.setAttribute('fill','#FFE9B8');c.setAttribute('opacity',(0.06+rnd()*.28).toFixed(2));
-    gBase.appendChild(c);placed++;
-  }
-})();
-
-/* ---------- BF polygóny ---------- */
-const shapes=[];
-MAPDATA.bf.forEach((f,i)=>{
-  const p=document.createElementNS(NS,'path');
-  p.setAttribute('d',f.d);p.setAttribute('class','bf-shape');
-  p.addEventListener('click',()=>selectBF(i,true));
-  gBf.appendChild(p);
-  let hz=null;
-  if(f.sez){
-    hz=document.createElementNS(NS,'path');
-    hz.setAttribute('d',f.d);hz.setAttribute('fill','url(#hatch)');hz.setAttribute('pointer-events','none');
-    gBf.appendChild(hz);
-  }
-  shapes.push({p,hz,f,bbox:null});
-});
-/* bboxy po vložení do DOM */
-requestAnimationFrame(()=>shapes.forEach(s=>{try{s.bbox=s.p.getBBox();}catch(e){}}));
-
-/* ikony obrov na najväčších územiach (ha ≥ 8) — kanál typológie priamo na mape */
-MAPDATA.bf.forEach((f,i)=>{
-  if(f.ha<8)return;
-  const g=document.createElementNS(NS,'g');
-  g.setAttribute('class','map-icon');
-  const s=26;
-  g.innerHTML=`<g transform="translate(${f.cx-s/2},${f.cy-s/2}) scale(${s/48})" stroke="#FFE9B8" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[f.typ]||ICONS.other}</g>`;
-  gIcons.appendChild(g);
-});
-/* menovky známych zón */
-['ISTROCHEM VAJNORSKÁ','MATADOR','FILIÁLKA','NOVÉ LIDO','ZÓNA CHALUPKOVA','NEMOCNICA RÁZSOCHY','JANÍKOV DVOR'].forEach(nm=>{
-  const z=MAPDATA.zones.find(z=>z.n===nm);if(!z)return;
-  const t=document.createElementNS(NS,'text');
-  t.setAttribute('x',z.cx+12);t.setAttribute('y',z.cy-9);t.setAttribute('class','zone-label');
-  t.textContent=z.n;gLabels.appendChild(t);
+/* bboxy pre fitBounds */
+const BBOX=FEATS.map(f=>{
+  let minx=99,miny=99,maxx=-99,maxy=-99;
+  const scan=r=>r.forEach(c=>{if(c[0]<minx)minx=c[0];if(c[0]>maxx)maxx=c[0];if(c[1]<miny)miny=c[1];if(c[1]>maxy)maxy=c[1];});
+  const g=f.geometry;
+  (g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(p=>p[0])).forEach(scan);
+  return [[minx,miny],[maxx,maxy]];
 });
 
-/* ---------- stavový stroj ---------- */
-let mode='pulz', layer='stav', year=2026, selIdx=null, filters=new Set(), query='';
-
-function wakeYear(f,i){let h=0;for(const ch of f.n)h=(h*31+ch.charCodeAt(0))%97;return 2024+((h+i)%12);}
-
-function paint(){
-  shapes.forEach(({p,hz,f},i)=>{
-    let fill=C.sleeping,op=.85,pulse=false,dash='none',sw=1.2,stroke='#8B91DD';
-    if(mode==='vizia'){
-      const wy=wakeYear(f,i);
-      if(year<1998){fill=C.alive;op=.9;}
-      else if(year>=wy){fill=C.alive;op=.95;}
-      else if(year>=wy-3){fill=C.plan;op=.9;}
-      else{fill=C.sleeping;pulse=true;}
-      if(votes[i]){fill=VOTEC[votes[i]];op=1;pulse=false;}
-    }
-    else if(mode==='objav'){
-      const match=matchesFilter(f);
-      fill=hasPlan(f)?C.plan:C.sleeping;
-      op=match?(selIdx===i?1:.8):.18;
-      pulse=match&&!hasPlan(f)&&selIdx==null;
-    }
-    else{ /* pulz + tematické vrstvy */
-      if(layer==='stav'){fill=hasPlan(f)?C.plan:C.sleeping;pulse=!hasPlan(f);op=hasPlan(f)?.9:.85;}
-      else if(layer==='typ'){fill=C.typ[f.typ];op=.88;}
-      else if(layer==='sez'){fill=C.sleeping;op=f.sez?1:.4;pulse=!!f.sez;}
-      else if(layer==='own'){fill=C.own[f.own];op=.85;sw=2;stroke='#FFF6E3';
-        dash={city:'none',state:'2 4',private:'7 5',mixed:'10 4 2 4',other:'1 5'}[f.own];}
-      else if(layer==='cls'){fill=C.cls[f.cls]||C.sleeping;op=.9;}
-    }
-    p.setAttribute('fill',fill);p.setAttribute('opacity',op);
-    p.setAttribute('stroke',stroke);p.setAttribute('stroke-width',sw);p.setAttribute('stroke-dasharray',dash);
-    p.classList.toggle('pulse',pulse);
-    p.classList.toggle('sel',selIdx===i);
-    if(hz)hz.setAttribute('opacity',(mode==='pulz'&&layer==='sez')?1:((mode==='pulz'&&layer==='stav')||mode==='objav'?.5:0));
-  });
-  gIcons.style.opacity=(mode==='pulz'&&(layer==='stav'||layer==='typ'))||mode==='objav'?1:0;
-}
-
-/* ---------- zoom ---------- */
-let vbAnim=null;
-function animateVB(to){
-  if(vbAnim)cancelAnimationFrame(vbAnim);
-  const from={...VB},t0=performance.now(),dur=700;
-  (function step(t){
-    const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);
-    ['x','y','w','h'].forEach(a=>VB[a]=from[a]+(to[a]-from[a])*e);
-    map.setAttribute('viewBox',`${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
-    if(k<1)vbAnim=requestAnimationFrame(step);
-  })(t0);
-}
-function zoomTo(i){
-  const b=shapes[i].bbox;if(!b)return;
-  const pad=Math.max(b.width,b.height)*2.2+60;
-  animateVB({x:b.x+b.width/2-pad/2,y:b.y+b.height/2-pad/2,w:pad,h:pad});
-  document.getElementById('backMap').classList.add('vis');
-}
-function resetZoom(){
-  animateVB({x:0,y:0,w:MAPDATA.W,h:MAPDATA.H});
-  document.getElementById('backMap').classList.remove('vis');
-  if(mode==='objav'){selIdx=null;renderPanel();paint();}
-}
-
-/* ---------- filtre (OBJAV) ---------- */
-function matchesFilter(f){
-  if(query&&!(f.n+' '+f.mc).toLowerCase().includes(query.toLowerCase()))return false;
-  if(filters.has('sez')&&!f.sez)return false;
-  if(filters.has('city')&&f.own!=='city'&&f.own!=='mixed')return false;
-  if(filters.has('big')&&f.ha<5)return false;
-  if(filters.has('A')&&f.cls!=='A')return false;
+/* ---------- stav aplikácie ---------- */
+let mode='pulz', farba='stav', year=2026, selIdx=null, query='';
+const F={sez:null,own:null,size:0,cls:null};                 /* filtre — kombinovateľné */
+const O={sez:true,labels:true,b3d:true};                      /* prekryvy — kombinovateľné */
+function activeFilters(){return (F.sez?1:0)+(F.own?1:0)+(F.size?1:0)+(F.cls?1:0);}
+function matchesFilter(p){
+  if(query&&!(p.n+' '+p.mc).toLowerCase().includes(query.toLowerCase()))return false;
+  if(F.sez&&!p.sez)return false;
+  if(F.own&&p.own!==F.own)return false;
+  if(F.size&&p.ha<F.size)return false;
+  if(F.cls&&p.cls!==F.cls)return false;
   return true;
 }
+function matchedIds(){return FEATS.filter(f=>matchesFilter(f.properties)).map(f=>f.properties.id);}
 
-/* ---------- panel ---------- */
-function renderPanel(){
-  const el=document.getElementById('panelContent');
-  if(mode==='pulz')el.innerHTML=panelPulz();
-  else if(mode==='objav')el.innerHTML=(selIdx==null)?panelList():panelDetail(selIdx);
-  else el.innerHTML=panelVizia();
-  bindPanel();
+/* ---------- MapLibre ---------- */
+const HOME={center:[17.11,48.148],zoom:10.9,pitch:52,bearing:-17};
+const style={
+  version:8,
+  glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  sources:{om:{type:'vector',url:'https://tiles.openfreemap.org/planet'}},
+  layers:[
+    {id:'bg',type:'background',paint:{'background-color':'#0B0E1A'}},
+    {id:'water',type:'fill',source:'om','source-layer':'water',paint:{'fill-color':'#141B3C'}},
+    {id:'waterway',type:'line',source:'om','source-layer':'waterway',paint:{'line-color':'#141B3C','line-width':1.5}},
+    {id:'landuse-green',type:'fill',source:'om','source-layer':'landcover',
+      filter:['in','class','wood','grass','forest'],paint:{'fill-color':'#0E1426','fill-opacity':.9}},
+    {id:'road-minor',type:'line',source:'om','source-layer':'transportation',minzoom:12,
+      filter:['in','class','minor','service','residential','unclassified','path','track'],
+      paint:{'line-color':'#1B2140','line-width':['interpolate',['linear'],['zoom'],12,.3,16,2.4]}},
+    {id:'road-mid',type:'line',source:'om','source-layer':'transportation',
+      filter:['in','class','secondary','tertiary'],
+      paint:{'line-color':'#242C55','line-width':['interpolate',['linear'],['zoom'],10,.5,16,5]}},
+    {id:'road-major',type:'line',source:'om','source-layer':'transportation',
+      filter:['in','class','motorway','trunk','primary'],
+      paint:{'line-color':'#313A6E','line-width':['interpolate',['linear'],['zoom'],9,.8,16,8]}},
+    {id:'rail',type:'line',source:'om','source-layer':'transportation',minzoom:11,
+      filter:['==','class','rail'],
+      paint:{'line-color':'#1E2547','line-width':1,'line-dasharray':[3,3]}},
+    {id:'b3d',type:'fill-extrusion',source:'om','source-layer':'building',minzoom:12.5,
+      paint:{'fill-extrusion-color':'#1D2447',
+        'fill-extrusion-height':['coalesce',['get','render_height'],9],
+        'fill-extrusion-base':['coalesce',['get','render_min_height'],0],
+        'fill-extrusion-opacity':.92}},
+  ]
+};
+const map=new maplibregl.Map({
+  container:'map',style,center:HOME.center,zoom:HOME.zoom,pitch:HOME.pitch,bearing:HOME.bearing,
+  minZoom:9.3,maxZoom:17.4,maxBounds:[[16.75,47.92],[17.5,48.36]],
+  attributionControl:{compact:true},antialias:true
+});
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-left');
+map.on('error',e=>{ if(e && e.error && /Failed to fetch|NetworkError|load/i.test(String(e.error.message||''))) document.getElementById('maperr').style.display='flex'; });
+
+map.on('load',()=>{
+  /* šrafy pre envirozáťaž */
+  const cv=document.createElement('canvas');cv.width=cv.height=12;
+  const cx=cv.getContext('2d');cx.strokeStyle='#E84B8A';cx.lineWidth=2.6;
+  cx.beginPath();cx.moveTo(-3,15);cx.lineTo(15,-3);cx.moveTo(-3,9);cx.lineTo(9,-3);cx.moveTo(3,15);cx.lineTo(15,3);cx.stroke();
+  map.addImage('hatch',cx.getImageData(0,0,12,12),{pixelRatio:1});
+
+  map.addSource('bf',{type:'geojson',data:BFGEO});
+  map.addSource('ba',{type:'geojson',data:BALINE});
+  map.addSource('zones',{type:'geojson',data:{type:'FeatureCollection',
+    features:ZONESLL.filter(z=>['ISTROCHEM VAJNORSKÁ','MATADOR','FILIÁLKA','NOVÉ LIDO','ZÓNA CHALUPKOVA','NEMOCNICA RÁZSOCHY','JANÍKOV DVOR','MLYNSKÉ NIVY ZÁPAD'].includes(z.n))
+      .map(z=>({type:'Feature',properties:{n:z.n},geometry:{type:'Point',coordinates:[z.lon,z.lat]}}))}});
+
+  map.addLayer({id:'ba-line',type:'line',source:'ba',
+    paint:{'line-color':'#2A3150','line-width':1.6,'line-dasharray':[4,3]}});
+  map.addLayer({id:'bf-fill',type:'fill',source:'bf',
+    paint:{'fill-color':C.sleeping,'fill-opacity':.8}});
+  map.addLayer({id:'bf-hatch',type:'fill',source:'bf',filter:['==',['get','sez'],1],
+    paint:{'fill-pattern':'hatch','fill-opacity':.85}});
+  map.addLayer({id:'bf-line',type:'line',source:'bf',
+    paint:{'line-color':'#8B91DD','line-width':1.2}});
+  /* obrysy vlastníctva (viditeľné len vo farbe "own") */
+  const ownDash={city:[1,0],state:[1,2],private:[2.4,1.8],mixed:[3.5,1.2,1,1.2],other:[.6,1.8]};
+  Object.entries(ownDash).forEach(([k,d])=>{
+    map.addLayer({id:'bf-own-'+k,type:'line',source:'bf',filter:['==',['get','own'],k],
+      layout:{visibility:'none'},
+      paint:{'line-color':'#FFF6E3','line-width':2,'line-dasharray':d}});
+  });
+  map.addLayer({id:'bf-sel',type:'line',source:'bf',filter:['==',['get','id'],-1],
+    paint:{'line-color':'#FFF6E3','line-width':3.2,'line-blur':.4}});
+  map.addLayer({id:'zone-labels',type:'symbol',source:'zones',
+    layout:{'text-field':['get','n'],'text-font':['Noto Sans Regular'],'text-size':11.5,
+      'text-letter-spacing':.12,'text-transform':'uppercase','text-offset':[0,1]},
+    paint:{'text-color':'#B4B7D4','text-halo-color':'#0B0E1A','text-halo-width':1.4}});
+  map.addLayer({id:'bf-labels',type:'symbol',source:'bf',minzoom:13,
+    layout:{'text-field':['get','n'],'text-font':['Noto Sans Regular'],'text-size':11,
+      'text-letter-spacing':.06,'text-offset':[0,.4]},
+    paint:{'text-color':'#FFE9B8','text-halo-color':'#0B0E1A','text-halo-width':1.4}});
+
+  map.on('click','bf-fill',e=>{if(e.features.length)clickBF(e.features[0].properties.id);});
+  map.on('mouseenter','bf-fill',()=>map.getCanvas().style.cursor='pointer');
+  map.on('mouseleave','bf-fill',()=>map.getCanvas().style.cursor='');
+
+  repaint();
+  /* pulz spiacich území — dych svetla */
+  setInterval(()=>{
+    if(!map.getLayer('bf-fill'))return;
+    pulseVal=.5+.3*(1+Math.sin(performance.now()/640))/2*1.5; /* 0.5–0.95 */
+    applyOpacity();
+  },90);
+});
+let pulseVal=.7;
+
+/* ---------- prekreslenie vrstiev ---------- */
+function colorExpr(){
+  if(mode==='vizia'){
+    const voteCases=[];
+    Object.entries(votes).forEach(([id,v])=>{voteCases.push(['==',['get','id'],+id]);voteCases.push(VOTEC[v]);});
+    const base= year<1998 ? C.alive :
+      ['case',['>=',year,['get','wy']],C.alive,['>=',year,['-',['get','wy'],3]],C.plan,C.sleeping];
+    return voteCases.length?['case',...voteCases,base]:base;
+  }
+  if(farba==='typ')return ['match',['get','typ'],...Object.entries(C.typ).flat(),C.typ.other];
+  if(farba==='own')return ['match',['get','own'],...Object.entries(C.own).flat(),C.own.other];
+  if(farba==='cls')return ['match',['get','cls'],...Object.entries(C.cls).flat(),C.sleeping];
+  if(farba==='sez')return ['case',['==',['get','sez'],1],'#B3376B',C.sleeping];
+  return ['case',['==',['get','plan'],1],C.plan,C.sleeping]; /* stav */
+}
+function applyOpacity(){
+  const ids=matchedIds();
+  const inSet=['in',['get','id'],['literal',ids]];
+  let expr;
+  const sleepPulse=(mode==='pulz'&&(farba==='stav'||farba==='sez'))||mode==='vizia';
+  if(sleepPulse){
+    const sleepCond= mode==='vizia'
+      ? ['all',['<',year,['-',['get','wy'],3]],['>=',year,1998]]
+      : (farba==='sez'?['==',['get','sez'],1]:['==',['get','plan'],0]);
+    expr=['case',['!',inSet],.10,sleepCond,pulseVal,.88];
+  }else{
+    expr=['case',['!',inSet],.10,.85];
+  }
+  if(map.getLayer('bf-fill'))map.setPaintProperty('bf-fill','fill-opacity',expr);
+}
+function repaint(){
+  if(!map.getLayer('bf-fill'))return;
+  map.setPaintProperty('bf-fill','fill-color',colorExpr());
+  applyOpacity();
+  /* obrysy vlastníctva */
+  const ownVis=(mode==='pulz'&&farba==='own')?'visible':'none';
+  ['city','state','private','mixed','other'].forEach(k=>map.setLayoutProperty('bf-own-'+k,'visibility',ownVis));
+  map.setLayoutProperty('bf-line','visibility',ownVis==='visible'?'none':'visible');
+  /* prekryvy */
+  map.setLayoutProperty('bf-hatch','visibility',O.sez?'visible':'none');
+  map.setLayoutProperty('zone-labels','visibility',O.labels?'visible':'none');
+  map.setLayoutProperty('bf-labels','visibility',O.labels?'visible':'none');
+  if(map.getLayer('b3d'))map.setLayoutProperty('b3d','visibility',O.b3d?'visible':'none');
+  map.setFilter('bf-sel',['==',['get','id'],selIdx==null?-1:selIdx]);
 }
 
+/* ---------- navigácia mapy ---------- */
+function zoomTo(i){
+  map.fitBounds(BBOX[i],{padding:{top:140,bottom:140,left:120,right:420},maxZoom:15.8,pitch:55,duration:1100});
+  document.getElementById('backMap').classList.add('vis');
+}
+function resetView(){
+  map.flyTo({...HOME,duration:1300});
+  document.getElementById('backMap').classList.remove('vis');
+  if(mode==='objav'&&selIdx!=null){selIdx=null;renderStack();repaint();}
+}
+
+/* ---------- pravé karty ---------- */
 function donutSvg(){
-  const R=52,CIRC=2*Math.PI*R;
-  const segs=[[N_SLEEP,C.sleeping],[N_PLAN,C.plan]];
+  const R=50,CIRC=2*Math.PI*R;
   let off=0,paths='';
-  segs.forEach(([n,col])=>{
+  [[N_SLEEP,C.sleeping],[N_PLAN,C.plan]].forEach(([n,col])=>{
     const len=n/113*CIRC;
-    paths+=`<circle cx="64" cy="64" r="${R}" fill="none" stroke="${col}" stroke-width="14"
+    paths+=`<circle cx="63" cy="63" r="${R}" fill="none" stroke="${col}" stroke-width="14"
       stroke-dasharray="${len-3} ${CIRC-len+3}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;
     off+=len;
   });
-  return `<div style="position:relative;width:128px;height:128px;flex:0 0 auto">
-    <svg width="128" height="128" style="transform:rotate(-90deg)">${paths}</svg>
+  return `<div class="donut-box"><svg width="126" height="126" style="transform:rotate(-90deg)">${paths}</svg>
     <div class="donut-num"><b>113</b><span>ÚZEMÍ</span></div></div>`;
 }
-
-function panelPulz(){
-  const LEG={
-    stav:[['spí — bez známeho zámeru ('+N_SLEEP+')',C.sleeping],['prebúdza sa — so zámerom ('+N_PLAN+')',C.plan]],
-    typ:Object.keys(TYPL).map(k=>[TYPL[k],C.typ[k]]),
-    sez:[['s envirozáťažou (15)','#E84B8A'],['bez záťaže (98)',C.sleeping]],
-    own:Object.keys(OWNL).map(k=>[OWNL[k],C.own[k]]),
-    cls:[['A — najvyšší potenciál (51)',C.cls.A],['B (48)',C.cls.B],['C (11)',C.cls.C],['D — rezerva (3)',C.cls.D]]
-  }[layer];
-  return `<div class="pcard">
+function stackPulz(){
+  const p=selIdx!=null?P(selIdx):null;
+  return `<div class="card glass">
     <h3>Pulz mesta</h3><div class="sub">živý prehľad registra brownfieldov</div>
     <div class="donut-wrap">${donutSvg()}
       <div class="dlg">
         <div class="li"><span class="sw" style="background:${C.sleeping}"></span>${N_SLEEP} spí</div>
-        <div class="li"><span class="sw" style="background:${C.plan}"></span>${N_PLAN} so zámerom</div>
-        <div class="li" style="color:var(--text-low);font-size:11.5px">zámer = známy investičný<br>alebo územný plán</div>
+        <div class="li"><span class="sw" style="background:${C.plan}"></span>${N_PLAN} prebúdza sa</div>
+        <div class="li" style="color:var(--text-low);font-size:11px">podľa známych zámerov<br>v registri MIB</div>
       </div>
     </div>
     <div class="statrows">
@@ -518,72 +573,66 @@ function panelPulz(){
       <div><b>13</b>území nad 8 ha</div>
     </div>
   </div>
-  <div class="pcard legend"><h4>Legenda — ${ {stav:'stavy',typ:'typológia',sez:'envirozáťaž',own:'vlastníctvo',cls:'potenciál'}[layer] }</h4>
-    ${LEG.map(([l,c])=>`<div class="li"><span class="sw" style="background:${c}"></span>${l}</div>`).join('')}
-    ${layer==='own'?'<div class="li" style="font-size:11px;color:var(--text-low)">obrys: plný = mesto · prerušovaný = súkromné</div>':''}
+  <div class="card glass selcard">
+    <h3 style="font-size:15px">Vybrané územie</h3>
+    ${p?`<div class="nm">${p.n||'Bez názvu'}</div>
+         <div class="meta">${p.mc} · ${p.ha} ha · ${TYPL[p.typ]}</div>
+         <button class="gobtn hot" id="goDetail">Zobraziť detail <span>→</span></button>`
+       :`<div class="empty">— ťukni na mapu alebo na model</div>
+         <button class="gobtn" id="goList">Prehľadať zoznam <span>→</span></button>`}
   </div>`;
 }
-
-function panelList(){
-  const list=MAPDATA.bf.map((f,i)=>({f,i})).filter(({f})=>matchesFilter(f))
-    .sort((a,b)=>b.f.ha-a.f.ha);
-  return `<div class="pcard" style="display:flex;flex-direction:column;min-height:0;flex:1">
-    <h3>Všetkých 113 území</h3><div class="sub">klikni na kartu alebo priamo do mapy</div>
-    <div class="search">🔍<input id="q" placeholder="Hľadaj názov alebo mestskú časť…" value="${query.replace(/"/g,'&quot;')}"></div>
-    <div class="fchips">
-      <button class="fchip ${filters.has('sez')?'on':''}" data-f="sez">⚠ Kontaminované</button>
-      <button class="fchip ${filters.has('city')?'on':''}" data-f="city">Mestské</button>
-      <button class="fchip ${filters.has('big')?'on':''}" data-f="big">Veľké 5+ ha</button>
-      <button class="fchip ${filters.has('A')?'on':''}" data-f="A">Potenciál A</button>
-    </div>
-    <div class="listcount">zobrazených ${list.length} z 113 · zoradené podľa rozlohy</div>
-    <div class="bflist" style="overflow-y:auto;min-height:0">
-      ${list.map(({f,i})=>`
-      <button class="bfitem ${selIdx===i?'sel':''}" data-i="${i}">
-        <span class="av">${iconSvg(f.typ,26)}</span>
+function stackList(){
+  const list=FEATS.map(f=>f.properties).filter(matchesFilter).sort((a,b)=>b.ha-a.ha);
+  return `<div class="card glass" style="display:flex;flex-direction:column;min-height:0;flex:1">
+    <h3>Objav 113 území</h3><div class="sub">ťukni na kartu alebo priamo do 3D mapy</div>
+    <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="q" placeholder="Hľadaj názov alebo mestskú časť…" value="${query.replace(/"/g,'&quot;')}"></div>
+    <div class="listcount"><span>zobrazených ${list.length} z 113 · podľa rozlohy</span><button class="clearf ${activeFilters()?'vis':''}" id="clearF">✕ filtre (${activeFilters()})</button></div>
+    <div class="bflist scroll">
+      ${list.map(p=>`
+      <button class="bfitem ${selIdx===p.id?'sel':''}" data-i="${p.id}">
+        <span class="av">${iconSvg(p.typ,26)}</span>
         <span style="min-width:0">
-          <span class="nm">${f.n||'Bez názvu'}</span>
-          <span class="meta">${f.mc} · ${f.ha} ha · ${TYPL[f.typ]}</span>
+          <span class="nm">${p.n||'Bez názvu'}</span>
+          <span class="meta">${p.mc} · ${p.ha} ha · ${TYPL[p.typ]}</span>
           <span class="tags">
-            ${f.sez?'<span class="tagm risk">envirozáťaž</span>':''}
-            ${(f.own==='city'||f.own==='mixed')?'<span class="tagm city">mestské</span>':''}
-            ${f.cls==='A'?'<span class="tagm">potenciál A</span>':''}
+            ${p.sez?'<span class="tagm risk">envirozáťaž</span>':''}
+            ${(p.own==='city'||p.own==='mixed')?'<span class="tagm city">mestské</span>':''}
+            ${p.cls==='A'?'<span class="tagm">potenciál A</span>':''}
           </span>
         </span>
       </button>`).join('')}
     </div>
   </div>`;
 }
-
-function panelDetail(i){
-  const f=MAPDATA.bf[i];
-  const voted=votes[i];
-  return `<div class="pcard">
-    <button class="fchip" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
+function stackDetail(i){
+  const p=P(i),voted=votes[i];
+  return `<div class="card glass scroll" style="overflow-y:auto">
+    <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
       <div class="obor-face ${voted?'awake':''}" id="oborFace">
-        ${iconSvg(f.typ,34)}
+        ${iconSvg(p.typ,34)}
         <span class="eyes"><i></i><i></i></span>
       </div>
       <div>
-        <span class="dchip">${hasPlan(f)?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${f.cls||'—'}</span>
-        <div class="dtitle">${f.n||'Bez názvu'}</div>
-        <div class="dsub">${f.mc} · obor ${TYPL[f.typ]}</div>
+        <span class="dchip">${p.plan?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${p.cls||'—'}</span>
+        <div class="dtitle">${p.n||'Bez názvu'}</div>
+        <div class="dsub">${p.mc} · obor ${TYPL[p.typ]}</div>
       </div>
     </div>
     <div class="frows">
-      <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[f.own]}</span></div>
-      <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${f.sez?'var(--risk-300)':'var(--text-hi)'}">${f.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
-      <div class="frow"><span class="k">Súčasný stav</span><span class="v">${hasPlan(f)?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
-      <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[f.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[f.cls]||'—'}</span></div>
-      <div class="frow"><span class="k">Rozloha</span><span class="v">${f.ha} ha</span></div>
+      <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
+      <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
+      <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
+      <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
+      <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
     </div>
     <div class="mini-tl">
-      <div><b>MINULOSŤ</b><span>${f.typLabel||TYPL[f.typ]}</span></div>
-      <div class="hot"><b>DNES</b><span>${hasPlan(f)?'zámer v príprave':'spí v registri'}</span></div>
+      <div><b>MINULOSŤ</b><span>${p.typLabel||TYPL[p.typ]}</span></div>
+      <div class="hot"><b>DNES</b><span>${p.plan?'zámer v príprave':'spí v registri'}</span></div>
       <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
     </div>
-    <div class="dzamer">${f.zamer&&hasPlan(f)?('Známy zámer: '+f.zamer):'Bez známeho zámeru — presne pre takéto miesta má zmysel dočasné využitie: kultúra, komunita, šport.'}</div>
+    <div class="dzamer">${p.plan?('Známy zámer: '+p.zamer):'Bez známeho zámeru — presne pre takéto miesta má zmysel dočasné využitie: kultúra, komunita, šport.'}</div>
     <h3 style="font-size:15px;margin-bottom:10px">★ Prebuď obra — čo tu má vyrásť?</h3>
     <div class="vote-grid">
       ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
@@ -591,13 +640,12 @@ function panelDetail(i){
     <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Obor sa zobudil ✓ Tvoj hlas svieti vo Vízii.</div>
   </div>`;
 }
-
-function panelVizia(){
+function stackVizia(){
   const counts={byvanie:0,park:0,skola:0,kultura:0};
   Object.values(votes).forEach(v=>{if(counts[v]!=null)counts[v]++});
   const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
   const nvotes=Object.values(votes).length;
-  return `<div class="pcard">
+  return `<div class="card glass">
     <h3>Hlas verejnosti</h3><div class="sub">${nvotes} prebudených obrov na tomto zariadení</div>
     ${Object.keys(VOTEL).map(k=>`
       <div class="rbar">
@@ -608,60 +656,171 @@ function panelVizia(){
       Expozícia zbiera preferencie návštevníkov ako participatívny vstup pre MIB —
       1. fáza revitalizácie podľa Koncepcie je práve participácia.</p>
   </div>
-  <div class="pcard legend"><h4>Časová os</h4>
-    <div class="li"><span class="sw" style="background:${C.alive}"></span>žije / rozsvietené</div>
-    <div class="li"><span class="sw" style="background:${C.plan}"></span>prebúdza sa</div>
-    <div class="li"><span class="sw" style="background:${C.sleeping}"></span>spí</div>
-    <div class="li" style="font-size:11px;color:var(--text-low)">1990 → 1998: svetlá zhasínajú (deindustrializácia)<br>2024 → 2035: simulácia postupného prebúdzania</div>
+  <div class="card glass">
+    <h3 style="font-size:15px">Ako čítať čas</h3>
+    <div class="legend" style="margin-top:8px">
+      <div class="li" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:4px 0"><span style="width:16px;height:16px;border-radius:5px;background:${C.alive}"></span>žije / rozsvietené</div>
+      <div class="li" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:4px 0"><span style="width:16px;height:16px;border-radius:5px;background:${C.plan}"></span>prebúdza sa</div>
+      <div class="li" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);padding:4px 0"><span style="width:16px;height:16px;border-radius:5px;background:${C.sleeping}"></span>spí</div>
+      <div style="font-size:11px;color:var(--text-low);margin-top:6px">1990 → 1998 svetlá zhasínajú · 2024 → 2035 simulácia prebúdzania</div>
+    </div>
   </div>`;
 }
+function renderStack(){
+  const el=document.getElementById('stack');
+  if(mode==='pulz')el.innerHTML=stackPulz();
+  else if(mode==='objav')el.innerHTML=(selIdx==null)?stackList():stackDetail(selIdx);
+  else el.innerHTML=stackVizia();
+  bindStack();
+}
 
-/* ---------- spodná lišta ---------- */
-function renderBottom(){
-  const el=document.getElementById('bottomBar');
-  if(mode==='pulz'){
-    el.innerHTML=`<span class="hint" style="flex:0 0 auto">Vrstva:</span><div class="chips">
-      <button class="chip ${layer==='stav'?'on':''}" data-l="stav"><span class="dot" style="background:${C.plan}"></span>Stavy</button>
-      <button class="chip ${layer==='typ'?'on':''}" data-l="typ"><span class="dot" style="background:${C.typ.industry}"></span>Typológia</button>
-      <button class="chip ${layer==='sez'?'on':''}" data-l="sez"><span class="dot" style="background:#E84B8A"></span>Envirozáťaž</button>
-      <button class="chip ${layer==='own'?'on':''}" data-l="own"><span class="dot" style="background:${C.own.city}"></span>Vlastníctvo</button>
-      <button class="chip ${layer==='cls'?'on':''}" data-l="cls"><span class="dot" style="background:${C.cls.A}"></span>Potenciál</button>
-    </div>`;
-    el.querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>{layer=b.dataset.l;renderBottom();renderPanel();paint();}));
-  }
-  else if(mode==='objav'){
-    el.innerHTML=`<span class="hint">Klikni do mapy alebo vyber územie zo zoznamu vpravo — mapa priblíži a model nasvieti vybrané územie.</span>`;
-  }
-  else{
-    el.innerHTML=`<span class="year" id="yearLabel">${year}</span>
+/* ---------- spodné ovládanie ---------- */
+function renderDocks(){
+  const L=document.getElementById('dockLeft'),Cn=document.getElementById('dockCenter'),R=document.getElementById('dockRight');
+  closePops();
+  if(mode==='vizia'){
+    L.innerHTML='';R.innerHTML='';
+    Cn.innerHTML=`<div class="tlpill glass">
+      <span class="year" id="yearLabel">${year}</span>
       <div class="tl"><span class="tl-label">Potiahni čas — minulosť aj budúcnosť mesta</span>
-      <input type="range" id="yearRange" min="1990" max="2035" value="${year}" aria-label="Rok"></div>`;
-    const r=el.querySelector('#yearRange');
+      <input type="range" id="yearRange" min="1990" max="2035" value="${year}" aria-label="Rok"></div>
+    </div>`;
+    const r=Cn.querySelector('#yearRange');
     r.addEventListener('input',()=>{
       const ny=+r.value;
-      if(ny!==year){sndTick();}
-      year=ny;el.querySelector('#yearLabel').textContent=year;paint();
+      if(ny!==year)sndTick();
+      year=ny;Cn.querySelector('#yearLabel').textContent=year;repaint();
     });
+    return;
+  }
+  L.innerHTML=`
+    <button class="pill glass" id="btnLayers">
+      <svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>Vrstvy</button>
+    <button class="pill glass" id="btnFilter">
+      <svg width="17" height="17" viewBox="0 0 24 24"><path d="M4 5h16M7 12h10M10 19h4"/></svg>Filtrovať
+      <span class="badge ${activeFilters()?'vis':''}">${activeFilters()}</span></button>`;
+  L.querySelector('#btnLayers').addEventListener('click',()=>togglePop('popLayers'));
+  L.querySelector('#btnFilter').addEventListener('click',()=>togglePop('popFilter'));
+  renderLayersPop();renderFilterPop();
+
+  if(mode==='pulz'){
+    Cn.innerHTML=`<div class="seg glass">
+      <button class="${farba==='stav'?'on':''}" data-l="stav"><span class="dot" style="background:${C.plan}"></span>Stavy</button>
+      <button class="${farba==='typ'?'on':''}" data-l="typ"><span class="dot" style="background:${C.typ.industry}"></span>Typológia</button>
+      <button class="${farba==='sez'?'on':''}" data-l="sez"><span class="dot" style="background:#E84B8A"></span>Envirozáťaž</button>
+      <button class="${farba==='own'?'on':''}" data-l="own"><span class="dot" style="background:${C.own.city}"></span>Vlastníctvo</button>
+      <button class="${farba==='cls'?'on':''}" data-l="cls"><span class="dot" style="background:${C.cls.A}"></span>Potenciál</button>
+    </div>`;
+    Cn.querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>{farba=b.dataset.l;renderDocks();renderLegendPop();repaint();}));
+    R.innerHTML=`<button class="pill glass" id="btnLegend"><svg width="17" height="17" viewBox="0 0 24 24"><path d="M4 6h2M4 12h2M4 18h2M10 6h10M10 12h10M10 18h10"/></svg>Legenda</button>`;
+    R.querySelector('#btnLegend').addEventListener('click',()=>togglePop('popLegend'));
+    renderLegendPop();
+  }else{
+    Cn.innerHTML='';R.innerHTML='';
   }
 }
 
-/* ---------- interakcie ---------- */
-function bindPanel(){
-  const q=document.getElementById('q');
-  if(q){q.addEventListener('input',()=>{query=q.value;
-    /* re-render len zoznam, zachovaj focus */
-    const val=q.value,pos=q.selectionStart;
-    renderPanel();
-    const q2=document.getElementById('q');q2.focus();q2.setSelectionRange(pos,pos);
-    paint();
-  });}
-  document.querySelectorAll('[data-f]').forEach(b=>b.addEventListener('click',()=>{
-    const f=b.dataset.f;filters.has(f)?filters.delete(f):filters.add(f);
-    renderPanel();paint();
+/* Vrstvy — prekryvy, kombinovateľné */
+function renderLayersPop(){
+  const el=document.getElementById('popLayers');
+  const chk=(key,label,desc)=>`<button class="fopt chk ${O[key]?'on':''}" data-o="${key}">${O[key]?'✓ ':''}${label}</button>`;
+  el.innerHTML=`
+    <h4>Prekryvy — kombinuj ľubovoľne</h4>
+    <div class="fgroup" style="flex-direction:column;align-items:stretch">
+      ${chk('sez','⚠ Envirozáťaže (šrafy)')}
+      ${chk('labels','◎ Menovky území a zón')}
+      ${chk('b3d','▲ 3D budovy mesta')}
+    </div>
+    <div class="clearrow"><span>prekryvy sa sčítavajú s farbou aj filtrami</span></div>`;
+  el.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>{
+    O[b.dataset.o]=!O[b.dataset.o];
+    renderLayersPop();repaint();
+    document.getElementById('popLayers').classList.add('open');
   }));
-  document.querySelectorAll('[data-i]').forEach(b=>b.addEventListener('click',()=>selectBF(+b.dataset.i,true)));
+}
+
+/* Filter — skupiny, kombinovateľné, platia v každom režime */
+function fopt(group,val,label){
+  const on=(val===null&&!F[group])||(F[group]===val)||(group==='size'&&F.size===val);
+  return `<button class="fopt ${on?'on':''}" data-g="${group}" data-val="${val===null?'':val}">${label}</button>`;
+}
+function renderFilterPop(){
+  const el=document.getElementById('popFilter');
+  el.innerHTML=`
+    <h4>Envirozáťaž</h4><div class="fgroup">
+      ${fopt('sez',null,'Všetky')}${fopt('sez',true,'⚠ Len kontaminované (15)')}
+    </div>
+    <h4>Kto drží kľúč</h4><div class="fgroup">
+      ${fopt('own',null,'Všetci')}${fopt('own','city','🏛 Mesto (13)')}${fopt('own','private','🔒 Súkromné (56)')}${fopt('own','state','🏳 Štát (11)')}${fopt('own','mixed','🤝 Mix (8)')}
+    </div>
+    <h4>Rozloha</h4><div class="fgroup">
+      ${fopt('size',0,'Všetky')}${fopt('size',1,'1+ ha')}${fopt('size',5,'5+ ha')}${fopt('size',8,'obri 8+ ha')}
+    </div>
+    <h4>Potenciál (CABERNET)</h4><div class="fgroup">
+      ${fopt('cls',null,'Všetky')}${fopt('cls','A','A (51)')}${fopt('cls','B','B (48)')}${fopt('cls','C','C (11)')}${fopt('cls','D','D (3)')}
+    </div>
+    <div class="clearrow">
+      <span>filtre sa kombinujú · platia pre mapu, model aj zoznam</span>
+      <button id="popClear">✕ zrušiť</button>
+    </div>`;
+  el.querySelectorAll('.fopt').forEach(b=>b.addEventListener('click',()=>{
+    const g=b.dataset.g;let v=b.dataset.val;
+    if(g==='size')v=+v||0;
+    else if(g==='sez')v=v?true:null;
+    else v=v||null;
+    F[g]=v;
+    renderFilterPop();renderStack();renderDocks();repaint();
+    document.getElementById('popFilter').classList.add('open');
+  }));
+  el.querySelector('#popClear').addEventListener('click',()=>{
+    F.sez=null;F.own=null;F.size=0;F.cls=null;
+    renderFilterPop();renderStack();renderDocks();repaint();
+  });
+}
+
+function renderLegendPop(){
+  const LEG={
+    stav:[['spí — bez známeho zámeru ('+N_SLEEP+')',C.sleeping],['prebúdza sa — so zámerom ('+N_PLAN+')',C.plan]],
+    typ:Object.keys(TYPL).map(k=>[TYPL[k],C.typ[k]]),
+    sez:[['s envirozáťažou (15)','#B3376B'],['bez záťaže (98)',C.sleeping]],
+    own:Object.keys(OWNL).map(k=>[OWNL[k],C.own[k]]),
+    cls:[['A — najvyšší potenciál (51)',C.cls.A],['B (48)',C.cls.B],['C (11)',C.cls.C],['D — rezerva (3)',C.cls.D]]
+  }[farba];
+  document.getElementById('popLegend').innerHTML=`
+    <h4>Legenda — ${ {stav:'stavy',typ:'typológia',sez:'envirozáťaž',own:'vlastníctvo',cls:'potenciál'}[farba] }</h4>
+    <div class="legend">${LEG.map(([l,c])=>`<div class="li"><span class="sw" style="background:${c}"></span>${l}</div>`).join('')}
+    ${farba==='own'?'<div class="li" style="font-size:11px;color:var(--text-low)">obrys: plný = mesto · prerušovaný = súkromné</div>':''}</div>`;
+}
+
+function togglePop(id){
+  const el=document.getElementById(id);
+  const was=el.classList.contains('open');
+  closePops();
+  if(!was)el.classList.add('open');
+}
+function closePops(){document.querySelectorAll('.pop').forEach(p=>p.classList.remove('open'));}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.pop')&&!e.target.closest('#btnFilter')&&!e.target.closest('#btnLegend')&&!e.target.closest('#btnLayers'))closePops();
+});
+
+/* ---------- interakcie ---------- */
+function bindStack(){
+  const q=document.getElementById('q');
+  if(q){q.addEventListener('input',()=>{
+    query=q.value;const pos=q.selectionStart;
+    renderStack();
+    const q2=document.getElementById('q');q2.focus();q2.setSelectionRange(pos,pos);
+    repaint();
+  });}
+  document.querySelectorAll('[data-i]').forEach(b=>b.addEventListener('click',()=>{selIdx=+b.dataset.i;renderStack();repaint();zoomTo(selIdx);}));
   const back=document.getElementById('backList');
-  if(back)back.addEventListener('click',()=>{selIdx=null;resetZoom();renderPanel();paint();});
+  if(back)back.addEventListener('click',()=>{selIdx=null;renderStack();repaint();resetView();});
+  const clearF=document.getElementById('clearF');
+  if(clearF)clearF.addEventListener('click',()=>{F.sez=null;F.own=null;F.size=0;F.cls=null;renderStack();renderDocks();repaint();});
+  const goD=document.getElementById('goDetail');
+  if(goD)goD.addEventListener('click',()=>{const i=selIdx;setMode('objav',false);selIdx=i;renderStack();repaint();zoomTo(i);});
+  const goL=document.getElementById('goList');
+  if(goL)goL.addEventListener('click',()=>setMode('objav'));
   document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{
     if(selIdx==null)return;
     votes[selIdx]=b.dataset.v;saveVotes();
@@ -669,34 +828,30 @@ function bindPanel(){
     b.classList.add('picked');
     const face=document.getElementById('oborFace');if(face)face.classList.add('awake');
     const th=document.getElementById('voteThanks');if(th)th.style.display='block';
-    sndChime();paint();
+    sndChime();repaint();
   }));
 }
-
-function selectBF(i,zoom){
-  if(mode!=='objav'){setMode('objav',false);}
-  selIdx=i;renderPanel();paint();
-  if(zoom)zoomTo(i);
+function clickBF(i){
+  if(mode==='pulz'){selIdx=i;renderStack();repaint();}
+  else if(mode==='objav'){selIdx=i;renderStack();repaint();zoomTo(i);}
+  else{const idx=i;setMode('objav',false);selIdx=idx;renderStack();repaint();zoomTo(idx);}
 }
-
-function setMode(m,rz=true){
+function setMode(m,rv=true){
   mode=m;selIdx=null;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.mode===m));
-  if(rz)resetZoom();
-  renderPanel();renderBottom();paint();
+  if(rv)resetView();
+  renderStack();renderDocks();repaint();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setMode(t.dataset.mode)));
 
 /* ---------- splash + ignite ---------- */
 function ignite(m){
   document.getElementById('splash').classList.add('off');
-  /* zábleskové rozsvietenie: všetko žije → stagger návrat do stavov */
-  shapes.forEach(({p},i)=>{
-    p.style.transition='none';p.setAttribute('fill',C.alive);p.setAttribute('opacity','.95');
-    setTimeout(()=>{p.style.transition='fill .9s, opacity .9s';},30);
-  });
   sndChime();
-  setTimeout(()=>setMode(m),650);
+  if(map.getLayer('bf-fill')){
+    map.setPaintProperty('bf-fill','fill-color',C.alive);
+    setTimeout(()=>setMode(m),700);
+  }else setMode(m);
 }
 
 /* ---------- zvuky ---------- */
@@ -722,7 +877,7 @@ function sndTick(){
 }
 
 /* init */
-renderPanel();renderBottom();paint();
+renderStack();renderDocks();
 </script>
 </body>
 </html>
