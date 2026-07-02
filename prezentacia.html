@@ -39,6 +39,23 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 .frag{opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.2,.9,.3,1),transform .6s cubic-bezier(.2,.9,.3,1)}
 .frag.in{opacity:1;transform:none}
+/* simulátor modelu — scény projekcie */
+.simseg{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:104px;display:flex;gap:5px;z-index:3;
+  background:rgba(11,14,26,.68);backdrop-filter:blur(16px);border:1px solid rgba(139,145,221,.28);
+  border-radius:99px;padding:6px;
+}
+.simseg button{
+  min-height:46px;padding:11px 18px;border-radius:99px;font-family:var(--fm);font-size:11px;
+  letter-spacing:.14em;color:var(--text-mid);transition:all .2s;
+}
+.simseg button:hover{color:var(--text-hi)}
+.simseg button.on{background:var(--amber-500);color:#0B0E1A;font-weight:700}
+.simcap{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:58px;z-index:3;
+  font-family:var(--fm);font-size:12.5px;color:var(--warm-300);text-align:center;white-space:nowrap;
+  text-shadow:0 2px 12px rgba(7,9,18,.9);
+}
 /* backend poznámky — ako to funguje pod kapotou */
 .backnote{
   font-family:var(--fm);font-size:11px;color:var(--text-low);line-height:1.75;
@@ -225,6 +242,24 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   <p class="backnote frag"><b>odkiaľ sa berie stav</b> · PREBÚDZA SA = pole ZAMER má záznam (66 území) · SPÍ = bez záznamu (47) · DRIEME a ŽIJE = polia dočasného využitia a vyradenia · <b>jas = miera života</b>: stavy sú stupnica od tmy k žiare — na modeli svieti mesto a diery mlčia, obrazovka figúru obráti, aby sa dalo klikať</p>
 </section>
 
+<!-- 08 · SIMULÁCIA MODELU -->
+<section class="slide" data-enter="msim:ambient">
+  <div class="livemap"><svg id="msim"></svg></div>
+  <div style="position:absolute;left:96px;top:76px;z-index:2;pointer-events:none">
+    <div class="kicker">simulácia projekcie · tie isté dáta, obrátená figúra</div>
+    <p class="stmt" style="font-size:clamp(28px,3.4vw,48px)">Takto to bude<br>vyzerať na modeli</p>
+  </div>
+  <div class="simseg" id="simseg">
+    <button data-s="ambient" class="on">POKOJ</button>
+    <button data-s="stavy">STAVY</button>
+    <button data-s="zataze">ZÁŤAŽE</button>
+    <button data-s="vyber">VÝBER</button>
+    <button data-s="cas">ČAS</button>
+    <button data-s="hlas">HLAS</button>
+  </div>
+  <p class="simcap" id="simcap"></p>
+</section>
+
 <!-- 08 · KANÁLY -->
 <section class="slide">
   <div class="kicker">dizajn systém naživo</div>
@@ -399,13 +434,15 @@ function buildMap(id){
   mk('rect',{width:2.8,height:9,fill:'#E84B8A',opacity:.9},pat);
   const b=mk('path',{d:MAPDATA.boundary,fill:'#0D1122',stroke:'#2A3150','stroke-width':2});
   MAPDATA.danube.forEach(d=>mk('path',{d,fill:'none',stroke:'#1B2244','stroke-width':13,'stroke-linecap':'round'}));
+  const bright=(id==='msim'); /* simulátor modelu: mesto svieti výraznejšie */
   let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   let placed=0,tries=0;
-  while(placed<320&&tries<5200){
+  while(placed<(bright?460:320)&&tries<6800){
     tries++;const x=rnd()*MAPDATA.W,y=rnd()*MAPDATA.H;
     const dc=Math.hypot((x-MAPDATA.W*.46)/MAPDATA.W,(y-MAPDATA.H*.40)/MAPDATA.H);
     if(rnd()<dc*1.9||!inBA(x,y))continue;
-    mk('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:(0.9+rnd()*1.8).toFixed(1),fill:'#FFE9B8',opacity:(0.05+rnd()*.24).toFixed(2)});
+    mk('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:(0.9+rnd()*(bright?2.3:1.8)).toFixed(1),
+      fill:'#FFE9B8',opacity:((bright?0.14:0.05)+rnd()*(bright?.5:.24)).toFixed(2)});
     placed++;
   }
   const shapes=MAPDATA.bf.map((f,i)=>{
@@ -432,7 +469,64 @@ function mapMode(id,mode){
     p.classList.toggle('pulse',pulse);
   });
 }
-['m1','m2','m3','m4','m5','mf'].forEach(buildMap);
+['m1','m2','m3','m4','m5','mf','msim'].forEach(buildMap);
+
+/* ---------- simulátor modelu: 6 scén projekcie ---------- */
+const planOf=f=>!!(f.zamer&&!/^nezisten/i.test(f.zamer));
+function wakeYear(f,i){let h=0;for(const ch of f.n)h=(h*31+ch.charCodeAt(0))%97;return 2024+((h+i)%12);}
+const SIMSEL=MAPDATA.bf.reduce((b,f,i)=>f.ha>MAPDATA.bf[b].ha?i:b,0);
+let simTimer=null;
+const SIMCAP={
+  ambient:'POKOJ · mesto svieti, 113 dier ticho dýcha — najtmavšie miesta miestnosti',
+  stavy:'STAVY · jas = miera života: 66 území so zámerom sa rozžiari, 47 spí ďalej',
+  zataze:'ZÁŤAŽE · všetko stíchne, ostane 15 šrafovaných jaziev',
+  vyber:`VÝBER · dirigent vybral „${MAPDATA.bf[SIMSEL].n}" — okolie ustúpi, územie zažiari`,
+  hlas:`HLAS · návštevník zahlasoval — „${MAPDATA.bf[SIMSEL].n}" vzbĺkne teplým svetlom + chime`
+};
+function simScene(s){
+  const m=MAPS['msim'];if(!m)return;
+  if(simTimer){clearInterval(simTimer);simTimer=null;}
+  document.querySelectorAll('#simseg button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  const cap=document.getElementById('simcap');
+  const paintOne=(sh,i,fill,op,pulse,stroke,sw,hzOp)=>{
+    sh.p.setAttribute('fill',fill);sh.p.setAttribute('opacity',op);
+    sh.p.classList.toggle('pulse',pulse);
+    sh.p.setAttribute('stroke',stroke||'none');sh.p.setAttribute('stroke-width',sw||0);
+    if(sh.hz)sh.hz.setAttribute('opacity',hzOp||0);
+  };
+  m.shapes.forEach(sh=>sh.p.style.transition=(s==='cas')?'fill .18s,opacity .18s':'');
+  if(s==='cas'){
+    let year=1990;
+    const tick=()=>{
+      m.shapes.forEach((sh,i)=>{
+        const wy=wakeYear(sh.f,i);
+        let fill,op;
+        if(year<1998){fill='#FFE9B8';op=.8;}
+        else if(year>=wy){fill='#FFE9B8';op=.9;}
+        else if(year>=wy-3){fill='#F59E0B';op=.85;}
+        else{fill='#20265A';op=.5;}
+        paintOne(sh,i,fill,op,false);
+      });
+      cap.textContent=`ČAS · ${year} — ${year<1998?'fabriky ešte žijú':year<2012?'deindustrializácia, svetlá zhasínajú':year<2024?'mesto spí':'prebúdzanie — zámery svitajú'}`;
+      year++;if(year>2035)year=1990;
+    };
+    tick();simTimer=setInterval(tick,160);
+    return;
+  }
+  m.shapes.forEach((sh,i)=>{
+    const f=sh.f;
+    if(s==='ambient')paintOne(sh,i,'#20265A',.5,true);
+    else if(s==='stavy')paintOne(sh,i,planOf(f)?'#F59E0B':'#1D2352',planOf(f)?.85:.45,!planOf(f));
+    else if(s==='zataze')paintOne(sh,i,f.sez?'#3B4285':'#12162E',f.sez?.95:.22,!!f.sez,null,0,f.sez?1:0);
+    else if(s==='vyber')paintOne(sh,i,i===SIMSEL?'#F59E0B':'#151A38',i===SIMSEL?.95:.28,false,i===SIMSEL?'#FFF6E3':null,i===SIMSEL?3:0);
+    else if(s==='hlas')paintOne(sh,i,i===SIMSEL?'#FFF6E3':'#20265A',i===SIMSEL?1:.4,i!==SIMSEL,i===SIMSEL?'#FFB94A':null,i===SIMSEL?4:0);
+  });
+  cap.textContent=SIMCAP[s]||'';
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('#simseg button');
+  if(b)simScene(b.dataset.s);
+});
 
 function countUp(id,to){
   const el=document.getElementById(id);if(!el)return;
@@ -448,6 +542,7 @@ function runFx(fx){
   fx.split(';').forEach(cmd=>{
     const parts=cmd.trim().split(':');
     if(parts[0]==='map')mapMode(parts[1],parts[2]);
+    if(parts[0]==='msim')simScene(parts[1]);
     if(parts[0]==='num')countUp(parts[1],+parts[2]);
     if(parts[0]==='ignite')setTimeout(()=>mapMode(parts[1],'ignite'),1000);
     if(parts[0]==='el'){
@@ -500,6 +595,7 @@ function enterSlide(s){
   if(s.querySelector('#composeSvg'))resetCompose();
 }
 function show(i,revealAll=false){
+  if(typeof simTimer!=='undefined'&&simTimer){clearInterval(simTimer);simTimer=null;}
   cur=Math.max(0,Math.min(i,slides.length-1));
   slides.forEach((s,j)=>s.classList.toggle('on',j===cur));
   const s=slides[cur];
