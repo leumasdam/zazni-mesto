@@ -26,10 +26,12 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 /* ============ filmové pozadie — scrub 4K videa scrollom ============ */
 #vidbg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-#vidbg .seq{position:absolute;left:0;top:-6%;width:100%;height:112%;will-change:transform}
+#vidbg .seq,#vidbg video{position:absolute;left:0;top:-6%;width:100%;height:112%;will-change:transform;object-fit:cover}
+/* filmový prach nad scénou */
+#pfx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40;mix-blend-mode:screen}
 #vidbg .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,18,.62),rgba(7,9,18,.38) 45%,rgba(7,9,18,.72));transition:opacity .9s ease}
 /* čisté video medzislajdy — film dostane celú obrazovku */
-.vpauza{min-height:100vh}
+.vpauza{min-height:135vh}
 .vpauza .cap{
   position:absolute;left:50%;bottom:54px;transform:translateX(-50%);
   font-family:var(--fm);font-size:11px;letter-spacing:.26em;color:var(--warm-300);text-transform:uppercase;
@@ -50,8 +52,9 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .giant{font-family:var(--fd);font-weight:700;font-size:clamp(120px,17vw,260px);line-height:.9;letter-spacing:-.02em;color:var(--warm-100)}
 .giant small{font-size:.32em;color:var(--indigo-300);letter-spacing:0;font-weight:600}
 
-.frag{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.9,.3,1),transform .7s cubic-bezier(.2,.9,.3,1)}
-.frag.in{opacity:1;transform:none}
+.frag{opacity:0;transform:translateY(26px);filter:blur(10px);
+  transition:opacity .85s cubic-bezier(.2,.9,.3,1),transform .85s cubic-bezier(.2,.9,.3,1),filter .85s ease}
+.frag.in{opacity:1;transform:none;filter:blur(0)}
 
 .backnote{
   font-family:var(--fm);font-size:11px;color:var(--text-low);line-height:1.75;
@@ -218,7 +221,12 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 </head>
 <body>
 
-<div id="vidbg" aria-hidden="true"><canvas class="seq" id="vseq"></canvas><div class="veil" id="vveil"></div></div>
+<div id="vidbg" aria-hidden="true">
+  <video id="vfall" muted playsinline preload="auto" src="assets/hero.mp4"></video>
+  <canvas class="seq" id="vseq"></canvas>
+  <div class="veil" id="vveil"></div>
+</div>
+<canvas id="pfx" aria-hidden="true"></canvas>
 <div class="topbar"><i id="bar"></i></div>
 <span class="brand">ZAŽNI <em>MESTO</em></span>
 <span class="tubamark" aria-label="TU-BA">TU<i></i>BA</span>
@@ -228,7 +236,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 <!-- 01 · TITUL -->
 <section class="slide mapfade" data-enter="map:m1:base" data-dot="Zažni mesto">
   <div class="livemap"><svg id="m1"></svg></div>
-  <div style="margin-top:auto">
+  <div style="margin-top:auto" id="heroInner">
     <div class="kicker">MIB · TU-BA · koncept interaktívnej expozície brownfieldov</div>
     <h1 class="stmt" style="font-size:clamp(60px,9vw,140px);text-transform:uppercase"><span class="lit">Zažni</span><br><span class="dim">mesto</span></h1>
     <p class="line mono" style="font-size:13px">vpravo živý register MIB (113 polygónov) · za textom expozícia TU-BA — kamera stojí v miestnosti a scrollom ňou preletíš</p>
@@ -680,33 +688,55 @@ function wakeObor(){
 }
 
 /* ============ landing engine: video scrub + aktívna sekcia + reveal ============ */
-/* jeden prejazd: začiatok stránky = frame 0, koniec stránky = posledný frame
-   render cez canvas — framy sa kreslia preddekódované, žiadne sekanie */
-const VSEQ={dir:'assets/seq/hero',count:241};
+/* jeden prejazd: začiatok stránky = frame 0, koniec = posledný frame.
+   Framy sa extrahujú za behu z MP4 do ImageBitmapov (GPU-friendly, plná kvalita);
+   kým extrakcia beží, scrubuje sa priamo <video> element. */
+const VN=140;                      /* počet extrahovaných framov */
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const slides=[...document.querySelectorAll('.slide')];
 const vseq=document.getElementById('vseq');
 const vctx=vseq.getContext('2d');
-const vcache=[];
-function vpre(i){
-  if(!vcache[i]){const im=new Image();im.src=`${VSEQ.dir}/frame-${i}.jpg`;vcache[i]=im;}
-  return vcache[i];
-}
+const vfall=document.getElementById('vfall');
+const VF=[];let vfDone=false,vSeeking=false;
 function sizeCanvas(){
-  const dpr=Math.min(devicePixelRatio||1,1.5);
+  const dpr=Math.min(devicePixelRatio||1,2);
   vseq.width=Math.round(vseq.clientWidth*dpr);
   vseq.height=Math.round(vseq.clientHeight*dpr);
 }
 function drawFrame(i){
-  const img=vcache[i];
-  if(!img||!img.complete||!img.naturalWidth)return false;
-  const cw=vseq.width,ch=vseq.height,iw=img.naturalWidth,ih=img.naturalHeight;
+  const b=VF[i];if(!b)return false;
+  const cw=vseq.width,ch=vseq.height,iw=b.width,ih=b.height;
   const s=Math.max(cw/iw,ch/ih),dw=iw*s,dh=ih*s;
-  vctx.drawImage(img,(cw-dw)/2,(ch-dh)/2,dw,dh);
+  vctx.drawImage(b,(cw-dw)/2,(ch-dh)/2,dw,dh);
   return true;
 }
+async function extractFrames(){
+  const xv=document.createElement('video');
+  xv.muted=true;xv.playsInline=true;xv.preload='auto';xv.src='assets/hero.mp4';
+  await new Promise((res,rej)=>{xv.onloadedmetadata=res;xv.onerror=rej;setTimeout(rej,20000);});
+  const scale=Math.min(1,1600/xv.videoWidth);
+  const w=Math.round(xv.videoWidth*scale),h=Math.round(xv.videoHeight*scale);
+  for(let i=0;i<VN;i++){
+    const t=(i/(VN-1))*(xv.duration-0.05);
+    xv.currentTime=t;
+    await new Promise(res=>{const on=()=>{xv.removeEventListener('seeked',on);res();};xv.addEventListener('seeked',on);});
+    try{VF[i]=await createImageBitmap(xv,{resizeWidth:w,resizeHeight:h});}
+    catch(e){
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(xv,0,0,w,h);VF[i]=c;
+    }
+  }
+  vfDone=true;vfall.style.display='none';shownF=-1;
+  requestAnimationFrame(animFrames);
+}
+vfall.addEventListener('seeked',()=>{vSeeking=false;});
+vfall.addEventListener('stalled',()=>{vSeeking=false;});
+/* video scrub bounds: hero chvíľu drží úvodný záber */
+function vprog(){
+  const start=innerHeight*.35, end=document.documentElement.scrollHeight-innerHeight;
+  return Math.max(0,Math.min(1,(scrollY-start)/(end-start)));
+}
 sizeCanvas();
-vpre(0).onload=()=>drawFrame(0);
 
 /* bodky navigácie */
 const dotsEl=document.getElementById('dots');
@@ -721,12 +751,16 @@ const dotBtns=[...dotsEl.children];
 /* plynulý dobeh framov — pri skoku na sekciu film „prejde" celý kus, nie skok */
 let curF=0,targetF=0,animRun=false,shownF=-1;
 function animFrames(){
-  if(Math.abs(targetF-curF)<.4){curF=targetF;animRun=false;}
+  if(Math.abs(targetF-curF)<.35){curF=targetF;animRun=false;}
   else{curF+=(targetF-curF)*.14;animRun=true;}
-  const f=Math.max(0,Math.min(VSEQ.count-1,Math.round(curF)));
-  if(f!==shownF){
-    if(drawFrame(f))shownF=f;
-    else vpre(f).onload=()=>{if(Math.round(curF)===f){drawFrame(f);shownF=f;}};
+  const f=Math.max(0,Math.min(VN-1,Math.round(curF)));
+  if(f!==shownF&&VF[f]){drawFrame(f);shownF=f;}
+  else if(!VF[f]&&!vfDone){
+    /* frame ešte nie je extrahovaný — scrubni priamo video element */
+    if(!vSeeking&&vfall.duration){
+      vSeeking=true;
+      vfall.currentTime=(f/(VN-1))*vfall.duration;
+    }
   }
   if(animRun)requestAnimationFrame(animFrames);
 }
@@ -740,10 +774,14 @@ function onScroll(){
     document.getElementById('bar').style.width=(g*100)+'%';
     document.getElementById('scrollhint').style.opacity=scrollY<80?1:0;
     if(!reduced){
-      targetF=g*(VSEQ.count-1);
+      targetF=vprog()*(VN-1);
       if(!animRun)requestAnimationFrame(animFrames);
-      vseq.style.transform=`translateY(${(g*-50).toFixed(1)}px) scale(1.1)`;
+      const tf=`translateY(${(g*-50).toFixed(1)}px) scale(1.08)`;
+      vseq.style.transform=tf;vfall.style.transform=tf;
     }
+    /* hero fade-out pri odchode */
+    const hi=document.getElementById('heroInner');
+    if(hi)hi.style.opacity=Math.max(0,1-scrollY/(innerHeight*.55));
     const mid=scrollY+innerHeight*.5;
     let idx=0;
     for(let i=0;i<slides.length;i++){
@@ -806,10 +844,39 @@ document.addEventListener('keydown',e=>{
   if(e.key==='End')slides[slides.length-1].scrollIntoView({behavior:'smooth'});
 });
 
-/* preload celej sekvencie postupne */
-addEventListener('load',()=>{let i=0;(function next(){if(i>=VSEQ.count)return;for(let k=0;k<5&&i<VSEQ.count;k++,i++)vpre(i);setTimeout(next,60);})();});
+/* extrakcia framov štartuje hneď (video fallback medzitým scrubuje) */
+if(!reduced)extractFrames().catch(()=>{});
 addEventListener('scroll',onScroll,{passive:true});
-addEventListener('resize',()=>{sizeCanvas();shownF=-1;drawFrame(Math.round(curF));onScroll();});
+addEventListener('resize',()=>{sizeCanvas();shownF=-1;drawFrame(Math.max(0,Math.min(VN-1,Math.round(curF))));onScroll();});
+
+/* ---------- filmový prach (particles) ---------- */
+(function(){
+  if(reduced)return;
+  const pc=document.getElementById('pfx'),px=pc.getContext('2d');
+  let P=[];
+  function rs(){
+    pc.width=innerWidth;pc.height=innerHeight;
+    P=[];
+    const n=Math.floor(innerWidth*innerHeight/26000);
+    for(let i=0;i<n;i++)P.push({
+      x:Math.random()*pc.width,y:Math.random()*pc.height,
+      vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22-.05,
+      r:Math.random()*1.4+.4,o:Math.random()*.32+.06
+    });
+  }
+  function tick(){
+    px.clearRect(0,0,pc.width,pc.height);
+    for(const p of P){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;
+      if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;
+      px.beginPath();px.arc(p.x,p.y,p.r,0,Math.PI*2);
+      px.fillStyle=`rgba(255,233,184,${p.o})`;px.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  rs();addEventListener('resize',rs);tick();
+})();
 
 /* štart na hash sekcii */
 const h=parseInt(location.hash.slice(1));
