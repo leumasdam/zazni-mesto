@@ -81,13 +81,15 @@ ok('každá typológia obrov má telo v OBODY',(()=>{
   return [...new Set(big.map(f=>f.typ))].every(t=>bodies.includes(t));
 })());
 
-console.log('\n— E · PREZENTÁCIA (čísla na slajdoch) —');
-ok('slajd 113',PRE.includes('num:n2:113'));
-ok('slajd 580 sedí so sumou',PRE.includes('num:n3:580')&&Math.round(sumHa)>=579&&Math.round(sumHa)<=580);
-ok('slajd 15 = sez',PRE.includes('num:n4:15'));
-ok('slajd 56 = súkromní',PRE.includes('num:n5:56')&&own.private===56);
-ok('mapové režimy big/sez/private existujú',['m3:big','m4:sez','m5:private'].every(s=>PRE.includes(s)));
-ok('simulátor modelu: príbeh návštevníka v 5 krokoch',['pride','vyberie','vrstva','cas','hlas'].every(s=>PRE.includes(`data-s="${s}"`))&&PRE.includes('msim:pride')&&PRE.includes('NÁVŠTEVNÍK'));
+console.log('\n— E · SCROLL-STORY (prezentacia.html) —');
+ok('beží na geo.js, žiadne video',PRE.includes('src="geo.js"')&&!PRE.includes('hero.mp4')&&!PRE.includes('createImageBitmap'));
+ok('5 aktov zážitkovej slučky',['PRITIAHNI','Objav','Pochop','Predstav','Zapoj'].every(s=>PRE.includes(s)));
+ok('reálne čísla v kartách (113/580/800/56/66)',['data-n="113"','data-n="580"','data-n="800"','data-n="56"','data-n="66"'].every(s=>PRE.includes(s))&&own.private===56);
+ok('rampa stavov spí→drieme→prebúdza→žije',PRE.includes('[[59,66,133],[23,179,163],[245,158,11],[255,233,184]]'));
+ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-a.cx'));
+ok('reduced-motion = statický rozsvietený stav',PRE.includes('prefers-reduced-motion')&&PRE.includes('REDUCED?1:'));
+ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
+ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti'));
 
 console.log(`\n${'='.repeat(46)}\nVÝSLEDOK: ${pass} ✓ · ${fail} ✗\n`);
 process.exit(fail?1:0);
