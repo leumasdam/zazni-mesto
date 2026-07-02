@@ -98,6 +98,25 @@ body.lightmode .brand em{color:#C77800}
 #ovlObor .oborbox svg{width:min(30vh,260px);height:min(30vh,260px)}
 #ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
 
+/* turntable kapitola */
+#ovlTurn{display:flex;align-items:center;justify-content:center}
+.turnwrap{position:relative;width:min(78vh,760px);height:min(78vh,760px)}
+.turnhead{position:absolute;top:-4vh;left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center}
+#turnimg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))}
+.callout{
+  position:absolute;max-width:230px;opacity:0;transform:translateY(14px);
+  transition:opacity .6s ease,transform .6s ease;
+}
+.callout b{font-family:var(--fd);font-size:15px;display:block;color:var(--warm-100)}
+.callout span{font-family:var(--fm);font-size:11px;color:var(--text-mid);line-height:1.6;display:block;margin-top:4px}
+.callout::before{content:'';position:absolute;top:8px;width:44px;height:2px;background:var(--amber-500);box-shadow:0 0 8px rgba(245,158,11,.7)}
+.c1{left:-240px;top:22%}.c1::before{right:-56px}
+.c2{right:-240px;top:16%}.c2::before{left:-56px}
+.c3{left:-240px;bottom:24%}.c3::before{right:-56px}
+.c4{right:-240px;bottom:18%}.c4::before{left:-56px}
+.callout.on{opacity:1;transform:none}
+@media (max-width:1100px){.callout{position:static;max-width:none;margin-top:8px}.callout::before{display:none}.turnwrap{width:min(56vh,92vw);height:auto}}
+
 /* kapitolové captiony */
 .chapcap{
   position:absolute;left:50%;bottom:56px;transform:translateX(-50%);
@@ -382,6 +401,20 @@ body.lightmode .dots i.on{background:#C77800}
   <p class="sub" id="oborHint">obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>ťukni a zobuď ho · oči = stav · ústa = energia · aura = jas</p>
 </div>
 
+<!-- 7b · TURNTABLE — expozícia z každej strany -->
+<div class="ovl" id="ovlTurn">
+  <div class="turnwrap">
+    <div class="turnhead">
+      <span class="kicker">06 · Priestor — otočka okolo expozície</span>
+    </div>
+    <img id="turnimg" src="assets/seq/turn/frame-0.png" alt="Model expozície TU-BA — otočný pohľad">
+    <div class="callout c1"><b>FYZICKÝ MODEL</b><span>projekcia stavov zhora — model JE mapa</span></div>
+    <div class="callout c2"><b>TABLETY / AR</b><span>osobný ďalekohľad: minulosť · dnes · budúcnosť</span></div>
+    <div class="callout c3"><b>DOTYKOVÁ OBRAZOVKA</b><span>dirigent pri hrane — ovládaš od okraja, aj z vozíka</span></div>
+    <div class="callout c4"><b>NÁVŠTEVNÍK</b><span>hlas rozsvieti model — a stane sa dátami pre MIB</span></div>
+  </div>
+</div>
+
 <!-- 8 · VIDEO kapitola -->
 <div class="ovl" id="ovlVideo">
   <span class="chapcap">expozícia v pohybe · simulácia priestoru TU<i></i>BA · takto to kreslia projektory</span>
@@ -538,9 +571,9 @@ function stateColor(s){
 
 /* ---------- akty na virtuálnej časovej osi 0–1 ---------- */
 const ACT={
-  pritiahni:[0,.06], objav:[.06,.16], pochop:[.16,.26], predstav:[.26,.46],
-  jazyk:[.46,.58], obor:[.58,.68], video:[.68,.76], tuba:[.76,.86],
-  skal:[.86,.94], proto:[.94,.985], zapoj:[.985,1]
+  pritiahni:[0,.055], objav:[.055,.15], pochop:[.15,.24], predstav:[.24,.42],
+  jazyk:[.42,.53], obor:[.53,.615], turn:[.615,.72], video:[.72,.785],
+  tuba:[.785,.875], skal:[.875,.93], proto:[.93,.975], zapoj:[.975,1]
 };
 let Ps=REDUCED?1:0;
 function aP(k){const[a,b]=ACT[k];return clamp((Ps-a)/(b-a));}
@@ -548,17 +581,18 @@ const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
 
 /* ---------- kroky: jeden swipe = jeden stupeň; medzi krokmi to ide samo ---------- */
 const STEPS=[
-  {t:0,   n:'Zažni mesto'},
-  {t:.11, n:'Objav — čísla'},
-  {t:.21, n:'Pochop — kto drží kľúč'},
-  {t:.445,n:'Svetelná vlna',slow:1.9},
-  {t:.52, n:'Legenda'},
-  {t:.63, n:'Spiaci obor'},
-  {t:.72, n:'Expozícia — film',auto:3000},
-  {t:.81, n:'TU-BA + médiá'},
-  {t:.90, n:'Škálovateľnosť'},
-  {t:.962,n:'Živý prototyp'},
-  {t:1,   n:'Zapoj sa'},
+  {t:0,    n:'Zažni mesto'},
+  {t:.1025,n:'Objav — čísla'},
+  {t:.195, n:'Pochop — kto drží kľúč'},
+  {t:.405, n:'Svetelná vlna',slow:1.9},
+  {t:.475, n:'Legenda'},
+  {t:.5725,n:'Spiaci obor'},
+  {t:.6675,n:'Expozícia z každej strany',slow:2.6},
+  {t:.7525,n:'Expozícia — film',auto:3000},
+  {t:.83,  n:'TU-BA + médiá'},
+  {t:.9025,n:'Škálovateľnosť'},
+  {t:.9525,n:'Živý prototyp'},
+  {t:1,    n:'Zapoj sa'},
 ];
 let STEP=0,tw=null,autoT=null;
 const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
@@ -710,6 +744,9 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
 }
 
 const chapvid=document.getElementById('chapvid');
+/* turntable framy */
+const TURN_N=25,TURN=[];let turnShown=-1;
+for(let i=0;i<TURN_N;i++){const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;TURN[i]=im;}
 function chores(t){
   const p=Ps;
   bar.style.width=(p*100)+'%';
@@ -768,6 +805,20 @@ function chores(t){
   document.body.classList.toggle('lightmode',light>.5);
   document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
   document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
+
+  /* 6b TURNTABLE — pomalá otočka, vysvetlivky sa hromadia po štvrtinách */
+  const tn=wnd('turn');
+  const ot=document.getElementById('ovlTurn');
+  ot.style.opacity=tn.toFixed(3);
+  ot.style.visibility=tn>.02?'visible':'hidden';
+  const rot=clamp(aP('turn')*2);               /* plná otáčka presne do bodu dojazdu */
+  const tf=Math.round(rot*(TURN_N-1))%TURN_N;
+  if(tf!==turnShown&&TURN[tf]&&TURN[tf].complete){
+    turnShown=tf;document.getElementById('turnimg').src=TURN[tf].src;
+  }
+  document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
+    c.classList.toggle('on',(rot*4-i)>.35);
+  });
 
   /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
   const vSpan=clamp((Ps-ACT.video[0])/(ACT.tuba[1]-ACT.video[0]));
