@@ -39,6 +39,12 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 .frag{opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.2,.9,.3,1),transform .6s cubic-bezier(.2,.9,.3,1)}
 .frag.in{opacity:1;transform:none}
+/* backend poznámky — ako to funguje pod kapotou */
+.backnote{
+  font-family:var(--fm);font-size:11px;color:var(--text-low);line-height:1.75;
+  margin-top:30px;max-width:76ch;border-left:2px solid rgba(245,158,11,.4);padding-left:14px;
+}
+.backnote b{color:var(--amber-300);font-weight:500}
 
 /* živá mapa */
 .livemap{position:absolute;inset:0;z-index:-1}
@@ -146,6 +152,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="kicker">MIB · TU-BA · koncept interaktívnej expozície brownfieldov</div>
     <h1 class="stmt" style="font-size:clamp(60px,9vw,140px);text-transform:uppercase"><span class="lit">Zažni</span><br><span class="dim">mesto</span></h1>
     <p class="line mono" style="font-size:13px">vpravo nie je ilustrácia — je to živý register MIB, 113 polygónov, ktoré práve spia</p>
+    <p class="backnote"><b>backend</b> · ArcGIS FeatureServer BF_aktualizácia_2022 → generátor → GeoJSON → mapa · polia: NAZOV · VYMERA_HA · DRUH_VLA · P_VYUZITIE · ZAMER · KONTAMIN · KLASIFIKAC</p>
   </div>
 </section>
 
@@ -156,6 +163,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="kicker">register brownfieldov · aktualizácia 2022</div>
     <div class="giant"><span id="n2">0</span></div>
     <p class="stmt" style="font-size:clamp(28px,3vw,42px)">zhasnutých miest.</p>
+    <p class="backnote"><b>odkiaľ</b> · register vzniká terénnym prieskumom MIB v 2-ročnom cykle · 2019: 131 → 2022: 113 · brownfield = min. 2 roky opustené alebo využívané pod 30 % (metodika CABERNET)</p>
   </div>
 </section>
 
@@ -166,6 +174,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="kicker">≈ 800 futbalových ihrísk · na mape svietia obri nad 8 ha</div>
     <div class="giant"><span id="n3">0</span> <small>ha</small></div>
     <p class="stmt" style="font-size:clamp(28px,3vw,42px)">mesta spí.</p>
+    <p class="backnote"><b>odkiaľ</b> · súčet poľa VYMERA_HA cez všetkých 113 polygónov = 579 ha · obri = územia ≥ 8 ha, je ich 13 · najväčší: Dynamitka-Istrochem 138 ha</p>
   </div>
 </section>
 
@@ -176,6 +185,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="kicker">envirozáťaže · šrafy = jazvy mesta</div>
     <div class="giant"><span id="n4">0</span></div>
     <p class="stmt" style="font-size:clamp(28px,3vw,42px)">jaziev po priemysle.</p>
+    <p class="backnote"><b>odkiaľ</b> · pole KONTAMIN registra: 15 s evidovanou záťažou v Informačnom systéme envirozáťaží · šrafy sa viažu priamo na túto hodnotu · možná kontaminácia až 511 ha (Koncepcia 2026)</p>
   </div>
 </section>
 
@@ -186,6 +196,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="kicker">vlastníctvo · najväčšia prekážka revitalizácie</div>
     <div class="giant"><span id="n5">0</span></div>
     <p class="stmt" style="font-size:clamp(28px,3vw,42px)">kľúčov drží súkromník.</p>
+    <p class="backnote"><b>odkiaľ</b> · pole DRUH_VLA · súkromní: 49,6 % počtu / 45,9 % plochy · mesto len 11,5 % / 5,5 % plochy — preto sa revitalizácia nedá nariadiť, len vyjednať</p>
   </div>
 </section>
 
@@ -209,6 +220,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="stcard frag"><div class="stdemo"><div class="parcel p-awake"></div></div><div class="stname">PREBÚDZA SA</div><span class="sttok">amber · žiara rastie</span></div>
     <div class="stcard frag"><div class="stdemo"><div class="parcel p-alive"></div></div><div class="stname">ŽIJE</div><span class="sttok">teplá biela · stále</span></div>
   </div>
+  <p class="backnote frag"><b>odkiaľ sa berie stav</b> · PREBÚDZA SA = pole ZAMER má záznam (66 území: ohlásené projekty, zmeny ÚPN, štúdie — zbiera terénny prieskum) · SPÍ = bez záznamu (47) · DRIEME a ŽIJE = polia dočasného využitia a vyradenia pri aktualizácii · žiadny stav sa needituje ručne</p>
 </section>
 
 <!-- 08 · KANÁLY -->
@@ -222,6 +234,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
       <div class="chrow frag" data-fx="el:ch-hatch"><span class="no">3</span><b>VZOR</b><span>riziko</span></div>
       <div class="chrow frag" data-fx="el:ch-outline"><span class="no">4</span><b>OBRYS</b><span>vlastníctvo</span></div>
       <div class="chrow frag" data-fx="el:ch-label"><span class="no">5</span><b>MIERKA</b><span>význam</span></div>
+      <p class="backnote frag"><b>mapovanie polí → kanálov</b> · P_VYUZITIE→ikona · KONTAMIN→vzor · DRUH_VLA→obrys · KLASIFIKAC→potenciál · zoznam významných BF→mierka · jedna tabuľka pravidiel, žiadne ručné farbenie</p>
     </div>
     <svg id="composeSvg" viewBox="0 0 520 460">
       <defs>
@@ -308,12 +321,16 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="m frag"><b>Tablet je ďalekohľad.</b><span>osobná vrstva — detail, AR: minulosť · dnes · budúcnosť</span></div>
     <div class="m frag" style="border:none"><b style="color:var(--text-low);font-size:clamp(20px,2.2vw,30px)">Web je pokračovanie.</b><span>QR → celý zážitok doma</span></div>
   </div>
+  <p class="backnote frag"><b>synchronizácia</b> · obrazovka drží stav scény (websocket) → projekčná appka a tablety ho čítajú · tablet vie len požiadať „ukáž na modeli" (10 s highlight) · hlasy sa ukladajú ako dataset s časom a územím → export pre MIB</p>
 </section>
 
 <!-- 13 · PROTOTYP -->
 <section class="slide" style="padding:0">
   <iframe class="protoframe" src="obrazovka.html" title="Živý prototyp" loading="lazy"></iframe>
-  <div class="protobadge"><span class="dot"></span>ŽIVÉ DEMO · skutočný register + OSM 3D mesto · klikajte</div>
+  <div class="protobadge" style="flex-direction:column;gap:4px;border-radius:22px;text-align:center">
+    <span style="display:flex;gap:14px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO · skutočný register + OSM 3D mesto · klikajte</span>
+    <span style="font-family:var(--fm);font-size:10px;color:var(--text-low);font-weight:400">pipeline: ArcGIS → GeoJSON → MapLibre · snímky: Esri + GKÚ WMS · fotky: Wikimedia geosearch (produkčne pasport MIB) · hlasy: localStorage → export</span>
+  </div>
 </section>
 
 <!-- 14 · ŠKÁLOVATEĽNOSŤ -->
@@ -325,6 +342,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
     <div class="m frag"><b>Aktualizuje sa sama.</b><span>stavy sú mapované na polia ArcGIS registra · cyklus 2 roky</span></div>
     <div class="m frag" style="border:none"><b>Zajtra iná téma.</b><span>nájomné bývanie · zeleň · doprava — jazyk ostáva</span></div>
   </div>
+  <p class="backnote frag"><b>kvalita</b> · konzistenciu dát, čísel v UI a pravidiel zobrazenia stráži automatický audit — 46 kontrol pri každej zmene (node audit.mjs) · vrátane invariantu „obor bdie len zámerom z registra"</p>
 </section>
 
 <!-- 15 · FINÁLE -->
