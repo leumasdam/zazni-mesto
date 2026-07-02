@@ -606,7 +606,8 @@ function wakeObor(){
 }
 
 /* ============ landing engine: video scrub + aktívna sekcia + reveal ============ */
-const VSEQ={dir:'assets/seq/hero',count:121,loops:2};
+/* jeden prejazd: začiatok stránky = frame 0, koniec stránky = posledný frame */
+const VSEQ={dir:'assets/seq/hero',count:121};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const slides=[...document.querySelectorAll('.slide')];
 const vseq=document.getElementById('vseq');
@@ -625,7 +626,16 @@ slides.forEach((s,i)=>{
 });
 const dotBtns=[...dotsEl.children];
 
-let curIdx=-1,lastF=-1,ticking=false;
+/* plynulý dobeh framov — pri skoku na sekciu film „prejde" celý kus, nie skok */
+let curF=0,targetF=0,animRun=false,shownF=-1;
+function animFrames(){
+  if(Math.abs(targetF-curF)<.5){curF=targetF;animRun=false;}
+  else{curF+=(targetF-curF)*.09;animRun=true;}
+  const f=Math.max(0,Math.min(VSEQ.count-1,Math.round(curF)));
+  if(f!==shownF){shownF=f;vseq.style.backgroundImage=`url(${vpre(f)})`;}
+  if(animRun)requestAnimationFrame(animFrames);
+}
+let curIdx=-1,ticking=false;
 function onScroll(){
   if(ticking)return;ticking=true;
   requestAnimationFrame(()=>{
@@ -635,8 +645,8 @@ function onScroll(){
     document.getElementById('bar').style.width=(g*100)+'%';
     document.getElementById('scrollhint').style.opacity=scrollY<80?1:0;
     if(!reduced){
-      const f=Math.floor(g*VSEQ.loops*VSEQ.count)%VSEQ.count;
-      if(f!==lastF){lastF=f;vseq.style.backgroundImage=`url(${vpre(f)})`;}
+      targetF=g*(VSEQ.count-1);
+      if(!animRun)requestAnimationFrame(animFrames);
       vseq.style.transform=`translateY(${(g*-50).toFixed(1)}px) scale(1.1)`;
     }
     const mid=scrollY+innerHeight*.5;
