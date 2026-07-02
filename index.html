@@ -325,6 +325,115 @@ nav .logo{font-family:var(--font-display);font-weight:700;font-size:15px;letter-
 nav .logo em{font-style:normal;color:var(--amber-300)}
 nav a{color:var(--text-mid);text-decoration:none;font-size:13px;font-family:var(--font-mono);white-space:nowrap}
 nav a:hover{color:var(--warm-100)}
+
+/* ============================================================
+   MIB THEME — urban identita: biely papier, štvorcový grid,
+   indigo + koral, všetko hranaté. Tmavé demá = exponáty.
+   ============================================================ */
+:root{
+  --mib:#332F9E;
+  --mib-ink:#17172B;
+  --mib-sub:#4E4E66;
+  --mib-low:#8B8B9F;
+  --coral:#E8574A;
+  --paper:#FFFFFF;
+}
+html{background:var(--paper)}
+body{color:var(--mib-ink)}
+#bgfx{background:var(--paper)}
+#bgFar{background-image:
+  linear-gradient(rgba(232,87,74,.16) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(232,87,74,.16) 1px,transparent 1px);
+  background-size:26px 26px}
+#bgNear{background-image:
+  linear-gradient(rgba(51,47,158,.10) 1.5px,transparent 1.5px),
+  linear-gradient(90deg,rgba(51,47,158,.10) 1.5px,transparent 1.5px);
+  background-size:156px 156px;filter:none}
+#bgMid path{fill:none!important;stroke:#332F9E;stroke-width:1.4;opacity:.28;animation:none!important}
+#bgVeil{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15) 30%,rgba(255,255,255,.6))}
+
+/* HRANATÉ */
+.card,.tag,.chip,.stage,.loc-card,.icon-cell,.obor,.copy-btn,pre,.ramp,.ramp div,
+.state-demo,.parcel,.channel .swatchbox,.legend .sw,.imgcard,.fig{border-radius:0!important}
+
+/* chrome */
+nav{background:rgba(255,255,255,.94);border-bottom:2px solid var(--mib)}
+nav a{color:var(--mib-sub)}
+nav a:hover{color:var(--mib)}
+nav .logo{color:var(--mib-ink)}
+nav .logo em{color:var(--coral)}
+h2{color:var(--mib)}
+h3,h4{color:var(--mib-ink)}
+.kicker{color:var(--coral)}
+p.lead{color:var(--mib-sub)}
+p.lead strong,p.lead b{color:var(--mib-ink)!important}
+section{border-top:1px solid rgba(51,47,158,.18)}
+body>section .mono,section>.wrap>p.mono{color:var(--mib-low)}
+.tag{border:1.5px solid var(--mib);color:var(--mib);font-weight:500}
+.tag a{color:var(--coral)!important}
+
+/* karty = biely dokument s indigo rámom a MIB tieňom */
+.card{background:#fff;border:1.5px solid rgba(51,47,158,.28);color:var(--mib-ink);
+  box-shadow:6px 6px 0 rgba(51,47,158,.10)}
+.card p,.channel p{color:var(--mib-sub)!important}
+.card .mono,.channel .mono{color:var(--mib-low)}
+.channel h4{color:var(--mib-ink)}
+.card .tok,.card .sttok{color:var(--coral)}
+
+/* tabuľky */
+table th{color:var(--coral);border-bottom:2px solid var(--mib)}
+table td{color:var(--mib-sub);border-bottom:1px solid rgba(51,47,158,.15)}
+table td:first-child{color:var(--mib-ink)}
+.type-row{border-bottom:1px solid rgba(51,47,158,.15)}
+.type-row span{color:var(--mib-ink)}
+.type-row .mono{color:var(--mib-low)}
+
+/* tmavé exponáty — noc v MIB ráme */
+.stage,.state-demo,pre,.icon-cell,.obor,.loc-card{border:1.5px solid var(--mib)!important;box-shadow:6px 6px 0 rgba(51,47,158,.14)}
+.icon-cell,.obor{background:var(--night-900)}
+.icon-cell .nm,.obor .nm{color:var(--warm-100)}
+.icon-cell .mono,.obor .hint{color:var(--indigo-300)}
+pre{background:var(--night-950);color:#B4B7D4}
+.loc-card{background:var(--night-800)}
+.loc-card h4{color:var(--text-hi)}
+.state-card p{color:var(--mib-sub)!important}
+.state-name{color:var(--mib-ink)}
+
+/* hranaté koralové buttony (MIB filter štýl) */
+.copy-btn,.chip{
+  border-radius:0!important;background:var(--coral);color:#fff;border:none;
+  text-transform:uppercase;letter-spacing:.06em;font-weight:700;box-shadow:none;
+}
+.copy-btn:hover,.chip:hover{background:#d24437;box-shadow:none;color:#fff;border:none}
+.chip .dot{background:#fff!important}
+.chip.on{background:var(--mib);color:#fff;border:none}
+
+/* hero — MIB dokument s červeným rastrom */
+.hero-bg{display:none}
+header.hero{background:
+  linear-gradient(rgba(232,87,74,.13) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(232,87,74,.13) 1px,transparent 1px);
+  background-size:26px 26px}
+.hero h1 .lit{color:var(--mib);text-shadow:none}
+.hero h1 .dim{color:transparent;-webkit-text-stroke:2.5px var(--coral)}
+.hero .sub{color:var(--mib-sub)}
+.hero .sub strong{color:var(--mib-ink)!important}
+.hero .meta .tag{border-color:var(--mib)}
+
+.legend .li{color:var(--mib-sub)}
+.timeline-demo .tl-year{color:var(--mib-ink)}
+
+/* footer = MIB indigo s modrou mriežkou */
+footer{
+  background:
+    linear-gradient(rgba(130,140,255,.22) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(130,140,255,.22) 1px,transparent 1px),
+    var(--mib);
+  background-size:32px 32px,32px 32px,auto;
+  color:rgba(255,255,255,.88);border-top:none;padding:64px 0;
+}
+footer a{color:#fff}
+footer img{border-radius:0!important}
 </style>
 </head>
 <body>
