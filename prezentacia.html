@@ -32,6 +32,7 @@ a{color:inherit}
 #pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
 /* kapitolové pozadia — video a fotky, nabiehajú podľa aktu */
 #chapvid,#chapimg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity}
+#chapimg{filter:blur(9px) brightness(.5) saturate(1.15)}
 /* biele panely — vyrollujú sa z boku (litvanyi/zenko štýl) */
 .wpanel{
   position:fixed;inset:0;background:#F4F2EE;z-index:5;visibility:hidden;
@@ -140,8 +141,10 @@ body.lightmode .dots i.on{background:#C77800}
 }
 #ovlHero .cta:hover{background:var(--amber-300);box-shadow:0 0 70px rgba(245,158,11,.55)}
 
-/* spoločné karty dole (mask-reveal) */
-.deck{position:absolute;left:0;right:0;bottom:0;padding:40px 48px 56px}
+/* kartové bloky — vždy v strede, vytlačené zdola */
+.ovl.mid{display:flex;align-items:center;justify-content:center}
+.deck{width:100%;padding:0 48px}
+.deck .head{text-shadow:0 2px 18px rgba(5,7,15,.9)}
 .deck .grid{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .card{
   background:var(--glass);backdrop-filter:blur(18px) saturate(130%);
@@ -234,7 +237,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- 2 · OBJAV — čísla -->
-<div class="ovl" id="ovlObjav">
+<div class="ovl mid" id="ovlObjav">
   <div class="deck">
     <div class="head"><span>02 · Objav</span><b>Koľko mesta spí</b></div>
     <div class="grid" id="gridObjav">
@@ -261,7 +264,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- 3 · POCHOP — vlastníctvo -->
-<div class="ovl" id="ovlPochop">
+<div class="ovl mid" id="ovlPochop">
   <div class="deck">
     <div class="head"><span>03 · Pochop</span><b>Kto drží kľúč</b></div>
     <div class="grid" id="gridPochop">
@@ -302,7 +305,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- 6 · JAZYK SVETLA — legenda a vysvetlivky -->
-<div class="ovl light" id="ovlLegenda">
+<div class="ovl light mid" id="ovlLegenda">
   <div class="deck">
     <div class="head"><span>05 · Jazyk svetla</span><b>Legenda — ako čítať mesto</b></div>
     <div class="grid grid4" id="gridLegenda">
@@ -354,7 +357,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- 9 · TU-BA naživo + médiá -->
-<div class="ovl" id="ovlTuba">
+<div class="ovl mid" id="ovlTuba">
   <div class="deck">
     <div class="head"><span>07 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
     <div class="grid" id="gridTuba">
@@ -367,7 +370,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- 10 · ŠKÁLOVATEĽNOSŤ -->
-<div class="ovl light" id="ovlSkal">
+<div class="ovl light mid" id="ovlSkal">
   <div class="deck">
     <div class="head"><span>08 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
     <div class="grid grid4" id="gridSkal">
@@ -648,7 +651,7 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
   ovl.style.opacity=vis.toFixed(3);
   ovl.style.pointerEvents=vis>.15?'auto':'none';
   const deck=ovl.querySelector('.deck');
-  if(deck)deck.style.transform=`translateY(${(1-Math.min(1,ap*2))*36}px)`;
+  if(deck)deck.style.transform=`translateY(${((1-Math.min(1,ap*2))*14).toFixed(2)}vh)`;
   if(mode==='wipeR'||mode==='wipeL'||mode==='wipeD'){
     const wipe=clamp(ap*1.45)*130;
     const dir=mode==='wipeR'?'to right':mode==='wipeL'?'to left':'to bottom';
