@@ -136,8 +136,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 }
 .bfitem:hover{border-color:var(--indigo-300);transform:translateX(-2px)}
 .bfitem.sel{border-color:var(--amber-500);background:rgba(245,158,11,.1)}
-.bfitem .av{width:44px;height:44px;border-radius:13px;background:rgba(59,66,133,.4);flex:0 0 auto;
-  display:flex;align-items:center;justify-content:center}
+.bfitem .av{width:44px;height:48px;border-radius:13px;background:rgba(59,66,133,.4);flex:0 0 auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.aveyes{display:flex;gap:5px;align-items:center;height:5px}
+.aveyes i{display:block;width:5.5px;height:2px;border-radius:99px;background:var(--indigo-300)}
+.aveyes.awake i{width:4.5px;height:4.5px;background:var(--amber-300);box-shadow:0 0 4px rgba(255,185,74,.8)}
 .bfitem .av svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .bfitem .nm{font-family:var(--fd);font-weight:600;font-size:14.5px;line-height:1.2}
 .bfitem .meta{font-size:11.5px;color:var(--text-low);margin-top:2px}
@@ -381,7 +384,7 @@ const BBOX=FEATS.map(f=>{
 /* ---------- stav aplikácie ---------- */
 let mode='pulz', farba='stav', year=2026, selIdx=null, query='';
 const F={sez:null,own:null,size:0,cls:null};                 /* filtre — kombinovateľné */
-const O={sez:true,labels:true,b3d:true};                      /* prekryvy — kombinovateľné */
+const O={sez:true,labels:true,b3d:true,obri:true};            /* prekryvy — kombinovateľné */
 function activeFilters(){return (F.sez?1:0)+(F.own?1:0)+(F.size?1:0)+(F.cls?1:0);}
 function matchesFilter(p){
   if(query&&!(p.n+' '+p.mc).toLowerCase().includes(query.toLowerCase()))return false;
@@ -471,6 +474,35 @@ map.on('load',()=>{
       'text-letter-spacing':.06,'text-offset':[0,.4]},
     paint:{'text-color':'#FFE9B8','text-halo-color':'#0B0E1A','text-halo-width':1.4}});
 
+  /* spiaci obri na mape — silueta typológie s očami (územia ≥ 8 ha)
+     zavreté oči = spí (bez zámeru) · otvorené = prebúdza sa */
+  const oborTypes=[...new Set(FEATS.filter(f=>f.properties.ha>=8).map(f=>f.properties.typ))];
+  let oborLoaded=0;
+  oborTypes.forEach(typ=>['sleep','awake'].forEach(st=>{
+    const awake=st==='awake';
+    const col=awake?'#FFB94A':'#8B91DD';
+    const eyes=awake
+      ?`<circle cx="17" cy="57" r="3.8" fill="#FFF6E3"/><circle cx="31" cy="57" r="3.8" fill="#FFF6E3"/>`
+      :`<path d="M12 57 q5 4 10 0 M26 57 q5 4 10 0" stroke="${col}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="128" viewBox="0 0 48 64">
+      <g fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICONS[typ]||ICONS.other}</g>${eyes}</svg>`;
+    const img=new Image(96,128);
+    img.onload=()=>{
+      map.addImage(`obor-${typ}-${st}`,img,{pixelRatio:2});
+      if(++oborLoaded===oborTypes.length*2){
+        map.addLayer({id:'bf-obri',type:'symbol',source:'bf',
+          filter:['>=',['get','ha'],8],
+          layout:{
+            'icon-image':['concat','obor-',['get','typ'],'-',['case',['==',['get','plan'],1],'awake','sleep']],
+            'icon-size':['interpolate',['linear'],['zoom'],10,.55,14,1],
+            'icon-allow-overlap':true,'icon-ignore-placement':true
+          }});
+        repaint();
+      }
+    };
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  }));
+
   map.on('click','bf-fill',e=>{if(e.features.length)clickBF(e.features[0].properties.id);});
   map.on('mouseenter','bf-fill',()=>map.getCanvas().style.cursor='pointer');
   map.on('mouseleave','bf-fill',()=>map.getCanvas().style.cursor='');
@@ -528,6 +560,7 @@ function repaint(){
   map.setLayoutProperty('zone-labels','visibility',O.labels?'visible':'none');
   map.setLayoutProperty('bf-labels','visibility',O.labels?'visible':'none');
   if(map.getLayer('b3d'))map.setLayoutProperty('b3d','visibility',O.b3d?'visible':'none');
+  if(map.getLayer('bf-obri'))map.setLayoutProperty('bf-obri','visibility',O.obri?'visible':'none');
   map.setFilter('bf-sel',['==',['get','id'],selIdx==null?-1:selIdx]);
 }
 
@@ -591,7 +624,7 @@ function stackList(){
     <div class="bflist scroll">
       ${list.map(p=>`
       <button class="bfitem ${selIdx===p.id?'sel':''}" data-i="${p.id}">
-        <span class="av">${iconSvg(p.typ,26)}</span>
+        <span class="av">${iconSvg(p.typ,22)}<span class="aveyes ${p.plan?'awake':''}"><i></i><i></i></span></span>
         <span style="min-width:0">
           <span class="nm">${p.n||'Bez názvu'}</span>
           <span class="meta">${p.mc} · ${p.ha} ha · ${TYPL[p.typ]}</span>
@@ -730,6 +763,7 @@ function renderLayersPop(){
       ${chk('sez','⚠ Envirozáťaže (šrafy)')}
       ${chk('labels','◎ Menovky území a zón')}
       ${chk('b3d','▲ 3D budovy mesta')}
+      ${chk('obri','☻ Spiaci obri (8+ ha)')}
     </div>
     <div class="clearrow"><span>prekryvy sa sčítavajú s farbou aj filtrami</span></div>`;
   el.querySelectorAll('[data-o]').forEach(b=>b.addEventListener('click',()=>{
