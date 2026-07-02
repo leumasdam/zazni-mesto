@@ -243,6 +243,7 @@ body.lightmode .dots i.on{background:#C77800}
 
 /* 7c · VRSTVY SVETLA */
 .vrow{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center}
+.vrow>*,.vcards .card{min-width:0}
 .vimg{will-change:transform}
 .vimg img{display:block;width:100%;max-height:60vh;object-fit:contain;mix-blend-mode:multiply}
 .deck .grid.vcards{grid-template-columns:1fr;gap:14px;margin:0}
@@ -252,7 +253,15 @@ body.lightmode .dots i.on{background:#C77800}
 .vcards .card.rule{background:rgba(16,20,38,.05);border-style:dashed}
 .vcards .card.rule p{font-size:13px}
 .ovl.light .vcards .card.rule p b{color:#101426}
-@media (max-width:1100px){.vrow{grid-template-columns:1fr}.vimg img{max-height:34vh}}
+@media (max-width:1100px){.vrow{grid-template-columns:1fr;gap:12px}.vimg img{max-height:30vh}}
+@media (max-width:860px){
+  .vimg img{max-height:20vh}
+  .vcards .card{padding:11px 14px 10px}
+  .vcards .card p{font-size:11.5px}
+  .vcards .card .src{margin-top:6px;font-size:9px}
+  #ovlVrstvy .head{margin-bottom:8px}
+  #ovlVrstvy .head b{font-size:19px}
+}
 
 /* plávajúca clay tabuľa (obor) */
 .floatboard{
@@ -308,6 +317,9 @@ body.lightmode .dots i.on{background:#C77800}
   #ovlHero .kicker,#ovlHero h1,#ovlHero p,#ovlHero .cta{animation:none;opacity:1}
 }
 @media (max-width:860px){
+  .chapcap{white-space:normal;max-width:88vw;text-align:center;line-height:1.7}
+  .turnhead{white-space:normal;max-width:92vw}
+  .hint{white-space:nowrap}
   .deck{padding:20px 16px 28px}
   .deck .grid{grid-template-columns:1fr;gap:12px}
   .card{padding:18px}
