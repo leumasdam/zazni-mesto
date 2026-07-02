@@ -155,12 +155,10 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
   transition:all .8s;border:1px solid var(--glass-border);
 }
-.obor-face svg{stroke:var(--indigo-300);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .8s}
-.obor-face .eyes{display:flex;gap:9px;height:9px;align-items:center}
-.obor-face .eyes i{display:block;width:9px;height:2.4px;border-radius:99px;background:var(--indigo-300);transition:all .5s}
+.obor-face .ob-a{display:none}
+.obor-face.awake .ob-a{display:block}
+.obor-face.awake .ob-s{display:none}
 .obor-face.awake{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.5);box-shadow:0 0 30px rgba(245,158,11,.35)}
-.obor-face.awake svg{stroke:var(--amber-300)}
-.obor-face.awake .eyes i{width:7px;height:7px;background:var(--warm-100);box-shadow:0 0 7px rgba(255,246,227,.9)}
 .dchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:10.5px;
   padding:3px 10px;border-radius:99px;border:1px solid var(--indigo-700);color:var(--indigo-300);margin-bottom:6px}
 .dtitle{font-family:var(--fd);font-size:21px;font-weight:600;line-height:1.15}
@@ -364,6 +362,46 @@ const ICONS={
 };
 function iconSvg(typ,size){return `<svg width="${size}" height="${size}" viewBox="0 0 48 48">${ICONS[typ]||ICONS.other}</svg>`;}
 
+/* obri v štýle plagátu — plná silueta, tvár vo vnútri; stav = paleta + tvár + aura
+   (jedna kresba na typológiu, presne ako v manuáli / obri.html) */
+const OBODY={
+  industry:{b:'M16 112 V54 L44 34 v20 L72 34 v20 L100 34 v78 Z M26 44 V16 h13 v19 Z',e:[[46,80],[72,80]],m:[59,95]},
+  transport:{b:'M16 112 V62 Q60 28 104 62 V112 Z',x:'M46 112 V90 Q60 76 74 90 V112 M60 46 m-6 0 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0',e:[[38,78],[82,78]],m:[60,97]},
+  military:{b:'M28 112 V34 h12 v-9 h11 v9 h18 v-9 h11 v9 h12 v78 Z',x:'M60 44 l3.2 6.6 7 .8 -5.1 5 1.2 7 -6.3 -3.4 -6.3 3.4 1.2 -7 -5.1 -5 7 -.8 Z',e:[[47,78],[73,78]],m:[60,93]},
+  agriculture:{b:'M20 112 V52 a16 16 0 0 1 32 0 V112 Z M62 112 V64 a13 13 0 0 1 26 0 V112 Z',x:'M20 66 h32',e:[[29,82],[43,82]],m:[36,95]},
+  office:{b:'M28 112 V26 q0-8 8-8 h48 q8 0 8 8 V112 Z',x:'M42 36 h10 M68 36 h10 M42 52 h10 M68 52 h10',e:[[46,80],[74,80]],m:[60,95]},
+  sport:{b:'M14 112 V80 q46-46 92 0 V112 Z',e:[[44,90],[76,90]],m:[60,102]},
+  housing:{b:'M20 112 V66 L60 32 L100 66 V112 Z',x:'M76 48 V34 h10 v22',e:[[46,84],[74,84]],m:[60,98]},
+  culture:{b:'M22 112 V46 h76 V112 Z',x:'M60 46 V28 l15 5 -15 5',e:[[46,78],[74,78]],m:[60,93]},
+  recreation:{b:'M20 112 V82 a40 40 0 0 1 80 0 V112 Z',e:[[46,88],[74,88]],m:[60,100]},
+  other:{b:'M26 112 V50 q0-14 14-14 h40 q14 0 14 14 V112 Z',e:[[46,80],[74,80]],m:[60,94]}
+};
+function oborArt(typ,awake,size=160,halo=false){
+  const g=OBODY[typ]||OBODY.other;
+  const P=awake?{f:'#F59E0B',s:'#C77800',face:'#FFF6E3'}:{f:'#454CA0',s:'#8B91DD',face:'#C9CDF4'};
+  let fx='';
+  if(awake){
+    for(let a=-160;a<=20;a+=36){const r=a*Math.PI/180;
+      fx+=`<line x1="${(60+Math.cos(r)*62).toFixed(1)}" y1="${(66+Math.sin(r)*62).toFixed(1)}" x2="${(60+Math.cos(r)*76).toFixed(1)}" y2="${(66+Math.sin(r)*76).toFixed(1)}" stroke="#FFB94A" stroke-width="5" stroke-linecap="round" opacity=".85"/>`;}
+  }else{
+    fx=`<text x="96" y="22" font-size="14" fill="#8B91DD" font-family="monospace" font-weight="bold">z</text>
+        <text x="106" y="8" font-size="18" fill="#8B91DD" font-family="monospace" font-weight="bold">z</text>`;
+  }
+  const eyes=g.e.map(([x,y])=>awake
+    ?`<circle cx="${x}" cy="${y}" r="5" fill="${P.face}"/>`
+    :`<path d="M${x-6} ${y} q6 5 12 0" stroke="${P.face}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`).join('');
+  const mouth=awake
+    ?`<path d="M${g.m[0]-7} ${g.m[1]} q7 6 14 0" stroke="${P.face}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`
+    :`<path d="M${g.m[0]-4} ${g.m[1]} q4 3 8 0" stroke="${P.face}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size*178/172)}" viewBox="-26 -30 172 178">
+    ${halo?'<circle cx="60" cy="68" r="66" fill="#070912" opacity=".55"/>':''}
+    ${fx}
+    <path d="${g.b}" fill="${P.f}" stroke="${P.s}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${g.x?`<path d="${g.x}" fill="none" stroke="${P.face}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`:''}
+    ${eyes}${mouth}
+  </svg>`;
+}
+
 const FEATS=BFGEO.features;
 const P=i=>FEATS[i].properties;
 const N_PLAN=FEATS.filter(f=>f.properties.plan).length, N_SLEEP=113-N_PLAN,
@@ -479,14 +517,8 @@ map.on('load',()=>{
   const oborTypes=[...new Set(FEATS.filter(f=>f.properties.ha>=8).map(f=>f.properties.typ))];
   let oborLoaded=0;
   oborTypes.forEach(typ=>['sleep','awake'].forEach(st=>{
-    const awake=st==='awake';
-    const col=awake?'#FFB94A':'#8B91DD';
-    const eyes=awake
-      ?`<circle cx="17" cy="57" r="3.8" fill="#FFF6E3"/><circle cx="31" cy="57" r="3.8" fill="#FFF6E3"/>`
-      :`<path d="M12 57 q5 4 10 0 M26 57 q5 4 10 0" stroke="${col}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="128" viewBox="0 0 48 64">
-      <g fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICONS[typ]||ICONS.other}</g>${eyes}</svg>`;
-    const img=new Image(96,128);
+    const svg=oborArt(typ,st==='awake',300,true);
+    const img=new Image(300,Math.round(300*178/172));
     img.onload=()=>{
       map.addImage(`obor-${typ}-${st}`,img,{pixelRatio:2});
       if(++oborLoaded===oborTypes.length*2){
@@ -494,7 +526,7 @@ map.on('load',()=>{
           filter:['>=',['get','ha'],8],
           layout:{
             'icon-image':oborExpr(),
-            'icon-size':['interpolate',['linear'],['zoom'],10,.55,14,1],
+            'icon-size':['interpolate',['linear'],['zoom'],9.5,.34,12,.55,15,.95],
             'icon-allow-overlap':true,'icon-ignore-placement':true
           }});
         repaint();
@@ -656,8 +688,8 @@ function stackDetail(i){
     <button class="fopt" id="backList" style="margin-bottom:14px">← Späť na zoznam</button>
     <div class="obor-av">
       <div class="obor-face ${voted?'awake':''}" id="oborFace">
-        ${iconSvg(p.typ,34)}
-        <span class="eyes"><i></i><i></i></span>
+        <span class="ob-s">${oborArt(p.typ,false,66)}</span>
+        <span class="ob-a">${oborArt(p.typ,true,66)}</span>
       </div>
       <div>
         <span class="dchip">${p.plan?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${p.cls||'—'}</span>
