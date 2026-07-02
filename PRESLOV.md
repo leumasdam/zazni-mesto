@@ -42,6 +42,29 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 
 *(nechaj dobehnúť na „113 / 113 svieti")*
 
+## medzihry · LEGENDA → OBOR → VIDEO → TU-BA → ŠKÁLOVATEĽNOSŤ
+
+**LEGENDA** *(karty vystúpajú zdola)*
+> Tu je celý slovník: štyri stavy svetla — spí, drieme, prebúdza sa, žije — a päť kanálov,
+> ktoré sa nikdy nebijú: farba, ikona, vzor, obrys, mierka. Nič sa nefarbí ručne, všetko číta register.
+
+**OBOR** *(KLIKNÚŤ — zobudí sa + chime)*
+> Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
+> Toto na expozícii urobí hlas návštevníka.
+
+**VIDEO** *(mesto sa rozplynie do filmu — nechaj bežať ~10 s)*
+> A takto to vyzerá v priestore: projektory kreslia presne tie dáta, ktorými sme práve prešli, na fyzický model.
+
+**TU-BA foto + MÉDIÁ** *(karty sa stierajú zhora, za nimi reálna fotka plnej miestnosti)*
+> Toto nie je render — to je plná miestnosť TU-BA na talku o brownfieldoch. Roly sú prísne:
+> model je mapa, obrazovka dirigent, tablet ďalekohľad — a web, na ktorom sme, je pokračovanie.
+
+**ŠKÁLOVATEĽNOSŤ** *(mesto sa vráti — už celé svieti)*
+> Prečo sa to nerozpadne: nové dáta = nový kanál, jeden zdroj pravdy, aktualizuje sa samo,
+> zajtra unesie inú tému. Nekúpili by ste si výstavu — kúpili by ste si nástroj.
+
+*(scroll do prototypu — živé demo priamo v stránke)*
+
 ## 5 · ZAPOJ SA
 
 > Rozsvietili sme mesto scrollom. Na expozícii to návštevník urobí dotykom a hlasom —
