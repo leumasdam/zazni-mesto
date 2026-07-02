@@ -31,6 +31,25 @@ a{color:inherit}
 #pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
 /* kapitolové pozadia — video a fotky, nabiehajú podľa aktu */
 #chapvid,#chapimg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity}
+/* biele panely — vyrollujú sa z boku (litvanyi/zenko štýl) */
+.wpanel{
+  position:fixed;inset:0;background:#F4F2EE;z-index:5;visibility:hidden;
+  transform:translateX(-104%);will-change:transform;
+  box-shadow:0 0 90px rgba(0,0,0,.4);
+}
+/* light mode obsahu na bielych paneloch */
+.ovl.light .head b{color:#101426}
+.ovl.light .card{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);
+  box-shadow:0 14px 40px rgba(16,20,38,.10);backdrop-filter:none}
+.ovl.light .card h3{color:#101426}
+.ovl.light .card p{color:#5C5F78}
+.ovl.light .card .src{color:#9a9dae}
+.ovl.light .num{color:#101426}
+.ovl.light .num small{color:#C77800}
+.ovl.light .chanbar .ch{color:#5C5F78}
+.ovl.light .chanbar .ch b{color:#101426}
+body.lightmode .brand,body.lightmode .tubamark,body.lightmode .hint{color:#101426}
+body.lightmode .brand em{color:#C77800}
 
 /* legenda: 4 stavy naživo + kanály */
 .grid4{grid-template-columns:repeat(4,1fr)!important}
@@ -182,6 +201,8 @@ a{color:inherit}
 <canvas id="city"></canvas>
 <video id="chapvid" muted loop playsinline preload="metadata" src="assets/hero.mp4"></video>
 <img id="chapimg" src="assets/tuba-live-1.jpg" alt="">
+<div id="panelL" class="wpanel"></div>
+<div id="panelR" class="wpanel"></div>
 <div id="vignette"></div>
 <canvas id="pfx"></canvas>
 
@@ -268,7 +289,7 @@ a{color:inherit}
 </div>
 
 <!-- 6 · JAZYK SVETLA — legenda a vysvetlivky -->
-<div class="ovl" id="ovlLegenda">
+<div class="ovl light" id="ovlLegenda">
   <div class="deck">
     <div class="head"><span>05 · Jazyk svetla</span><b>Legenda — ako čítať mesto</b></div>
     <div class="grid grid4" id="gridLegenda">
@@ -333,7 +354,7 @@ a{color:inherit}
 </div>
 
 <!-- 10 · ŠKÁLOVATEĽNOSŤ -->
-<div class="ovl" id="ovlSkal">
+<div class="ovl light" id="ovlSkal">
   <div class="deck">
     <div class="head"><span>08 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
     <div class="grid grid4" id="gridSkal">
@@ -646,10 +667,10 @@ function chores(t){
     :wv<.7?'zámery svitajú · drieme → prebúdza sa'
     :'mesto ožíva · teplá biela = život';
 
-  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ */
-  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),aP('jazyk'),'rise');
+  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď je panel/foto na mieste */
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),clamp((aP('jazyk')-.14)*1.22),'rise');
   deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aP('tuba'),'wipeD');
-  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),aP('skal'),'pop');
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),clamp((aP('skal')-.14)*1.22),'pop');
 
   /* 6 OBOR */
   const ob=wnd('obor');
@@ -658,10 +679,24 @@ function chores(t){
   ovlOb.style.pointerEvents=ob>.3?'auto':'none';
   ovlOb.style.transform=`translateY(${(1-ob)*28}px)`;
 
-  /* pozadia sa vyvíjajú: mesto → video → fotka → mesto */
-  const dim=Math.max(wnd('jazyk'),wnd('obor'));
-  const hide=Math.max(wnd('video'),wnd('tuba'));
-  cv.style.opacity=((1-.5*dim)*(1-.96*hide)).toFixed(3);
+  /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
+  cv.style.opacity=(1-clamp(aP('jazyk')*2.4)).toFixed(3);   /* mapa už sa nevracia */
+
+  function rollPanel(el,ap,fromLeft){
+    if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
+    el.style.visibility='visible';
+    const enter=clamp(ap*3),exit=clamp((ap-.72)*3.6);
+    const x=fromLeft?(-104+enter*104+exit*104):(104-enter*104-exit*104);
+    el.style.transform=`translateX(${x.toFixed(2)}%)`;
+    return enter*(1-exit);
+  }
+  const light=Math.max(
+    rollPanel(document.getElementById('panelL'),aP('jazyk'),true),
+    rollPanel(document.getElementById('panelR'),aP('skal'),false)
+  );
+  document.body.classList.toggle('lightmode',light>.5);
+  document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
+  document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
 
   const vv=wnd('video');
   chapvid.style.opacity=vv.toFixed(3);

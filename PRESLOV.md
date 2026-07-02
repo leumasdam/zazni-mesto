@@ -59,7 +59,7 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 > Toto nie je render — to je plná miestnosť TU-BA na talku o brownfieldoch. Roly sú prísne:
 > model je mapa, obrazovka dirigent, tablet ďalekohľad — a web, na ktorom sme, je pokračovanie.
 
-**ŠKÁLOVATEĽNOSŤ** *(mesto sa vráti — už celé svieti)*
+**ŠKÁLOVATEĽNOSŤ** *(biely panel sa vyrolluje sprava — svetlá bodka na záver)*
 > Prečo sa to nerozpadne: nové dáta = nový kanál, jeden zdroj pravdy, aktualizuje sa samo,
 > zajtra unesie inú tému. Nekúpili by ste si výstavu — kúpili by ste si nástroj.
 
