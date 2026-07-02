@@ -1,7 +1,7 @@
 # ZAŽNI MESTO — preslov (scroll-story)
 
-**Forma:** prezentacia.html je scroll-story — jedna súvislá cesta, žiadne slajdy.
-Scrolluješ pomaly a rozprávaš; mesto na pozadí reaguje na každý pohyb.
+**Forma:** prezentacia.html je kroková story — 11 stupňov, jeden swipe/šípka = jeden stupeň.
+Prechod sa vždy doplaví sám (vlna ~5 s — nechaj ju dobehnúť, film ~3 s a posunie sa sám); bodky vpravo = skok.
 **Čas: ~6–8 min príbeh + 3–5 min živé demo prototypu.**
 
 ## Dramaturgia
