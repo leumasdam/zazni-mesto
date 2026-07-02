@@ -23,7 +23,7 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 ## 2 · OBJAV *(karty sa stierajú zľava, čísla nabiehajú)*
 
 > Najprv rozsah. Stotrinásť brownfieldov — a číslo klesá, v 2019 ich bolo 131;
-> mesto sa prebúdza samo, my mu dávame vypypínač. Dokopy 580 hektárov — osemsto futbalových ihrísk.
+> mesto sa prebúdza samo, my mu dávame vypínač. Dokopy 580 hektárov — osemsto futbalových ihrísk.
 > Šestnásť z nich sú ťažké váhy: Palma, Mlynské nivy, Istrochem, Filiálka, Matador, Nové Lido.
 
 ## 3 · POCHOP *(súkromným územiam sa rozžiaria obrysy)*
