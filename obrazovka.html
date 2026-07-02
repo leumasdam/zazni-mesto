@@ -737,34 +737,79 @@ function photoBox(i,padF){
 }
 const esriUrl=b=>`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${b.w.toFixed(5)},${b.s.toFixed(5)},${b.e.toFixed(5)},${b.n.toFixed(5)}&bboxSR=4326&imageSR=4326&size=880,440&format=jpg&f=image`;
 const gkuUrl=b=>`https://zbgisws.skgeodesy.sk/zbgis_ortofoto_wms/service.svc/get?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=1&STYLES=&CRS=EPSG:4326&BBOX=${b.s.toFixed(5)},${b.w.toFixed(5)},${b.n.toFixed(5)},${b.e.toFixed(5)}&WIDTH=880&HEIGHT=440&FORMAT=image/jpeg`;
-let PH=[];
+let PH=[],phTouched=false;
+const PHCACHE={};
+function aerialItems(i){
+  const close=photoBox(i,.45), wide=photoBox(i,2.4);
+  return [
+    {lab:'Z NEBA · dnes',url:esriUrl(close),vb:close.vb,path:close.path,credit:'Esri World Imagery'},
+    {lab:'OKOLIE',url:esriUrl(wide),vb:wide.vb,path:wide.path,credit:'Esri World Imagery'},
+    {lab:'ORTOFOTO SR',url:gkuUrl(close),vb:close.vb,path:close.path,credit:'GKÚ Bratislava'}
+  ];
+}
 function aerial(i){
   if(!BBOX[i])return '';
-  const close=photoBox(i,.45), wide=photoBox(i,2.4);
-  PH=[
-    {lab:'DNES · detail',url:esriUrl(close),vb:close.vb,path:close.path,credit:'Esri World Imagery'},
-    {lab:'OKOLIE · kontext',url:esriUrl(wide),vb:wide.vb,path:wide.path,credit:'Esri World Imagery'},
-    {lab:'ORTOFOTO SR',url:gkuUrl(close),vb:close.vb,path:close.path,credit:'GKÚ Bratislava · ortofotomozaika SR'}
-  ];
+  PH=(PHCACHE[i]||[]).concat(aerialItems(i));
+  phTouched=false;
   const p=PH[0];
   return `<div class="dphoto">
     <img id="phImg" src="${p.url}" alt="Snímka územia" loading="lazy">
-    <svg id="phSvg" viewBox="${p.vb}" preserveAspectRatio="none">
-      <path d="${p.path}" fill="rgba(245,158,11,.13)" stroke="#FFB94A" stroke-width="2.6" stroke-dasharray="8 5"
+    <svg id="phSvg" viewBox="${p.vb||'0 0 1 1'}" preserveAspectRatio="none" style="${p.vb?'':'display:none'}">
+      <path d="${p.path||''}" fill="rgba(245,158,11,.13)" stroke="#FFB94A" stroke-width="2.6" stroke-dasharray="8 5"
         vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
     </svg>
-    <div class="ph-tabs">${PH.map((x,k)=>`<button class="ph-tab ${k===0?'on':''}" data-ph="${k}">${x.lab}</button>`).join('')}</div>
+    <div class="ph-tabs" id="phTabs">${phTabsHtml()}</div>
     <span class="credit" id="phCredit">${p.credit}</span>
   </div>`;
 }
+function phTabsHtml(){
+  return PH.map((x,k)=>`<button class="ph-tab ${k===0?'on':''}" data-ph="${k}">${x.lab}</button>`).join('');
+}
 function phSet(k){
   const p=PH[k];if(!p)return;
-  document.getElementById('phImg').src=p.url;
+  const img=document.getElementById('phImg');if(!img)return;
+  img.src=p.url;
+  img.onerror=()=>{ if(k+1<PH.length)phSet(k+1); };
   const svg=document.getElementById('phSvg');
-  svg.setAttribute('viewBox',p.vb);
-  svg.querySelector('path').setAttribute('d',p.path);
+  if(p.vb){svg.style.display='';svg.setAttribute('viewBox',p.vb);svg.querySelector('path').setAttribute('d',p.path);}
+  else svg.style.display='none';
   document.getElementById('phCredit').textContent=p.credit;
   document.querySelectorAll('.ph-tab').forEach((t,j)=>t.classList.toggle('on',j===k));
+}
+/* skutočné fotografie z miesta a okolia — Wikimedia Commons geosearch
+   (v produkcii: fotky z terénneho pasportu MIB, register ich má) */
+async function loadCommons(i){
+  if(PHCACHE[i])return;
+  const p=P(i);
+  const radius=Math.min(900,Math.round(Math.sqrt(p.ha)*110+220));
+  const url='https://commons.wikimedia.org/w/api.php?origin=*&'+new URLSearchParams({
+    action:'query',generator:'geosearch',ggscoord:`${p.lat}|${p.lon}`,ggsradius:radius,
+    ggslimit:16,ggsnamespace:6,prop:'imageinfo',iiprop:'url',iiurlwidth:1100,format:'json'});
+  try{
+    const d=await(await fetch(url)).json();
+    const pages=Object.values((d.query||{}).pages||{});
+    const words=p.n.toLowerCase().split(/\s+/).filter(w=>w.length>3);
+    const items=pages
+      .filter(pg=>pg.imageinfo&&/\.(jpe?g|png)$/i.test(pg.title))
+      .sort((a,b)=>{
+        const am=words.some(w=>a.title.toLowerCase().includes(w))?0:1;
+        const bm=words.some(w=>b.title.toLowerCase().includes(w))?0:1;
+        return am-bm;
+      })
+      .slice(0,5)
+      .map((pg,k)=>({lab:`FOTO ${k+1}`,url:pg.imageinfo[0].thumburl||pg.imageinfo[0].url,vb:null,path:null,
+        credit:'foto z miesta a okolia · Wikimedia Commons'}));
+    PHCACHE[i]=items;
+    if(mode==='objav'&&selIdx===i&&items.length){
+      PH=items.concat(aerialItems(i));
+      const tabs=document.getElementById('phTabs');
+      if(tabs){
+        tabs.innerHTML=phTabsHtml();
+        tabs.querySelectorAll('[data-ph]').forEach(b=>b.addEventListener('click',()=>{phTouched=true;phSet(+b.dataset.ph);}));
+        if(!phTouched)phSet(0);
+      }
+    }
+  }catch(e){PHCACHE[i]=[];}
 }
 
 /* ---------- príbehy: kurátorské pre známe areály, šablóna podľa typológie pre ostatné ---------- */
@@ -1044,7 +1089,8 @@ function bindStack(){
   document.querySelectorAll('[data-i]').forEach(b=>b.addEventListener('click',()=>{selIdx=+b.dataset.i;renderStack();repaint();zoomTo(selIdx);}));
   const back=document.getElementById('backList');
   if(back)back.addEventListener('click',()=>{selIdx=null;renderStack();repaint();resetView();});
-  document.querySelectorAll('[data-ph]').forEach(b=>b.addEventListener('click',()=>phSet(+b.dataset.ph)));
+  document.querySelectorAll('[data-ph]').forEach(b=>b.addEventListener('click',()=>{phTouched=true;phSet(+b.dataset.ph);}));
+  if(mode==='objav'&&selIdx!=null)loadCommons(selIdx);
   const clearF=document.getElementById('clearF');
   if(clearF)clearF.addEventListener('click',()=>{F.sez=null;F.own=null;F.size=0;F.cls=null;renderStack();renderDocks();repaint();});
   const goD=document.getElementById('goDetail');
