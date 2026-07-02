@@ -45,7 +45,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .livemap svg{width:100%;height:100%}
 .mapfade::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(90deg,rgba(7,9,18,.94) 8%,rgba(7,9,18,.6) 44%,rgba(7,9,18,.06) 78%)}
-.slide>*{position:relative;z-index:1}
+.slide>*:not(.livemap):not(.bg):not(.shade){position:relative;z-index:1}
 @keyframes pulseSleep{0%,100%{opacity:.4}50%{opacity:.95}}
 .bfp{transition:fill 1.1s,opacity 1.1s,stroke 1.1s}
 .bfp.pulse{animation:pulseSleep 4s ease-in-out infinite}
@@ -354,6 +354,20 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 <script>
 const NS='http://www.w3.org/2000/svg';
 const MAPS={};
+/* bod v polygóne — nezávislé od renderingu (slajdy sú display:none) */
+const BPTS=(()=>{
+  const nums=MAPDATA.boundary.replace(/[MZ]/g,' ').trim().split(/[\s,]+/).map(Number);
+  const pts=[];for(let i=0;i<nums.length-1;i+=2)pts.push([nums[i],nums[i+1]]);
+  return pts;
+})();
+function inBA(x,y){
+  let inside=false;
+  for(let i=0,j=BPTS.length-1;i<BPTS.length;j=i++){
+    const [xi,yi]=BPTS[i],[xj,yj]=BPTS[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
 function buildMap(id){
   const svg=document.getElementById(id);if(!svg)return;
   svg.setAttribute('viewBox',`0 0 ${MAPDATA.W} ${MAPDATA.H}`);
@@ -364,13 +378,12 @@ function buildMap(id){
   mk('rect',{width:2.8,height:9,fill:'#E84B8A',opacity:.9},pat);
   const b=mk('path',{d:MAPDATA.boundary,fill:'#0D1122',stroke:'#2A3150','stroke-width':2});
   MAPDATA.danube.forEach(d=>mk('path',{d,fill:'none',stroke:'#1B2244','stroke-width':13,'stroke-linecap':'round'}));
-  let inside;try{inside=(x,y)=>b.isPointInFill(new DOMPoint(x,y));}catch(e){inside=()=>true;}
   let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
   let placed=0,tries=0;
   while(placed<320&&tries<5200){
     tries++;const x=rnd()*MAPDATA.W,y=rnd()*MAPDATA.H;
     const dc=Math.hypot((x-MAPDATA.W*.46)/MAPDATA.W,(y-MAPDATA.H*.40)/MAPDATA.H);
-    if(rnd()<dc*1.9||!inside(x,y))continue;
+    if(rnd()<dc*1.9||!inBA(x,y))continue;
     mk('circle',{cx:x.toFixed(1),cy:y.toFixed(1),r:(0.9+rnd()*1.8).toFixed(1),fill:'#FFE9B8',opacity:(0.05+rnd()*.24).toFixed(2)});
     placed++;
   }
