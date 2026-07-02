@@ -82,7 +82,7 @@ ok('každá typológia obrov má telo v OBODY',(()=>{
 })());
 
 console.log('\n— E · SCROLL-STORY (prezentacia.html) —');
-ok('beží na geo.js, žiadne video',PRE.includes('src="geo.js"')&&!PRE.includes('hero.mp4')&&!PRE.includes('createImageBitmap'));
+ok('mechanika = polygóny z geo.js; video len ambient loop',PRE.includes('src="geo.js"')&&!PRE.includes('createImageBitmap')&&PRE.includes('muted loop playsinline'));
 ok('5 aktov zážitkovej slučky',['PRITIAHNI','Objav','Pochop','Predstav','Zapoj'].every(s=>PRE.includes(s)));
 ok('reálne čísla v kartách (113/580/800/56/66)',['data-n="113"','data-n="580"','data-n="800"','data-n="56"','data-n="66"'].every(s=>PRE.includes(s))&&own.private===56);
 ok('rampa stavov spí→drieme→prebúdza→žije',PRE.includes('[[59,66,133],[23,179,163],[245,158,11],[255,233,184]]'));

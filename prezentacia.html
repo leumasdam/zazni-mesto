@@ -29,6 +29,52 @@ a{color:inherit}
 #vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 105% 90% at 50% 42%,transparent 55%,rgba(5,7,15,.85));}
 #pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
+/* kapitolové pozadia — video a fotky, nabiehajú podľa aktu */
+#chapvid,#chapimg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity}
+
+/* legenda: 4 stavy naživo + kanály */
+.grid4{grid-template-columns:repeat(4,1fr)!important}
+.stdemo{height:120px;border-radius:14px;background:rgba(5,7,15,.55);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.parcel{width:64px;height:64px;border-radius:13px}
+@keyframes pulseSleep{0%,100%{opacity:.45}50%{opacity:.95}}
+.p-sleep{background:#3B4285;animation:pulseSleep 4s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.75}12%{opacity:1}20%{opacity:.68}34%{opacity:.95}55%{opacity:.8}70%{opacity:1}}
+.p-temp{background:#17B3A3;box-shadow:0 0 14px rgba(23,179,163,.5);animation:flick 5.5s ease-in-out infinite}
+@keyframes rise{0%,100%{box-shadow:0 0 8px rgba(245,158,11,.3)}50%{box-shadow:0 0 34px rgba(245,158,11,.8)}}
+.p-awake{background:#F59E0B;animation:rise 3s ease-in-out infinite}
+.p-alive{background:#FFE9B8;box-shadow:0 0 44px rgba(255,233,184,.55)}
+.chanbar{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center}
+.chanbar .ch{display:flex;align-items:center;gap:10px;font-family:var(--fm);font-size:11.5px;letter-spacing:.08em;color:var(--text-mid)}
+.chanbar .ch b{color:var(--text-hi);font-family:var(--fd);font-size:14px;letter-spacing:0}
+.chanbar .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
+
+/* obor kapitola */
+#ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(28px,4.4vw,54px);margin-bottom:22px}
+#ovlObor .oborbox{cursor:pointer;transition:filter .8s}
+#ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4))}
+#ovlObor .oborbox svg{width:min(30vh,260px);height:min(30vh,260px)}
+#ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
+
+/* kapitolové captiony */
+.chapcap{
+  position:absolute;left:50%;bottom:56px;transform:translateX(-50%);
+  font-family:var(--fm);font-size:11.5px;letter-spacing:.24em;color:var(--warm-300);text-transform:uppercase;
+  text-shadow:0 2px 12px rgba(5,7,15,.9);white-space:nowrap;
+}
+.chapcap i{display:inline-block;width:40px;height:2px;background:currentColor;vertical-align:middle;margin:0 8px}
+
+/* prototyp v toku */
+#proto{position:relative;z-index:20;height:100vh}
+#proto iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#proto .badge{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:44px;z-index:5;
+  background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-b);
+  border-radius:20px;padding:13px 26px;font-family:var(--fd);font-weight:600;font-size:14px;
+  display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;
+}
+#proto .badge .dot{width:8px;height:8px;border-radius:50%;background:#5AE07A;box-shadow:0 0 10px #5AE07A}
+#proto .badge small{font-family:var(--fm);font-size:9.5px;color:var(--text-low);font-weight:400}
 
 /* ============ chrome ============ */
 .bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(139,145,221,.12)}
@@ -134,6 +180,8 @@ a{color:inherit}
 <body>
 
 <canvas id="city"></canvas>
+<video id="chapvid" muted loop playsinline preload="metadata" src="assets/hero.mp4"></video>
+<img id="chapimg" src="assets/tuba-live-1.jpg" alt="">
 <div id="vignette"></div>
 <canvas id="pfx"></canvas>
 
@@ -219,11 +267,103 @@ a{color:inherit}
   </div>
 </div>
 
+<!-- 6 · JAZYK SVETLA — legenda a vysvetlivky -->
+<div class="ovl" id="ovlLegenda">
+  <div class="deck">
+    <div class="head"><span>05 · Jazyk svetla</span><b>Legenda — ako čítať mesto</b></div>
+    <div class="grid grid4" id="gridLegenda">
+      <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne</span></div>
+      <div class="card"><div class="stdemo"><div class="parcel p-temp"></div></div><h3>DRIEME</h3><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">state.temporary · teal</span></div>
+      <div class="card"><div class="stdemo"><div class="parcel p-awake"></div></div><h3>PREBÚDZA SA</h3><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">66 území so zámerom · amber</span></div>
+      <div class="card"><div class="stdemo"><div class="parcel p-alive"></div></div><h3>ŽIJE</h3><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">26 vyradených od 2019</span></div>
+      <div class="card chanbar">
+        <span class="ch"><span class="sw" style="background:linear-gradient(135deg,#3B4285,#FFE9B8)"></span><b>FARBA</b>·&nbsp;stav</span>
+        <span class="ch"><span class="sw" style="background:#0B0E1A;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="4"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/></svg></span><b>IKONA</b>·&nbsp;typológia</span>
+        <span class="ch"><span class="sw" style="background:repeating-linear-gradient(45deg,transparent,transparent 3px,#E84B8A 3px,#E84B8A 5px)"></span><b>VZOR</b>·&nbsp;riziko (15 záťaží)</span>
+        <span class="ch"><span class="sw" style="background:transparent;border:2px dashed #FFE9B8"></span><b>OBRYS</b>·&nbsp;vlastníctvo</span>
+        <span class="ch"><span class="sw" style="background:#3B4285;box-shadow:6px 6px 0 -2px #3B4285"></span><b>MIERKA</b>·&nbsp;význam (16 BF)</span>
+        <span class="ch" style="color:var(--text-low)">päť kanálov, ktoré sa nikdy nebijú — nová dátová dimenzia = nový kanál, nie redizajn</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 · OBOR -->
+<div class="ovl" id="ovlObor">
+  <h2>Každý brownfield<br>je <span style="color:var(--warm-100)">spiaci obor</span></h2>
+  <div class="oborbox" id="oborBig">
+    <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g id="obAura" opacity="0" style="transition:opacity .8s">
+        <circle cx="48" cy="52" r="42" fill="rgba(245,158,11,.09)"/>
+        <path d="M10 38l-7-4M86 38l7-4M48 6V-2M20 14l-5-6M76 14l5-6" stroke="#FFB94A" stroke-width="2.6"/>
+      </g>
+      <g id="obBody" stroke="#8B91DD" stroke-width="3" style="transition:stroke .8s">
+        <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+      </g>
+      <g id="obSleep" style="transition:opacity .5s">
+        <path d="M34 60h7M50 60h7" stroke="#B9BEF0" stroke-width="3.2"/>
+        <path d="M42 70q4 3 8 0" stroke="#B9BEF0" stroke-width="2.4" opacity=".6"/>
+        <text x="66" y="24" fill="#8B91DD" font-family="monospace" font-size="10">z z</text>
+      </g>
+      <g id="obAwake" opacity="0" style="transition:opacity .5s">
+        <circle cx="37.5" cy="60" r="3.6" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.6" fill="#FFF6E3"/>
+        <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
+      </g>
+    </svg>
+  </div>
+  <p class="sub" id="oborHint">obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>ťukni a zobuď ho · oči = stav · ústa = energia · aura = jas</p>
+</div>
+
+<!-- 8 · VIDEO kapitola -->
+<div class="ovl" id="ovlVideo">
+  <span class="chapcap">expozícia v pohybe · simulácia priestoru TU<i></i>BA · takto to kreslia projektory</span>
+</div>
+
+<!-- 9 · TU-BA naživo + médiá -->
+<div class="ovl" id="ovlTuba">
+  <div class="deck">
+    <div class="head"><span>07 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
+    <div class="grid" id="gridTuba">
+      <div class="card"><h3>Model je mapa.</h3><p>Scéna pre všetkých — priestor, stavy, svetlo. Nič ju nesupluje.</p><span class="src">projekčný mapping · kalibrácia raz</span></div>
+      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Jediná mení, čo svieti — vrstvy, filtre, čas. Tablet je ďalekohľad: detail, AR minulosť·dnes·budúcnosť; scénu neprepíše, vie len poprosiť „ukáž na modeli".</p><span class="src">websocket · master scény</span></div>
+      <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy vedie presne na túto stránku — mesto si rozsvietiš doma. Hlasy sa ukladajú ako dataset pre MIB.</p><span class="src">1. fáza metodiky: participácia</span></div>
+    </div>
+  </div>
+  <span class="chapcap" style="bottom:auto;top:96px">TU<i></i>BA · plná miestnosť na MIB talku o brownfieldoch — fotografia z priestoru</span>
+</div>
+
+<!-- 10 · ŠKÁLOVATEĽNOSŤ -->
+<div class="ovl" id="ovlSkal">
+  <div class="deck">
+    <div class="head"><span>08 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
+    <div class="grid grid4" id="gridSkal">
+      <div class="card"><div class="num" style="font-size:40px">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
+      <div class="card"><div class="num" style="font-size:40px">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
+      <div class="card"><div class="num" style="font-size:40px">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
+      <div class="card"><div class="num" style="font-size:40px">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 49 kontrol</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- scroll dráha (prázdne úseky = akty) -->
 <div style="height:120vh" id="sp1"></div>
-<div style="height:210vh" id="sp2"></div>
-<div style="height:210vh" id="sp3"></div>
-<div style="height:300vh" id="sp4"></div>
+<div style="height:190vh" id="sp2"></div>
+<div style="height:190vh" id="sp3"></div>
+<div style="height:280vh" id="sp4"></div>
+<div style="height:200vh" id="sp5"></div>
+<div style="height:170vh" id="sp6"></div>
+<div style="height:220vh" id="sp7"></div>
+<div style="height:210vh" id="sp8"></div>
+<div style="height:190vh" id="sp9"></div>
+
+<!-- 11 · ŽIVÝ PROTOTYP -->
+<section id="proto">
+  <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
+  <div class="badge">
+    <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — skutočný register + OSM 3D mesto · klikajte</span>
+    <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
+  </div>
+</section>
 
 <!-- 5 · ZAPOJ SA -->
 <section id="zapoj">
@@ -327,21 +467,30 @@ function stateColor(s){
   return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
 }
 
-/* ---------- akty podľa globálneho progresu ---------- */
-const ACT={pritiahni:[0,.13],objav:[.13,.36],pochop:[.36,.56],predstav:[.56,.90],zapoj:[.90,1]};
-const aP=(k,p)=>clamp((p-ACT[k][0])/(ACT[k][1]-ACT[k][0]));
-
-let P=0,Ps=REDUCED?1:0;      /* cieľový a hladený progres */
-function measureP(){
-  const max=document.documentElement.scrollHeight-innerHeight;
-  P=max>0?clamp(scrollY/max):0;
+/* ---------- akty naviazané na scroll dráhu (elementy sp1–sp9) ---------- */
+const ACTEL={pritiahni:'sp1',objav:'sp2',pochop:'sp3',predstav:'sp4',
+             jazyk:'sp5',obor:'sp6',video:'sp7',tuba:'sp8',skal:'sp9'};
+let MAXS=1;const ANCH={};
+function anchors(){
+  MAXS=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+  for(const k in ACTEL){
+    const el=document.getElementById(ACTEL[k]);
+    if(el)ANCH[k]=[el.offsetTop,el.offsetHeight];
+  }
 }
+let P=0,Ps=REDUCED?1:0;      /* cieľový a hladený progres */
+function measureP(){P=clamp(scrollY/MAXS);}
+function aP(k){
+  const a=ANCH[k];if(!a)return 0;
+  const y=Ps*MAXS+innerHeight*.55;
+  return clamp((y-a[0])/a[1]);
+}
+const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
 
-/* stav polygónu podľa aktov */
-function polyState(pl,p){
-  const wave=aP('predstav',p);
-  const s=clamp((wave*1.22-pl.t)*3.2);           /* vlna prebúdzania */
-  return s;
+/* stav polygónu: vlna prebúdzania v akte PREDSTAV SI, potom ostáva rozsvietené */
+function polyState(pl){
+  const wave=aP('predstav');
+  return clamp((wave*1.22-pl.t)*3.2);
 }
 
 /* ---------- kreslenie ---------- */
@@ -359,7 +508,7 @@ function draw(t){
   cx.translate(OX,OY);cx.scale(BASE,BASE);
   const px=1/(BASE*zoom);                        /* 1px v svetových jednotkách */
 
-  const ctxA=aP('objav',p);                      /* kontext mesta sa vynára v akte 2 */
+  const ctxA=aP('objav');                        /* kontext mesta sa vynára v akte 2 */
 
   /* hranica */
   cx.beginPath();
@@ -377,13 +526,13 @@ function draw(t){
     }
   }
 
-  const ownA=aP('pochop',p);                     /* zvýraznenie vlastníctva v akte 3 */
+  const ownA=aP('pochop');                       /* zvýraznenie vlastníctva v akte 3 */
   const ownPulse=Math.sin(clamp(ownA)*Math.PI);  /* nabehne a odíde */
 
   /* brownfieldy */
   let lit=0;
   for(const pl of POLY){
-    const s=polyState(pl,p);
+    const s=polyState(pl);
     if(s>.55)lit++;
     /* glow pod prebudenými */
     if(s>.4){
@@ -418,7 +567,7 @@ function draw(t){
   cx.font=`${11*px*DPR/DPR}px JetBrains Mono, monospace`;
   for(const pl of POLY){
     if(!pl.big)continue;
-    const s=polyState(pl,p);
+    const s=polyState(pl);
     if(s<.6)continue;
     const a=clamp((s-.6)/.4);
     cx.globalAlpha=a*.95;
@@ -438,19 +587,27 @@ const ovlHero=document.getElementById('ovlHero'),
       hint=document.getElementById('hint'),
       bar=document.getElementById('bar');
 
-function window01(x,inEnd,outStart){ /* 0→1 nábeh, drží, 1→0 odchod */
-  return clamp(x/inEnd)*(1-clamp((x-outStart)/(1-outStart)));
-}
-function deckUpdate(ovl,grid,ap){
-  const vis=Math.sin(clamp(ap)*Math.PI);
+function deckUpdate(ovl,grid,ap,mode='wipeR'){
+  const vis=Math.max(0,Math.min(1,ap*2.6,(1-ap)*2.6));
   ovl.style.opacity=vis.toFixed(3);
   ovl.style.pointerEvents=vis>.15?'auto':'none';
-  const wipe=clamp(ap*1.45)*130;
-  const m=`linear-gradient(to right, black ${wipe}%, transparent ${wipe+18}%)`;
-  grid.style.maskImage=m;grid.style.webkitMaskImage=m;
-  ovl.querySelector('.deck').style.transform=`translateY(${(1-Math.min(1,ap*2))*36}px)`;
-  /* count-up čísel viazaný na wipe */
-  grid.querySelectorAll('.num').forEach((el,i)=>{
+  const deck=ovl.querySelector('.deck');
+  if(deck)deck.style.transform=`translateY(${(1-Math.min(1,ap*2))*36}px)`;
+  if(mode==='wipeR'||mode==='wipeL'||mode==='wipeD'){
+    const wipe=clamp(ap*1.45)*130;
+    const dir=mode==='wipeR'?'to right':mode==='wipeL'?'to left':'to bottom';
+    const m=`linear-gradient(${dir}, black ${wipe}%, transparent ${wipe+18}%)`;
+    grid.style.maskImage=m;grid.style.webkitMaskImage=m;
+  }else{
+    grid.style.maskImage='none';grid.style.webkitMaskImage='none';
+    grid.querySelectorAll('.card').forEach((c,i)=>{
+      const local=clamp(ap*2.4-i*.16);
+      if(mode==='rise'){c.style.opacity=local;c.style.transform=`translateY(${(1-local)*46}px)`;}
+      else{c.style.opacity=local;c.style.transform=`scale(${.9+local*.1})`;}
+    });
+  }
+  /* count-up čísel viazaný na progres (scrub-friendly) */
+  grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
     const tgt=+el.dataset.n;
     const local=clamp(ap*2.2-i*.28);
     const val=Math.round(tgt*(1-Math.pow(1-local,3)));
@@ -460,27 +617,26 @@ function deckUpdate(ovl,grid,ap){
   });
 }
 
+const chapvid=document.getElementById('chapvid'),chapimg=document.getElementById('chapimg');
 function chores(t){
   const p=Ps;
   bar.style.width=(p*100)+'%';
   hint.style.opacity=p<.02?1:0;
 
   /* 1 PRITIAHNI */
-  const h=1-clamp(aP('pritiahni',p)*1.15);
+  const h=1-clamp(aP('pritiahni')*1.15);
   ovlHero.style.opacity=h.toFixed(3);
   ovlHero.style.pointerEvents=h>.3?'auto':'none';
   ovlHero.style.transform=`translateY(${(1-h)*-40}px)`;
 
   /* 2 OBJAV / 3 POCHOP */
-  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aP('objav',p));
-  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aP('pochop',p));
+  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aP('objav'),'wipeR');
+  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aP('pochop'),'wipeL');
 
   /* 4 PREDSTAV SI */
-  const wv=aP('predstav',p);
-  const wvis=Math.sin(clamp(wv)*Math.PI);
-  ovlWave.style.opacity=wvis.toFixed(3);
-  const lit=window.__lit||0;
-  document.getElementById('litN').textContent=lit;
+  const wv=aP('predstav');
+  ovlWave.style.opacity=Math.sin(clamp(wv)*Math.PI).toFixed(3);
+  document.getElementById('litN').textContent=window.__lit||0;
   const stg=wv*4;
   [['hs1',0],['hs2',1],['hs3',2],['hs4',3]].forEach(([id,i])=>{
     document.getElementById(id).classList.toggle('on',stg>i*.9);
@@ -489,6 +645,36 @@ function chores(t){
     wv<.33?'04 · Predstav si — svetlo ide mestom od východu'
     :wv<.7?'zámery svitajú · drieme → prebúdza sa'
     :'mesto ožíva · teplá biela = život';
+
+  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ */
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),aP('jazyk'),'rise');
+  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aP('tuba'),'wipeD');
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),aP('skal'),'pop');
+
+  /* 6 OBOR */
+  const ob=wnd('obor');
+  const ovlOb=document.getElementById('ovlObor');
+  ovlOb.style.opacity=ob.toFixed(3);
+  ovlOb.style.pointerEvents=ob>.3?'auto':'none';
+  ovlOb.style.transform=`translateY(${(1-ob)*28}px)`;
+
+  /* pozadia sa vyvíjajú: mesto → video → fotka → mesto */
+  const dim=Math.max(wnd('jazyk'),wnd('obor'));
+  const hide=Math.max(wnd('video'),wnd('tuba'));
+  cv.style.opacity=((1-.5*dim)*(1-.96*hide)).toFixed(3);
+
+  const vv=wnd('video');
+  chapvid.style.opacity=vv.toFixed(3);
+  chapvid.style.transform=`scale(${(1.02+aP('video')*.06).toFixed(3)})`;
+  if(!REDUCED){
+    if(vv>.04){if(chapvid.paused)chapvid.play().catch(()=>{});}
+    else if(!chapvid.paused)chapvid.pause();
+  }
+  document.getElementById('ovlVideo').style.opacity=vv.toFixed(3);
+
+  const tv=wnd('tuba');
+  chapimg.style.opacity=tv.toFixed(3);
+  chapimg.style.transform=`scale(${(1.05+aP('tuba')*.07).toFixed(3)}) translateY(${((aP('tuba')-.5)*-3).toFixed(2)}%)`;
 }
 
 /* ---------- hlavná slučka ---------- */
@@ -499,8 +685,36 @@ function loop(t){
   chores(t);
   requestAnimationFrame(loop);
 }
+anchors();
 requestAnimationFrame(loop);
 addEventListener('scroll',measureP,{passive:true});
+addEventListener('resize',anchors);
+addEventListener('load',anchors);
+
+/* obor — ťukni a zobuď */
+let oborUp=false;
+document.getElementById('oborBig').addEventListener('click',()=>{
+  oborUp=!oborUp;
+  document.getElementById('oborBig').classList.toggle('awake',oborUp);
+  document.getElementById('obAura').style.opacity=oborUp?1:0;
+  document.getElementById('obBody').setAttribute('stroke',oborUp?'#FFB94A':'#8B91DD');
+  document.getElementById('obSleep').style.opacity=oborUp?0:1;
+  document.getElementById('obAwake').style.opacity=oborUp?1:0;
+  document.getElementById('oborHint').innerHTML=oborUp
+    ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
+    :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>ťukni a zobuď ho · oči = stav · ústa = energia · aura = jas';
+  if(oborUp){try{
+    const a=new (window.AudioContext||window.webkitAudioContext)();
+    [523.25,659.25,783.99].forEach((fq,i)=>{
+      const o=a.createOscillator(),g=a.createGain();
+      o.frequency.value=fq;o.type='sine';
+      g.gain.setValueAtTime(0,a.currentTime+i*.09);
+      g.gain.linearRampToValueAtTime(.12,a.currentTime+i*.09+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+i*.09+1.1);
+      o.connect(g).connect(a.destination);o.start(a.currentTime+i*.09);o.stop(a.currentTime+i*.09+1.2);
+    });
+  }catch(e){}}
+});
 
 /* CTA → začni cestu */
 document.getElementById('ctaStart').addEventListener('click',()=>{
