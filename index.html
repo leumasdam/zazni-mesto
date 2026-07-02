@@ -291,15 +291,18 @@ pre{
 footer{padding:var(--sp-6) 0;border-top:1px solid var(--night-700);color:var(--text-low);font-size:13px}
 footer a{color:var(--indigo-300)}
 
-/* ---------- scroll scény pozadia (crossfade + parallax) ---------- */
-html{background:var(--night-900)}
+/* ---------- filmové pozadie: globálny bokeh scrub + tinty sekcií + snap ---------- */
+html{background:var(--night-900);scroll-snap-type:y proximity}
 body{background:transparent}
+section,header.hero,footer{scroll-snap-align:start}
 #bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.bglayer{
-  position:absolute;inset:-8% 0;background-size:cover;background-position:center;
-  opacity:0;transition:opacity 1.2s ease;will-change:transform,opacity;
+#bgfx .seq{
+  position:absolute;inset:-7% 0;background-size:cover;background-position:center;
+  will-change:transform;filter:saturate(1.08);
 }
-@media (prefers-reduced-motion:reduce){.bglayer{transition:none}}
+#bgfx .veil{position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 50% 30%, rgba(7,9,18,.36), rgba(7,9,18,.74))}
+.bgtint{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+@media (prefers-reduced-motion:reduce){html{scroll-snap-type:none}.bgtint{transition:none}}
 
 /* nav */
 nav{
@@ -315,7 +318,12 @@ nav a:hover{color:var(--warm-100)}
 </head>
 <body>
 
-<div id="bgfx" aria-hidden="true"><div class="bglayer" id="bgA"></div><div class="bglayer" id="bgB"></div></div>
+<div id="bgfx" aria-hidden="true">
+  <div class="seq" id="bgSeq"></div>
+  <div class="veil"></div>
+  <div class="bgtint" id="tintA"></div>
+  <div class="bgtint" id="tintB"></div>
+</div>
 
 <nav>
   <div class="wrap">
@@ -1155,87 +1163,52 @@ function sndTick(){
   o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.06);
 }
 
-/* ---------- scroll scény pozadia: crossfade + parallax + frame-sekvencie ----------
-   Vlastná sekvencia (napr. z GIFu): rozbaľ JPGs do assets/seq/<meno>/frame-0.jpg … frame-(N-1).jpg
-   a scéne nastav {frames:{dir:'assets/seq/<meno>',count:N}} — scroll v sekcii ju scrubuje frame po frame. */
-const SCENES={
-  noc:{img:'assets/bgfx-noc.jpg'},
-  indigo:{img:'assets/bgfx-indigo.jpg'},
-  teal:{img:'assets/bgfx-teal.jpg'},
-  amber:{img:'assets/bgfx-amber.jpg'},
-  risk:{img:'assets/bgfx-risk.jpg'},
-  warm:{img:'assets/bgfx-warm.jpg'},
-  bokeh:{frames:{dir:'assets/seq/bokeh',count:100}},   /* nočné svetlá mesta — scrub scrollom */
-};
-const SECTION_SCENE=[
-  ['princip','indigo'],['farby','teal'],['stavy','amber'],['kanaly','risk'],
-  ['typo','noc'],['ikony','indigo'],['komponenty','teal'],['kompozicia','noc'],
-  ['motion','bokeh'],['zvuk','indigo'],['obrazovka','teal'],['tokeny','noc'],
-  ['skalovatelnost','warm']
+/* ---------- filmové pozadie ----------
+   Bokeh sekvencia (100 JPG z GIFu) beží GLOBÁLNE: scroll celej stránky = prehrávanie (3 slučky).
+   Sekcie dodávajú farebný tint (crossfade). Snap po sekciách rieši CSS scroll-snap. */
+const SEQ={dir:'assets/seq/bokeh',count:100,loops:3};
+const TINTS=[
+  ['princip','#5A61B5'],['farby','#17B3A3'],['stavy','#F59E0B'],['kanaly','#E84B8A'],
+  ['typo','#3D4568'],['ikony','#5A61B5'],['komponenty','#17B3A3'],['kompozicia','#3D4568'],
+  ['motion','#F59E0B'],['zvuk','#5A61B5'],['obrazovka','#17B3A3'],['tokeny','#3D4568'],
+  ['skalovatelnost','#FFE9B8']
 ];
 (function(){
-  const A=document.getElementById('bgA'),B=document.getElementById('bgB');
-  if(!A)return;
-  const layers=[A,B];let front=0,curScene=null;
-  const secs=SECTION_SCENE.map(([id,sc])=>({el:document.getElementById(id),sc})).filter(s=>s.el);
-  const frameCache={};
-  function sceneUrl(sc,prog){
-    const s=SCENES[sc];if(!s)return null;
-    if(s.frames){
-      const i=Math.max(0,Math.min(s.frames.count-1,Math.floor(prog*s.frames.count)));
-      const u=`${s.frames.dir}/frame-${i}.jpg`;
-      if(!frameCache[u]){const im=new Image();im.src=u;frameCache[u]=im;}
-      return u;
-    }
-    return s.img;
-  }
-  function setScene(sc,prog){
-    if(sc!==curScene){
-      front=1-front;curScene=sc;
-      layers[front].style.backgroundImage=`url(${sceneUrl(sc,prog)})`;
-      layers[front].style.opacity=1;
-      layers[1-front].style.opacity=0;
-    }else if(SCENES[sc]&&SCENES[sc].frames){
-      layers[front].style.backgroundImage=`url(${sceneUrl(sc,prog)})`;
-    }
-  }
+  const seqEl=document.getElementById('bgSeq'),tints=[document.getElementById('tintA'),document.getElementById('tintB')];
+  if(!seqEl)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let ticking=false;
+  const cache={};
+  const url=i=>`${SEQ.dir}/frame-${i}.jpg`;
+  function pre(i){const u=url(i);if(!cache[u]){const im=new Image();im.src=u;cache[u]=im;}return u;}
+  if(reduced)seqEl.style.backgroundImage='url(assets/bgfx-noc.jpg)';
+  else seqEl.style.backgroundImage=`url(${pre(0)})`;
+  const secs=TINTS.map(([id,c])=>({el:document.getElementById(id),c})).filter(s=>s.el);
+  let front=0,cur=null,lastFrame=-1,ticking=false;
+  const tintBg=c=>`radial-gradient(ellipse 90% 70% at 50% 38%, ${c}3d, transparent 72%)`;
   function onScroll(){
     if(ticking)return;ticking=true;
     requestAnimationFrame(()=>{
       ticking=false;
-      const mid=scrollY+innerHeight*.45;
-      let active=null,prog=0;
-      for(const s of secs){
-        const top=s.el.offsetTop,bot=top+s.el.offsetHeight;
-        if(mid>=top&&mid<bot){active=s;prog=(mid-top)/(bot-top);break;}
-      }
-      if(!active){layers[0].style.opacity=0;layers[1].style.opacity=0;curScene=null;return;}
-      setScene(active.sc,prog);
+      const max=document.documentElement.scrollHeight-innerHeight;
+      const g=max>0?Math.min(1,Math.max(0,scrollY/max)):0;
       if(!reduced){
-        const drift=(prog-.5)*46;
-        layers[front].style.transform=`translateY(${drift.toFixed(1)}px) scale(1.1)`;
-        layers[1-front].style.transform=`translateY(${(drift*.6).toFixed(1)}px) scale(1.1)`;
+        const f=Math.floor(g*SEQ.loops*SEQ.count)%SEQ.count;
+        if(f!==lastFrame){lastFrame=f;seqEl.style.backgroundImage=`url(${pre(f)})`;}
+        seqEl.style.transform=`translateY(${(g*-60).toFixed(1)}px) scale(1.12)`;
+      }
+      const mid=scrollY+innerHeight*.45;
+      let active=null;
+      for(const s of secs){const t=s.el.offsetTop,b=t+s.el.offsetHeight;if(mid>=t&&mid<b){active=s;break;}}
+      const c=active?active.c:null;
+      if(c!==cur){
+        cur=c;
+        if(c){front=1-front;tints[front].style.background=tintBg(c);tints[front].style.opacity=1;tints[1-front].style.opacity=0;}
+        else{tints[0].style.opacity=0;tints[1].style.opacity=0;}
       }
     });
   }
-  Object.values(SCENES).forEach(s=>{if(s.img){const im=new Image();im.src=s.img;}});
-  /* frame-sekvencie prednačítaj postupne na pozadí (žiadny jank pri prvom scrube) */
-  addEventListener('load',()=>{
-    Object.values(SCENES).forEach(s=>{
-      if(!s.frames)return;
-      let i=0;
-      (function next(){
-        if(i>=s.frames.count)return;
-        for(let k=0;k<4&&i<s.frames.count;k++,i++){
-          const u=`${s.frames.dir}/frame-${i}.jpg`;
-          if(!frameCache[u]){const im=new Image();im.src=u;frameCache[u]=im;}
-        }
-        setTimeout(next,90);
-      })();
-    });
-  });
+  /* postupný preload celej sekvencie — po prvom prejdení nula blikania */
+  addEventListener('load',()=>{let i=0;(function next(){if(i>=SEQ.count)return;for(let k=0;k<5&&i<SEQ.count;k++,i++)pre(i);setTimeout(next,70);})();});
   addEventListener('scroll',onScroll,{passive:true});
   addEventListener('resize',onScroll);
   onScroll();
