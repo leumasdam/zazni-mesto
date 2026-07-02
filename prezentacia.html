@@ -58,7 +58,26 @@ body.lightmode .brand em{color:#C77800}
 
 /* legenda: 4 stavy naživo + kanály */
 .grid4{grid-template-columns:repeat(4,1fr)!important}
-.stdemo{height:120px;border-radius:14px;background:rgba(5,7,15,.55);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:16px}
+.stdemo{height:96px;border-radius:14px;background:#0B0E1A;border:1px solid #1C2138;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+/* kanálové mini-demá (z manuálu) */
+.kcard{padding:16px 16px 14px}
+.kdemo{height:62px;border-radius:12px;background:#0B0E1A;border:1px solid #1C2138;
+  display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.kcard b{font-family:var(--fd);font-size:14px;display:block}
+.kcard span{font-family:var(--fm);font-size:10px;color:#9a9dae;letter-spacing:.06em}
+/* prvky z prototypu */
+.uistrip{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.uistrip .lbl{font-family:var(--fm);font-size:10.5px;letter-spacing:.16em;color:#9a9dae;text-transform:uppercase;margin-right:6px}
+.uip{font-family:var(--fm);font-size:11px;padding:7px 14px;border-radius:99px;background:#0B0E1A;
+  color:#B4B7D4;border:1px solid #2A3150;display:inline-flex;align-items:center;gap:7px}
+.uip.amber{color:#FFB94A;border-color:rgba(245,158,11,.5)}
+.uip.indigo{color:#8B91DD;border-color:#3B4285}
+.uip.risk{color:#FF7EB0;border-color:#E84B8A}
+.uiseg{display:inline-flex;background:#0B0E1A;border:1px solid #2A3150;border-radius:99px;padding:3px;gap:2px}
+.uiseg span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;padding:5px 12px;border-radius:99px;color:#767A9C}
+.uiseg span.on{background:var(--amber-500);color:#0B0E1A;font-weight:700}
 .parcel{width:64px;height:64px;border-radius:13px}
 @keyframes pulseSleep{0%,100%{opacity:.45}50%{opacity:.95}}
 .p-sleep{background:#3B4285;animation:pulseSleep 4s ease-in-out infinite}
@@ -311,18 +330,29 @@ body.lightmode .dots i.on{background:#C77800}
 <div class="ovl light mid" id="ovlLegenda">
   <div class="deck">
     <div class="head"><span>05 · Jazyk svetla</span><b>Legenda — ako čítať mesto</b></div>
-    <div class="grid grid4" id="gridLegenda">
-      <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne</span></div>
-      <div class="card"><div class="stdemo"><div class="parcel p-temp"></div></div><h3>DRIEME</h3><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">state.temporary · teal</span></div>
-      <div class="card"><div class="stdemo"><div class="parcel p-awake"></div></div><h3>PREBÚDZA SA</h3><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">66 území so zámerom · amber</span></div>
-      <div class="card"><div class="stdemo"><div class="parcel p-alive"></div></div><h3>ŽIJE</h3><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">26 vyradených od 2019</span></div>
-      <div class="card chanbar">
-        <span class="ch"><span class="sw" style="background:linear-gradient(135deg,#3B4285,#FFE9B8)"></span><b>FARBA</b>·&nbsp;stav</span>
-        <span class="ch"><span class="sw" style="background:#0B0E1A;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="4"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/></svg></span><b>IKONA</b>·&nbsp;typológia</span>
-        <span class="ch"><span class="sw" style="background:repeating-linear-gradient(45deg,transparent,transparent 3px,#E84B8A 3px,#E84B8A 5px)"></span><b>VZOR</b>·&nbsp;riziko (15 záťaží)</span>
-        <span class="ch"><span class="sw" style="background:transparent;border:2px dashed #FFE9B8"></span><b>OBRYS</b>·&nbsp;vlastníctvo</span>
-        <span class="ch"><span class="sw" style="background:#3B4285;box-shadow:6px 6px 0 -2px #3B4285"></span><b>MIERKA</b>·&nbsp;význam (16 BF)</span>
-        <span class="ch" style="color:var(--text-low)">päť kanálov, ktoré sa nikdy nebijú — nová dátová dimenzia = nový kanál, nie redizajn</span>
+    <div id="gridLegenda">
+      <div class="grid grid4">
+        <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne · pulz 4 s</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-temp"></div></div><h3>DRIEME</h3><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">state.temporary · teal · flicker</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-awake"></div></div><h3>PREBÚDZA SA</h3><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">66 so zámerom · amber · glow-rise 3 s</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-alive"></div></div><h3>ŽIJE</h3><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">26 vyradených od 2019 · warm</span></div>
+      </div>
+      <div class="grid5">
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3B4285,#F59E0B 65%,#FFE9B8)"></div></div><b>FARBA</b><span>stav · jas = život</span></div>
+        <div class="card kcard"><div class="kdemo"><svg width="34" height="34" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg></div><b>IKONA</b><span>typológia · 10 obrov</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:#3B4285;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 4px,#E84B8A 4px,#E84B8A 6px);opacity:.85"></div></div></div><b>VZOR</b><span>riziko · 15 záťaží</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;border:2.5px dashed #FFE9B8"></div></div><b>OBRYS</b><span>vlastníctvo · kto drží kľúč</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="display:flex;align-items:flex-end;gap:6px"><div style="width:14px;height:14px;border-radius:5px;background:#3B4285"></div><div style="width:30px;height:30px;border-radius:8px;background:#3B4285;border:1.5px solid #8B91DD"></div></div></div><b>MIERKA</b><span>význam · 16 BF s menovkou</span></div>
+      </div>
+      <div class="card uistrip">
+        <span class="lbl">Prvky priamo z prototypu →</span>
+        <span class="uip indigo">😴 SPÍ · potenciál C</span>
+        <span class="uip amber">🌅 PREBÚDZA SA</span>
+        <span class="uip amber">★ 12 hlasov</span>
+        <span class="uip risk">⚠ Kontaminované (15)</span>
+        <span class="uip">obri 8+ ha</span>
+        <span class="uiseg"><span>MINULOSŤ</span><span class="on">DNES</span><span>BUDÚCNOSŤ</span></span>
+        <span class="uip" style="border-style:dashed">Kto drží kľúč · Súkromní vlastníci</span>
       </div>
     </div>
   </div>
