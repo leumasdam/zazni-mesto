@@ -1,6 +1,6 @@
 # ZAŽNI MESTO — preslov k prezentácii
 
-**Celkový čas: ~11–13 min + demo.** Ovládanie: šípka → posúva slajdy aj odhaľuje fragmenty (počítadlo vpravo dole, napr. „8 / 16 · 2/5").
+**Celkový čas: ~11–13 min + demo.** Prezentácia je scroll landing page: scrolluj (alebo šípky ↓/↑ = ďalšia/predošlá sekcia, bodky vpravo = skok). Obsah sa odhaľuje sám pri vstupe do sekcie; 4K video na pozadí sa prehráva scrollom. Kde preslov hovorí *(šípka)*, jednoducho pokračuj v scrolle.
 
 ## Dramaturgia — tri dejstvá
 
