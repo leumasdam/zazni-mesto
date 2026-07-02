@@ -88,7 +88,21 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .stack{
   position:fixed;top:86px;right:22px;bottom:112px;width:356px;z-index:20;
   display:flex;flex-direction:column;gap:14px;pointer-events:none;
+  transition:width .45s cubic-bezier(.2,.9,.3,1);
 }
+.stack.wide{width:600px}
+body.detailopen .backbtn{right:640px}
+/* detail — foto + sekcie minulosť/dnes/budúcnosť */
+.dphoto{position:relative;border-radius:16px;overflow:hidden;margin:4px 0 16px;background:var(--night-700);aspect-ratio:2/1}
+.dphoto img{width:100%;height:100%;object-fit:cover;display:block}
+.dphoto svg{position:absolute;inset:0;width:100%;height:100%}
+.dphoto .credit{position:absolute;right:10px;bottom:8px;font-family:var(--fm);font-size:9.5px;color:rgba(255,255,255,.75);
+  background:rgba(7,9,18,.55);padding:3px 8px;border-radius:99px;backdrop-filter:blur(4px)}
+.dsec{margin:18px 0 0;padding-top:14px;border-top:1px solid rgba(139,145,221,.14)}
+.dsec h4{font-family:var(--fm);font-size:10.5px;letter-spacing:.2em;color:var(--amber-300);margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.dsec h4 i{font-style:normal;color:var(--text-low);letter-spacing:0}
+.dsec p{font-size:13px;color:var(--text-mid);line-height:1.6}
+.dsec .frows{margin:0}
 .stack>*{pointer-events:auto}
 .card{padding:22px}
 .card h3{font-family:var(--fd);font-size:19px;margin-bottom:3px}
@@ -623,7 +637,7 @@ function repaint(){
 
 /* ---------- navigácia mapy ---------- */
 function zoomTo(i){
-  map.fitBounds(BBOX[i],{padding:{top:140,bottom:140,left:120,right:420},maxZoom:15.8,pitch:55,duration:1100});
+  map.fitBounds(BBOX[i],{padding:{top:140,bottom:140,left:120,right:680},maxZoom:15.8,pitch:55,duration:1100});
   document.getElementById('backMap').classList.add('vis');
 }
 function resetView(){
@@ -695,6 +709,31 @@ function stackList(){
     </div>
   </div>`;
 }
+/* letecká snímka územia + obrys parcely nad ňou */
+function aerial(i){
+  const b=BBOX[i];if(!b)return '';
+  const padX=(b[1][0]-b[0][0])*.45+.0012, padY=(b[1][1]-b[0][1])*.45+.0006;
+  /* pomer 2:1 — dorovnaj bbox na pomer obrázka (šírka v ° korigovaná cos φ) */
+  let w=b[0][0]-padX,e=b[1][0]+padX,s=b[0][1]-padY,n=b[1][1]+padY;
+  const k=Math.cos(48.15*Math.PI/180);
+  const spanX=(e-w)*k, spanY=(n-s), want=spanY*2/k; /* cieľ: spanX_deg = 2*spanY/k */
+  if(e-w<want){const c=(e+w)/2;w=c-want/2;e=c+want/2;}
+  else{const c=(n+s)/2,half=(e-w)*k/4;s=c-half;n=c+half;}
+  const url=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${w.toFixed(5)},${s.toFixed(5)},${e.toFixed(5)},${n.toFixed(5)}&bboxSR=4326&imageSR=4326&size=760,380&format=jpg&f=image`;
+  /* obrys parcely v súradniciach bboxu (y prevrátené) */
+  const g=FEATS[i].geometry;
+  const rings=g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);
+  const path=rings.map(r=>'M'+r.map(c=>`${c[0].toFixed(5)} ${(n+s-c[1]).toFixed(5)}`).join(' L')+'Z').join(' ');
+  return `<div class="dphoto">
+    <img src="${url}" alt="Letecká snímka" loading="lazy">
+    <svg viewBox="${w.toFixed(5)} ${s.toFixed(5)} ${(e-w).toFixed(5)} ${(n-s).toFixed(5)}" preserveAspectRatio="none">
+      <path d="${path}" fill="rgba(245,158,11,.14)" stroke="#FFB94A" stroke-width="2.6" stroke-dasharray="8 5"
+        vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    </svg>
+    <span class="credit">letecká snímka · Esri World Imagery</span>
+  </div>`;
+}
+
 function stackDetail(i){
   const p=P(i),voted=votes[i];
   return `<div class="card glass scroll" style="overflow-y:auto">
@@ -707,27 +746,42 @@ function stackDetail(i){
       <div>
         <span class="dchip">${p.plan?'🌅 PREBÚDZA SA':'😴 SPÍ'} · potenciál ${p.cls||'—'}</span>
         <div class="dtitle">${p.n||'Bez názvu'}</div>
-        <div class="dsub">${p.mc} · obor ${TYPL[p.typ]}</div>
+        <div class="dsub">${p.mc} · obor ${TYPL[p.typ]} · ${p.ha} ha</div>
       </div>
     </div>
-    <div class="frows">
-      <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
-      <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
-      <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
-      <div class="frow"><span class="k">Potenciál</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
-      <div class="frow"><span class="k">Rozloha</span><span class="v">${p.ha} ha</span></div>
+    ${aerial(i)}
+
+    <div class="dsec">
+      <h4>MINULOSŤ <i>· čím miesto bolo, kým zaspalo</i></h4>
+      <p><b style="color:var(--text-hi)">${p.typLabel||TYPL[p.typ]}.</b>
+      ${p.sez?' Prevádzka po sebe zanechala evidovanú environmentálnu záťaž — jazvu, ktorú treba pred novým životom vyliečiť.':' Bez evidovanej environmentálnej záťaže z minulej prevádzky.'}</p>
     </div>
-    <div class="mini-tl">
-      <div><b>MINULOSŤ</b><span>${p.typLabel||TYPL[p.typ]}</span></div>
-      <div class="hot"><b>DNES</b><span>${p.plan?'zámer v príprave':'spí v registri'}</span></div>
-      <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
+
+    <div class="dsec">
+      <h4>DNES <i>· stav podľa registra MIB (2022)</i></h4>
+      <div class="frows">
+        <div class="frow"><span class="k">Kto drží kľúč</span><span class="v">${OWNL[p.own]}</span></div>
+        <div class="frow"><span class="k">Env. záťaž</span><span class="v" style="color:${p.sez?'var(--risk-300)':'var(--text-hi)'}">${p.sez?'Evidovaná ⚠':'Bez evidovanej'}</span></div>
+        <div class="frow"><span class="k">Súčasný stav</span><span class="v">${p.plan?'So známym zámerom':'Nevyužívané, bez zámeru'}</span></div>
+        <div class="frow"><span class="k">Potenciál (CABERNET)</span><span class="v" style="color:${C.cls[p.cls]||'inherit'}">${{A:'A — najvyšší',B:'B — dobrý',C:'C — obmedzený',D:'D — rezerva'}[p.cls]||'—'}</span></div>
+      </div>
     </div>
-    <div class="dzamer">${p.plan?('Známy zámer: '+p.zamer):'Bez známeho zámeru — presne pre takéto miesta má zmysel dočasné využitie: kultúra, komunita, šport.'}</div>
-    <h3 style="font-size:15px;margin-bottom:10px">★ Prebuď obra — čo tu má vyrásť?</h3>
-    <div class="vote-grid">
-      ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
+
+    <div class="dsec">
+      <h4>BUDÚCNOSŤ <i>· plán mesta a tvoj hlas</i></h4>
+      ${p.nfunk?`<p style="margin-bottom:10px"><span class="k" style="color:var(--text-low);font-size:11.5px;font-family:var(--fm);letter-spacing:.06em">ÚZEMNÝ PLÁN URČUJE</span><br>${p.nfunk}</p>`:''}
+      <p>${p.plan?('<b style="color:var(--warm-100)">Známy zámer:</b> '+p.zamer):'Bez známeho zámeru — presne pre takéto miesta má podľa Koncepcie zmysel dočasné využitie: kultúra, komunita, šport.'}</p>
+      <div class="mini-tl" style="margin-top:14px">
+        <div><b>MINULOSŤ</b><span>${TYPL[p.typ]}</span></div>
+        <div class="hot"><b>DNES</b><span>${p.plan?'zámer v príprave':'spí v registri'}</span></div>
+        <div><b>VÍZIA</b><span>${voted?VOTEL[voted]:'tvoj hlas ↓'}</span></div>
+      </div>
+      <h3 style="font-size:15px;margin:6px 0 10px">★ Prebuď obra — čo tu má vyrásť?</h3>
+      <div class="vote-grid">
+        ${Object.keys(VOTEL).map(k=>`<button class="vote-btn ${voted===k?'picked':''}" data-v="${k}">${VOTEL[k]}</button>`).join('')}
+      </div>
+      <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Tvoj hlas zaznamenaný ✓ Obor sa zobudí vo VÍZII — v registri spí ďalej, kým sa zámer nestane skutočnosťou.</div>
     </div>
-    <div class="vote-thanks" id="voteThanks" ${voted?'style="display:block"':''}>Tvoj hlas zaznamenaný ✓ Obor sa zobudí vo VÍZII — v registri spí ďalej, kým sa zámer nestane skutočnosťou.</div>
   </div>`;
 }
 function stackVizia(){
@@ -758,8 +812,11 @@ function stackVizia(){
 }
 function renderStack(){
   const el=document.getElementById('stack');
+  const detail=(mode==='objav'&&selIdx!=null);
+  el.classList.toggle('wide',detail);
+  document.body.classList.toggle('detailopen',detail);
   if(mode==='pulz')el.innerHTML=stackPulz();
-  else if(mode==='objav')el.innerHTML=(selIdx==null)?stackList():stackDetail(selIdx);
+  else if(mode==='objav')el.innerHTML=detail?stackDetail(selIdx):stackList();
   else el.innerHTML=stackVizia();
   bindStack();
 }
