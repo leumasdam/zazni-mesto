@@ -162,6 +162,33 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   letter-spacing:.05em;text-shadow:0 2px 12px rgba(7,9,18,.9);
 }
 .brand em{font-style:normal;color:var(--amber-300)}
+/* TU————BA wordmark */
+.tubamark{
+  position:fixed;top:20px;right:52px;z-index:60;display:flex;align-items:center;gap:12px;
+  font-family:var(--fd);font-weight:700;font-size:16px;letter-spacing:.06em;color:var(--warm-100);
+  text-shadow:0 2px 12px rgba(7,9,18,.9);
+}
+.tubamark i{display:block;height:2.5px;width:clamp(46px,7vw,120px);background:currentColor;border-radius:99px}
+.tubamark.big{position:static;font-size:clamp(34px,4.6vw,64px);gap:22px;text-shadow:none;margin-bottom:14px}
+.tubamark.big i{height:5px;flex:1;max-width:340px}
+
+/* biele svetelné prelivy — vychádzajú z boku, parallax na scroll */
+.sweep{
+  position:absolute;top:14%;width:64vw;height:72vh;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(closest-side,rgba(255,246,227,.16),rgba(255,246,227,.05) 55%,transparent 72%);
+  will-change:transform,opacity;opacity:0;
+}
+.sweep.l{left:-36vw}.sweep.r{right:-36vw}
+.sweep.hi{background:radial-gradient(closest-side,rgba(255,246,227,.24),rgba(255,246,227,.08) 55%,transparent 72%)}
+
+/* foto pauzy z TU-BA — parallax */
+.pauza{padding:0;min-height:92vh}
+.pauza img{position:absolute;left:0;right:0;top:-14%;height:128%;width:100%;object-fit:cover;will-change:transform;z-index:-1}
+.pauza::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,18,.55),transparent 30%,transparent 65%,rgba(7,9,18,.7));z-index:0}
+.pauza .cap{
+  position:absolute;left:96px;bottom:56px;z-index:1;font-family:var(--fm);font-size:12px;
+  letter-spacing:.18em;color:var(--warm-300);text-transform:uppercase;text-shadow:0 2px 10px rgba(7,9,18,.9);
+}
 .dots{
   position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:60;
   display:flex;flex-direction:column;gap:10px;
@@ -187,6 +214,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 <div id="vidbg" aria-hidden="true"><div class="seq" id="vseq"></div><div class="veil"></div></div>
 <div class="topbar"><i id="bar"></i></div>
 <span class="brand">ZAŽNI <em>MESTO</em></span>
+<span class="tubamark" aria-label="TU-BA">TU<i></i>BA</span>
 <div class="dots" id="dots"></div>
 <span class="scrollhint" id="scrollhint">SCROLLUJ ↓</span>
 
@@ -196,7 +224,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   <div style="margin-top:auto">
     <div class="kicker">MIB · TU-BA · koncept interaktívnej expozície brownfieldov</div>
     <h1 class="stmt" style="font-size:clamp(60px,9vw,140px);text-transform:uppercase"><span class="lit">Zažni</span><br><span class="dim">mesto</span></h1>
-    <p class="line mono" style="font-size:13px">vpravo nie je ilustrácia — je to živý register MIB, 113 polygónov, ktoré práve spia</p>
+    <p class="line mono" style="font-size:13px">vpravo živý register MIB (113 polygónov) · za textom expozícia TU-BA — kamera stojí v miestnosti a scrollom ňou preletíš</p>
     <p class="backnote"><b>backend</b> · ArcGIS FeatureServer BF_aktualizácia_2022 → generátor → GeoJSON → mapa · polia: NAZOV · VYMERA_HA · DRUH_VLA · P_VYUZITIE · ZAMER · KONTAMIN · KLASIFIKAC</p>
   </div>
 </section>
@@ -245,11 +273,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   </div>
 </section>
 
-<!-- 06 · INSIGHT -->
+<!-- 06 · INSIGHT — video práve vlieta do modelu -->
 <section class="slide" data-dot="Insight">
-  <div class="bg" style="background-image:url('assets/hero-projektory.png')"></div><div class="shade"></div>
+  <div class="sweep l hi"></div>
   <div style="margin-top:auto">
-    <div class="kicker">insight — zhoda média s témou</div>
+    <div class="kicker">insight — zhoda média s témou · kamera práve vlieta do modelu</div>
     <p class="stmt">Téma: zhasnuté miesta.<br>Médium: svetlo.<br><span class="frag">Tak nech svetlo <span class="lit">nie je obraz — nech je význam.</span></span></p>
     <p class="line frag" style="font-size:16px;max-width:56ch">Návštevník nerozsvieti fabriku. Rozsvieti jej príbeh na modeli —
     a <b style="color:var(--warm-100)">pozornosť je prvé svetlo</b>, ktoré zhasnuté miesto potrebuje.
@@ -257,9 +285,16 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   </div>
 </section>
 
+<!-- PAUZA · TU-BA naživo I -->
+<section class="slide pauza" data-dot="TU-BA naživo">
+  <img src="assets/tuba-live-1.jpg" alt="Publikum v TU-BA" loading="lazy">
+  <span class="cap">TU<span style="display:inline-block;width:44px;height:2px;background:currentColor;vertical-align:middle;margin:0 8px"></span>BA · takto vyzerá plná miestnosť · MIB Talk o brownfieldoch</span>
+</section>
+
 <!-- 07 · STAVY -->
 <section class="slide" data-dot="Štyri stavy">
-  <div class="kicker">dizajn systém naživo</div>
+  <div class="sweep r"></div>
+  <div class="kicker">dizajn systém naživo · letíme ponad rozsvietené štvrte</div>
   <p class="stmt">Štyri stavy svetla</p>
   <div class="staterow">
     <div class="stcard frag"><div class="stdemo"><div class="parcel p-sleep"></div></div><div class="stname">SPÍ</div><span class="sttok">indigo · pulz 4 s</span></div>
@@ -289,6 +324,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 <!-- 09 · KANÁLY -->
 <section class="slide" data-dot="Päť kanálov">
+  <div class="sweep l"></div>
   <div class="kicker">dizajn systém naživo</div>
   <p class="stmt">Päť kanálov,<br>jedna parcela</p>
   <div class="compose">
@@ -358,8 +394,15 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   </div>
 </section>
 
+<!-- PAUZA · TU-BA naživo II -->
+<section class="slide pauza" data-dot="TU-BA naživo">
+  <img src="assets/tuba-live-2.jpg" alt="Dátová inštalácia v TU-BA" loading="lazy">
+  <span class="cap">TU<span style="display:inline-block;width:44px;height:2px;background:currentColor;vertical-align:middle;margin:0 8px"></span>BA · dáta tu už visia vo vzduchu — expozícia na ne nadviaže</span>
+</section>
+
 <!-- 11 · KROKY -->
 <section class="slide" data-dot="Päť krokov">
+  <div class="sweep r"></div>
   <div class="kicker">zážitok návštevníka · 4 minúty</div>
   <p class="stmt">Päť krokov k svetlu</p>
   <div class="steps">
@@ -373,12 +416,20 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 <!-- 12 · PRIESTOR -->
 <section class="slide" data-dot="Priestor TU-BA">
-  <div class="kicker">priestor TU-BA · jedna scéna, štyri vrstvy zážitku</div>
+  <div class="tubamark big" aria-hidden="true">TU<i></i>BA</div>
+  <div class="kicker">jedna scéna, štyri vrstvy zážitku</div>
   <div class="board frag"><img src="assets/tuba-priestor.png" alt="Priestor TU-BA" loading="lazy"></div>
+</section>
+
+<!-- PAUZA · TU-BA naživo III -->
+<section class="slide pauza" data-dot="TU-BA naživo">
+  <img src="assets/tuba-live-3.jpg" alt="Interiér TU-BA" loading="lazy">
+  <span class="cap">TU<span style="display:inline-block;width:44px;height:2px;background:currentColor;vertical-align:middle;margin:0 8px"></span>BA · kaviareň, dáta na podlahe — a vzadu miesto pre model</span>
 </section>
 
 <!-- 13 · MÉDIÁ -->
 <section class="slide" data-dot="Kto čo hrá">
+  <div class="sweep l"></div>
   <div class="kicker">kto čo hrá</div>
   <div class="mediastack" style="max-width:900px">
     <div class="m frag"><b>Model je mapa.</b><span>scéna pre všetkých — priestor, stavy, svetlo</span></div>
@@ -400,6 +451,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 <!-- 15 · ŠKÁLOVATEĽNOSŤ -->
 <section class="slide" data-dot="Škálovateľnosť">
+  <div class="sweep r"></div>
   <div class="kicker">prečo sa to nerozpadne</div>
   <div class="mediastack" style="max-width:940px">
     <div class="m frag"><b>Nové dáta = nový kanál.</b><span>nie redizajn — farba · ikona · vzor · obrys · mierka</span></div>
@@ -414,7 +466,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 <section class="slide mapfade" data-enter="map:mf:base;ignite:mf" data-dot="Finále">
   <div class="livemap"><svg id="mf"></svg></div>
   <div style="margin-top:auto">
-    <div class="kicker">ďakujem</div>
+    <div class="kicker">ďakujem · kamera stúpa do svetla</div>
     <p class="stmt">Poďme rozsvietiť<br><span class="lit">113 spiacich obrov.</span></p>
     <div class="linkrow">
       <a href="index.html" target="_blank">Dizajn manuál ↗</a>
@@ -654,6 +706,20 @@ function onScroll(){
     for(let i=0;i<slides.length;i++){
       if(mid>=slides[i].offsetTop)idx=i;
     }
+    /* svetelné prelivy + foto parallax — viazané na progres sekcie vo viewporte */
+    slides.forEach(s=>{
+      const top=s.offsetTop,h=s.offsetHeight;
+      if(top>scrollY+innerHeight||top+h<scrollY)return;
+      const p=Math.min(1,Math.max(0,(mid-top)/h));
+      const sw=s.querySelector('.sweep');
+      if(sw&&!reduced){
+        const dir=sw.classList.contains('l')?1:-1;
+        sw.style.transform=`translateX(${(dir*p*30).toFixed(1)}vw) translateY(${((p-.5)*-10).toFixed(1)}vh)`;
+        sw.style.opacity=(Math.sin(Math.min(1,Math.max(0,p))*Math.PI)*.95).toFixed(2);
+      }
+      const pimg=s.classList.contains('pauza')?s.querySelector('img'):null;
+      if(pimg&&!reduced)pimg.style.transform=`translateY(${((p-.5)*10).toFixed(2)}%)`;
+    });
     if(idx!==curIdx){
       curIdx=idx;
       dotBtns.forEach((d,j)=>d.classList.toggle('on',j===idx));
