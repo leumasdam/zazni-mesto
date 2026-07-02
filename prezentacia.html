@@ -19,8 +19,9 @@
   --glass:rgba(11,14,26,.55);--glass-b:rgba(139,145,221,.22);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
 html{background:var(--night-950)}
-body{font-family:var(--ft);color:var(--text-hi);overflow-x:hidden;background:transparent}
+body{font-family:var(--ft);color:var(--text-hi);background:transparent}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 a{color:inherit}
 
@@ -105,6 +106,18 @@ body.lightmode .brand em{color:#C77800}
 .tubamark i{display:block;height:2px;width:clamp(40px,6vw,96px);background:currentColor;border-radius:99px}
 .hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
   font-family:var(--fm);font-size:10.5px;letter-spacing:.26em;color:var(--text-low);transition:opacity .6s}
+/* kroková navigácia */
+.steps-ui{position:fixed;right:26px;bottom:26px;z-index:70;display:flex;flex-direction:column;gap:8px}
+.steps-ui button{
+  width:46px;height:46px;border-radius:50%;background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-b);color:var(--text-mid);font-size:17px;transition:all .25s;
+}
+.steps-ui button:hover{color:var(--warm-100);border-color:var(--amber-500)}
+.dots{position:fixed;right:34px;top:50%;transform:translateY(-50%);z-index:70;display:flex;flex-direction:column;gap:9px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(139,145,221,.32);transition:all .3s;cursor:pointer}
+.dots i.on{background:var(--amber-500);box-shadow:0 0 9px rgba(245,158,11,.8);transform:scale(1.45)}
+body.lightmode .dots i{background:rgba(16,20,38,.25)}
+body.lightmode .dots i.on{background:#C77800}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
 .hint span{display:inline-block;animation:bob 1.6s infinite}
 
@@ -366,27 +379,26 @@ body.lightmode .brand em{color:#C77800}
   </div>
 </div>
 
-<!-- scroll dráha (prázdne úseky = akty) -->
-<div style="height:120vh" id="sp1"></div>
-<div style="height:190vh" id="sp2"></div>
-<div style="height:190vh" id="sp3"></div>
-<div style="height:280vh" id="sp4"></div>
-<div style="height:200vh" id="sp5"></div>
-<div style="height:170vh" id="sp6"></div>
-<div style="height:220vh" id="sp7"></div>
-<div style="height:210vh" id="sp8"></div>
-<div style="height:190vh" id="sp9"></div>
-
-<!-- 11 · ŽIVÝ PROTOTYP -->
-<section id="proto">
-  <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
-  <div class="badge">
-    <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — skutočný register + OSM 3D mesto · klikajte</span>
-    <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
+<!-- 11 · ŽIVÝ PROTOTYP (overlay krok) -->
+<div class="ovl" id="ovlProto" style="z-index:22">
+  <div id="proto" style="position:absolute;inset:0">
+    <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
+    <div class="badge">
+      <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — klikaj priamo do prototypu · ďalej šípkami vpravo dole</span>
+      <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
+    </div>
   </div>
-</section>
+</div>
 
-<!-- 5 · ZAPOJ SA -->
+<!-- ovládanie krokov -->
+<div class="steps-ui">
+  <button id="stepUp" aria-label="Predošlý krok">↑</button>
+  <button id="stepDn" aria-label="Ďalší krok">↓</button>
+</div>
+<div class="dots" id="dots"></div>
+
+<!-- 5 · ZAPOJ SA (overlay krok) -->
+<div class="ovl" id="ovlZapoj" style="overflow:auto">
 <section id="zapoj">
   <span class="kicker reveal">05 · Zapoj sa</span>
   <h2 class="reveal">Rozsvietil si mesto.<br><span class="lit">Teraz prebuď obra naozaj.</span></h2>
@@ -400,6 +412,7 @@ body.lightmode .brand em{color:#C77800}
   <p class="foot reveal">dáta: register brownfieldov MIB (BF_aktualizácia_2022, ArcGIS) · 113 polygónov, žiadna ilustrácia<br>
   ZAŽNI MESTO · koncept pre TU-BA · leumasdam.github.io/zazni-mesto · júl 2026</p>
 </section>
+</div>
 
 <script src="geo.js"></script>
 <script>
@@ -488,25 +501,47 @@ function stateColor(s){
   return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
 }
 
-/* ---------- akty naviazané na scroll dráhu (elementy sp1–sp9) ---------- */
-const ACTEL={pritiahni:'sp1',objav:'sp2',pochop:'sp3',predstav:'sp4',
-             jazyk:'sp5',obor:'sp6',video:'sp7',tuba:'sp8',skal:'sp9'};
-let MAXS=1;const ANCH={};
-function anchors(){
-  MAXS=Math.max(1,document.documentElement.scrollHeight-innerHeight);
-  for(const k in ACTEL){
-    const el=document.getElementById(ACTEL[k]);
-    if(el)ANCH[k]=[el.offsetTop,el.offsetHeight];
-  }
-}
-let P=0,Ps=REDUCED?1:0;      /* cieľový a hladený progres */
-function measureP(){P=clamp(scrollY/MAXS);}
-function aP(k){
-  const a=ANCH[k];if(!a)return 0;
-  const y=Ps*MAXS+innerHeight*.55;
-  return clamp((y-a[0])/a[1]);
-}
+/* ---------- akty na virtuálnej časovej osi 0–1 ---------- */
+const ACT={
+  pritiahni:[0,.06], objav:[.06,.16], pochop:[.16,.26], predstav:[.26,.46],
+  jazyk:[.46,.58], obor:[.58,.68], video:[.68,.76], tuba:[.76,.86],
+  skal:[.86,.94], proto:[.94,.985], zapoj:[.985,1]
+};
+let Ps=REDUCED?1:0;
+function aP(k){const[a,b]=ACT[k];return clamp((Ps-a)/(b-a));}
 const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
+
+/* ---------- kroky: jeden swipe = jeden stupeň; medzi krokmi to ide samo ---------- */
+const STEPS=[
+  {t:0,   n:'Zažni mesto'},
+  {t:.11, n:'Objav — čísla'},
+  {t:.21, n:'Pochop — kto drží kľúč'},
+  {t:.445,n:'Svetelná vlna',slow:1.9},
+  {t:.52, n:'Legenda'},
+  {t:.63, n:'Spiaci obor'},
+  {t:.72, n:'Expozícia — film',auto:3000},
+  {t:.81, n:'TU-BA + médiá'},
+  {t:.90, n:'Škálovateľnosť'},
+  {t:.962,n:'Živý prototyp'},
+  {t:1,   n:'Zapoj sa'},
+];
+let STEP=0,tw=null,autoT=null;
+const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+function goStep(i,manual=true){
+  i=Math.max(0,Math.min(STEPS.length-1,i));
+  if(manual&&autoT){clearTimeout(autoT);autoT=null;}
+  if(i===STEP&&!tw&&Math.abs(Ps-STEPS[i].t)<.001)return;
+  STEP=i;
+  const s=STEPS[i];
+  const dist=Math.abs(s.t-Ps);
+  const dur=REDUCED?0:Math.min(5600,(900+dist*11000)*(s.slow||1));
+  tw={from:Ps,to:s.t,t0:performance.now(),dur};
+  document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
+}
+function onArrive(){
+  const s=STEPS[STEP];
+  if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
+}
 
 /* stav polygónu: vlna prebúdzania v akte PREDSTAV SI, potom ostáva rozsvietené */
 function polyState(pl){
@@ -710,21 +745,70 @@ function chores(t){
   const tv=wnd('tuba');
   chapimg.style.opacity=tv.toFixed(3);
   chapimg.style.transform=`scale(${(1.05+aP('tuba')*.07).toFixed(3)}) translateY(${((aP('tuba')-.5)*-3).toFixed(2)}%)`;
+
+  /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
+  const pr=wnd('proto');
+  const op=document.getElementById('ovlProto');
+  op.style.opacity=pr.toFixed(3);
+  op.style.visibility=pr>.03?'visible':'hidden';
+  op.style.pointerEvents=pr>.5?'auto':'none';
+  const zp=clamp(aP('zapoj')*1.6);
+  const oz=document.getElementById('ovlZapoj');
+  oz.style.opacity=zp.toFixed(3);
+  oz.style.visibility=zp>.03?'visible':'hidden';
+  oz.style.pointerEvents=zp>.5?'auto':'none';
+  document.querySelectorAll('#ovlZapoj .reveal').forEach(el=>el.classList.toggle('in',zp>.4));
 }
 
 /* ---------- hlavná slučka ---------- */
 function loop(t){
-  measureP();
-  Ps=REDUCED?1:lerp(Ps,P,.085);
+  if(tw){
+    const k=clamp((t-tw.t0)/Math.max(1,tw.dur));
+    Ps=lerp(tw.from,tw.to,easeIO(k));
+    if(k>=1){Ps=tw.to;tw=null;onArrive();}
+  }
   window.__lit=draw(t);
   chores(t);
   requestAnimationFrame(loop);
 }
-anchors();
 requestAnimationFrame(loop);
-addEventListener('scroll',measureP,{passive:true});
-addEventListener('resize',anchors);
-addEventListener('load',anchors);
+
+/* ---------- vstupy: swipe / koliesko / klávesy / šípky / bodky ---------- */
+let lastIn=0;
+function inputStep(d){
+  const now=performance.now();
+  if(tw||now-lastIn<420)return;
+  lastIn=now;
+  goStep(STEP+(d>0?1:-1));
+}
+addEventListener('wheel',e=>{e.preventDefault();if(Math.abs(e.deltaY)>=6)inputStep(e.deltaY);},{passive:false});
+let ty=null;
+addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});
+addEventListener('touchend',e=>{
+  if(ty==null)return;
+  const dy=ty-e.changedTouches[0].clientY;
+  if(Math.abs(dy)>44)inputStep(dy);
+  ty=null;
+},{passive:true});
+addEventListener('keydown',e=>{
+  if(['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();inputStep(1);}
+  if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();inputStep(-1);}
+  if(e.key==='Home')goStep(0);
+  if(e.key==='End')goStep(STEPS.length-1);
+});
+document.getElementById('stepDn').addEventListener('click',()=>inputStep(1));
+document.getElementById('stepUp').addEventListener('click',()=>inputStep(-1));
+/* bodky */
+{
+  const dw=document.getElementById('dots');
+  STEPS.forEach((s,i)=>{
+    const d=document.createElement('i');
+    d.title=s.n;
+    d.addEventListener('click',()=>goStep(i));
+    if(i===0)d.classList.add('on');
+    dw.appendChild(d);
+  });
+}
 
 /* obor — ťukni a zobuď */
 let oborUp=false;
@@ -751,17 +835,12 @@ document.getElementById('oborBig').addEventListener('click',()=>{
   }catch(e){}}
 });
 
-/* CTA → začni cestu */
-document.getElementById('ctaStart').addEventListener('click',()=>{
-  scrollTo({top:innerHeight*1.4,behavior:REDUCED?'auto':'smooth'});
-});
+/* CTA → prvý krok */
+document.getElementById('ctaStart').addEventListener('click',()=>goStep(1));
 
-/* záverečná sekcia — blur-in reveal */
-const io=new IntersectionObserver(es=>es.forEach(e=>{
-  if(e.isIntersecting)e.target.classList.add('in');
-}),{threshold:.25});
+/* stagger pre záverečné reveal bloky (spúšťa ich chores podľa kroku) */
 document.querySelectorAll('.reveal').forEach((el,i)=>{
-  el.style.transitionDelay=(i*110)+'ms';io.observe(el);
+  el.style.transitionDelay=(i*110)+'ms';
 });
 
 /* ---------- teplé častice (striedmo) ---------- */
