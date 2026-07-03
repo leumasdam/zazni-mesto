@@ -93,6 +93,14 @@ ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti
 ok('rendre zapracované (vrstvy·TU-BA·finále hrad) + obor = 3 SVG pózy',['vrstvy-l0.png','tuba-priestor.png','hrad-okno.png'].every(s=>PRE.includes(s))&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
 ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("searchParams.get('step')")&&PRE.includes('pointerleave'));
 ok('VRSTVY = render rozrezaný na 4 animované vrstvy (fokus + hit-test + popisy)',['vrstvy-l0.png','vrstvy-l1.png','vrstvy-l2.png','vrstvy-l3.png'].every(s=>PRE.includes(s))&&PRE.includes('vstackUpdate')&&PRE.includes('valpha')&&PRE.includes('VST.foc')&&!PRE.includes('vrstvy-projekcie.png'));
+const GLSRC=src('gl-src/city.js');
+ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
+  PRE.includes('.00157')&&PRE.includes('%5500')&&PRE.includes('cubic-bezier(.34,1.56,.64,1)')&&PRE.includes('pulseSleep 4s')
+  &&GLSRC.includes('.00157')&&GLSRC.includes('%5500')&&OBR.includes('performance.now()/640'));
+ok('počet kontrol v UI = skutočný počet auditu',(()=>{
+  const m=PRE.match(/audit · (\d+) kontrol/);
+  return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */
+})(),`v UI ${(PRE.match(/audit · (\d+) kontrol/)||[])[1]}, reálne ${pass+fail+1}`);
 
 console.log(`\n${'='.repeat(46)}\nVÝSLEDOK: ${pass} ✓ · ${fail} ✗\n`);
 process.exit(fail?1:0);

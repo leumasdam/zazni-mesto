@@ -9,6 +9,7 @@ import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass
 import {OutputPass} from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const FLK=[1,.82,1,.68,1,.9,.62,1];   /* flicker.temp — 5500 ms, nepravidelne kroky */
 const lerp=(a,b,t)=>a+(b-a)*t;
 
 function init(canvas,data){
@@ -172,14 +173,15 @@ function init(canvas,data){
       const s=clamp((st.wave*1.5-it.t)*2.6);     /* pomalší prechod — hodnoty zrkadlí polyState() */
       if(s>.55)lit++;
       if(!it.mesh)continue;
-      const pulse=s<.15?(.5+.28*Math.sin(st.t*.0016+it.phase)):1;
+      const pulse=s<.15?(.5+.28*Math.sin(st.t*.00157+it.phase)):1;   /* pulse.slow — 4000 ms */
+      const flick=(s>.2&&s<.55)?FLK[Math.floor((((st.t+it.phase*875)%5500)/5500)*8)]:1;
       stateCol(s,it.col);
       const ed=it.mesh.userData.edge.material;
       ed.color.copy(it.col).multiplyScalar(1.35);    /* obrys vo farbe stavu — teal a amber zaznejú */
       ed.opacity=s*.9;
       it.col.multiplyScalar(.52+s*.5+Math.max(0,s-.82)*2.4);  /* bloom až na konci — biela = žije */
       it.mesh.material.color.copy(it.col);
-      it.mesh.material.opacity=Math.min(1,(.62+s*.38)*pulse*st.hb);
+      it.mesh.material.opacity=Math.min(1,(.62+s*.38)*pulse*flick*st.hb);
       if(it.dash)it.dash.material.opacity=(s<.2?st.own:0)*.95;
       if(s>=.5&&it.prevS<.5&&st.wave>0&&st.wave<1)ripple(X(it.cx),Z(it.cy),st.t);
       it.prevS=s;

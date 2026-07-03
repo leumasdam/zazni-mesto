@@ -101,7 +101,8 @@ body.lightmode .brand em{color:#C77800}
 /* obor kapitola */
 #ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 #ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(36px,6.2vw,92px);line-height:1;letter-spacing:-.025em;margin-bottom:26px}
-#ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4))}
+#ovlObor .oborbox{transition:transform .45s cubic-bezier(.34,1.56,.64,1),filter .45s ease-out}  /* wake.spring 450 ms */
+#ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4));transform:scale(1.05)}
 #ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
 
 /* turntable kapitola */
@@ -519,12 +520,12 @@ body.lightmode .dots i.on{background:#C77800}
         <g id="obBody" stroke="#8B91DD" stroke-width="3" style="transition:stroke .8s">
           <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
         </g>
-        <g id="obSleep" style="transition:opacity .5s">
+        <g id="obSleep" style="transition:opacity .45s">
           <path d="M34 60h7M50 60h7" stroke="#B9BEF0" stroke-width="3.2"/>
           <path d="M42 70q4 3 8 0" stroke="#B9BEF0" stroke-width="2.4" opacity=".6"/>
           <text x="66" y="24" fill="#8B91DD" font-family="monospace" font-size="10">z z</text>
         </g>
-        <g id="obAwake" opacity="0" style="transition:opacity .5s">
+        <g id="obAwake" opacity="0" style="transition:opacity .45s">
           <circle cx="37.5" cy="60" r="3.6" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.6" fill="#FFF6E3"/>
           <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
         </g>
@@ -632,7 +633,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 51 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 54 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -760,6 +761,7 @@ const GLOW=document.createElement('canvas');GLOW.width=GLOW.height=160;{
 
 /* farebná rampa stavov: 0 spí → .33 drieme → .66 prebúdza → 1 žije */
 const RAMP=[[59,66,133],[23,179,163],[245,158,11],[255,233,184]];
+const FLK=[1,.82,1,.68,1,.9,.62,1];   /* flicker.temp — 5500 ms, nepravidelne kroky (drieme) */
 function stateColor(s){
   const t=clamp(s)*3, i=Math.min(2,Math.floor(t)), f=t-i;
   const a=RAMP[i],b=RAMP[i+1];
@@ -1036,8 +1038,9 @@ function draw(t){
       cx.globalAlpha=1;
     }
     /* pulz spiacich */
-    const pulse=s<.15?(.5+.28*Math.sin(t*.0016+pl.phase)):1;
-    const alpha=Math.min(1,(.5+s*.5)*pulse*HB);
+    const pulse=s<.15?(.5+.28*Math.sin(t*.00157+pl.phase)):1;   /* pulse.slow — 4000 ms */
+    const flick=(s>.2&&s<.55)?FLK[Math.floor((((t+pl.phase*875)%5500)/5500)*8)]:1;
+    const alpha=Math.min(1,(.5+s*.5)*pulse*flick*HB);
     cx.fillStyle=stateColor(s);
     cx.globalAlpha=alpha;
     cx.beginPath();
