@@ -213,7 +213,8 @@ body.lightmode .dots i.on{background:#C77800}
 .card p{font-size:13px;color:var(--text-mid);line-height:1.55}
 .card .src{font-family:var(--fm);font-size:10px;color:var(--text-low);display:block;margin-top:12px;letter-spacing:.05em}
 .deck .head{max-width:1240px;margin:0 auto 26px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-.deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(34px,4.6vw,74px);line-height:1;letter-spacing:-.025em}
+.deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(34px,4.6vw,74px);line-height:1;letter-spacing:-.025em;overflow:hidden;display:inline-block;padding-bottom:.08em;margin-bottom:-.08em}
+.deck .head .rl{display:inline-block;font-style:normal;transform:translateY(112%);will-change:transform}
 .deck .head span{font-family:var(--fm);font-size:11px;letter-spacing:.3em;color:var(--amber-300);text-transform:uppercase}
 /* ghost numerál — mierka za obsahom */
 .deck{position:relative}
@@ -776,7 +777,7 @@ const STEPS=[
   {t:0,    n:'Zažni mesto'},
   {t:.095, n:'Objav — čísla'},
   {t:.18,  n:'Pochop — kto drží kľúč'},
-  {t:.364, n:'Svetelná vlna',slow:1.9},
+  {t:.364, n:'Svetelná vlna',slow:3},
   {t:.43,  n:'Legenda'},
   {t:.5175,n:'Spiaci obor'},
   {t:.605, n:'Expozícia z každej strany',slow:4},
@@ -787,18 +788,20 @@ const STEPS=[
   {t:.94,  n:'Živý prototyp'},
   {t:1,    n:'Zapoj sa'},
 ];
-let STEP=0,tw=null,autoT=null,FL=0;
-const easeIO=x=>x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;   /* quint — hodvábny glide */
+let STEP=0,autoT=null,FL=0;
+/* INERTNÝ CHASE: Ps naháňa cieľ exponenciálne — okamžitá odozva, hodvábny dojazd,
+   ďalší vstup možno poslať kedykoľvek (žiadne čakanie na animáciu). */
+let target=REDUCED?1:0,chase=.075,arrivedFor=-1;
 const ss=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10);};       /* smootherstep — mäkký štart aj dojazd */
 function goStep(i,manual=true){
   i=Math.max(0,Math.min(STEPS.length-1,i));
   if(manual&&autoT){clearTimeout(autoT);autoT=null;}
-  if(i===STEP&&!tw&&Math.abs(Ps-STEPS[i].t)<.001)return;
+  if(i===STEP&&Math.abs(Ps-STEPS[i].t)<.001)return;
   STEP=i;
   const s=STEPS[i];
-  const dist=Math.abs(s.t-Ps);
-  const dur=REDUCED?0:Math.min(8200,(1150+dist*13000)*(s.slow||1));
-  tw={from:Ps,to:s.t,t0:performance.now(),dur};
+  target=s.t;
+  chase=.075/(s.slow||1);
+  arrivedFor=-1;
   FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
   document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
 }
@@ -972,6 +975,19 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
     deck.style.filter=bl>.06?`blur(${bl.toFixed(1)}px)`:'none';
     ovl.classList.toggle('moving',bl>.06);     /* počas pohybu vypni glass blur kariet — žiadny dvojitý blur */
   }
+  /* hĺbka: titul a ghost sa hýbu inou rýchlosťou než karty; titul vychádza spod orezu */
+  const head=ovl.querySelector('.head');
+  if(head){
+    const dx2=(1-en)*76-ex*92;
+    head.style.transform=`translateX(${(dx2*.38).toFixed(1)}px)`;
+    const rl=head.querySelector('.rl');
+    if(rl){
+      const eT=ss(clamp(ap*2.6));
+      rl.style.transform=`translateY(${((1-eT)*112).toFixed(1)}%)`;
+    }
+  }
+  const gh=ovl.querySelector('.ghost');
+  if(gh)gh.style.transform=`translateX(${(((1-en)*76-ex*92)*.72).toFixed(1)}px)`;
   grid.style.maskImage='none';grid.style.webkitMaskImage='none';
   const cards=grid.querySelectorAll('.card');
   const stag=cards.length>1?Math.min(.1,.38/(cards.length-1)):0;   /* celý stagger ≤ .38 — aj 10 kariet dôjde pri dojazde */
@@ -1154,10 +1170,15 @@ function chores(t){
 
 /* ---------- hlavná slučka ---------- */
 function loop(t){
-  if(tw){
-    const k=clamp((t-tw.t0)/Math.max(1,tw.dur));
-    Ps=lerp(tw.from,tw.to,easeIO(k));
-    if(k>=1){Ps=tw.to;tw=null;onArrive();}
+  {
+    const dt=Math.min(50,t-(lastT||t));
+    const k=1-Math.pow(1-chase,dt/16.7);        /* frame-rate nezávislé dohladzovanie */
+    if(REDUCED)Ps=target;
+    else Ps+=(target-Ps)*k;
+    if(Math.abs(target-Ps)<.0004){
+      Ps=target;
+      if(arrivedFor!==STEP){arrivedFor=STEP;onArrive();}
+    }
   }
   SMX+=(MX-SMX)*.07;SMY+=(MY-SMY)*.07;
   FL*=.93;
@@ -1186,7 +1207,7 @@ function tick(){
 let lastIn=0;
 function inputStep(d){
   const now=performance.now();
-  if(tw||now-lastIn<420)return;
+  if(now-lastIn<340)return;                     /* len debounce — vstup nečaká na animáciu */
   lastIn=now;
   const before=STEP;
   goStep(STEP+(d>0?1:-1));
@@ -1250,6 +1271,9 @@ document.getElementById('oborBig').addEventListener('click',()=>{
   }catch(e){}}
 });
 
+/* maskované reveal-y titulov — riadok vychádza spod orezu */
+document.querySelectorAll('.deck .head b').forEach(b=>{b.innerHTML='<i class="rl">'+b.innerHTML+'</i>';});
+
 /* CTA → prvý krok */
 document.getElementById('ctaStart').addEventListener('click',()=>goStep(1));
 
@@ -1272,12 +1296,12 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
   const q=parseInt(new URL(location).searchParams.get('step'),10);
   if(!isNaN(q)){
     STEP=Math.max(0,Math.min(STEPS.length-1,q));
-    Ps=STEPS[STEP].t;
+    Ps=target=STEPS[STEP].t;
     document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
   }
   const fp=parseFloat(new URL(location).searchParams.get('ps'));  /* ladenie medzistavov */
   if(!isNaN(fp)){
-    Ps=clamp(fp);
+    Ps=target=clamp(fp);
     STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);
     document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
   }
