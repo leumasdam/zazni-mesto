@@ -284,13 +284,16 @@ body.lightmode .dots i.on{background:#C77800}
 .vrow>*,.vcards .card{min-width:0}
 /* VRSTVY — interaktívny 3D stack: clay základňa + 3 živé dátové vrstvy */
 .vstage{position:relative;height:min(62vh,600px);user-select:none}
-.vscene{position:absolute;inset:0;perspective:1250px;perspective-origin:50% 26%;cursor:grab}
+.vscene{position:absolute;inset:0;perspective:2300px;perspective-origin:50% 36%;cursor:grab}
 .vscene.grabbing{cursor:grabbing}
 .vbase{position:absolute;left:50%;bottom:1%;width:100%;max-width:840px;transform:translateX(-50%);-webkit-user-drag:none}
-.vstack{position:absolute;left:50%;top:48%;transform-style:preserve-3d;pointer-events:none;will-change:transform}
-.vstack .slab{position:absolute;inset:0;width:100%;height:100%;border-radius:14px;pointer-events:auto;will-change:transform,opacity}
-.vbeam{position:absolute;width:30px;pointer-events:none;filter:blur(6px);transform-origin:50% 100%;
-  background:linear-gradient(to top,rgba(245,158,11,.6),rgba(245,158,11,.08) 78%,transparent)}
+.vstack{position:absolute;left:52%;top:56%;transform-style:preserve-3d;pointer-events:none;will-change:transform}
+.vstack .slab{position:absolute;inset:0;width:100%;height:100%;border-radius:16px;pointer-events:auto;will-change:transform,opacity}
+.vbeam{position:absolute;width:2.5px;pointer-events:none;transform-origin:50% 100%;
+  background:linear-gradient(to top,rgba(245,158,11,.9),rgba(255,214,140,.35) 72%,transparent);
+  box-shadow:0 0 7px rgba(245,158,11,.55)}
+.vbeam::after{content:'';position:absolute;top:-5px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,236,190,.95) 0 18%,rgba(245,158,11,.55) 40%,transparent 70%)}
 .vtip{position:absolute;z-index:5;pointer-events:none;opacity:0;background:#101426;color:#FFF6E3;
   font:600 11px/1.4 'JetBrains Mono',monospace;letter-spacing:.03em;padding:9px 13px;border-radius:9px;
   white-space:nowrap;transform:translate(-50%,-135%);box-shadow:0 10px 28px rgba(16,20,38,.28)}
@@ -778,8 +781,8 @@ const vstage=document.getElementById('vstage'),vscene=document.getElementById('v
       vtip=document.getElementById('vtip');
 const vslabs=[...document.querySelectorAll('.vstack .slab')];
 const vbeams=[...document.querySelectorAll('.vbeam')];
-const VZ=[46,104,162];                          /* translateZ výšky vrstiev */
-const VST={tX:57,tZ:-8,tXt:57,tZt:-8,foc:-1,fk:[0,0,0],drag:null,tipO:0,tipT:0};
+const VZ=[16,138,260];                          /* translateZ výšky vrstiev — veľký rozostup ako v renderi */
+const VST={tX:66,tZ:-5,tXt:66,tZt:-5,foc:-1,fk:[0,0,0],drag:null,tipO:0,tipT:0};
 const VCNT={awake:POLY.filter(pl=>pl.p.plan===1).length,
             sez:POLY.filter(pl=>pl.p.sez===1).length,
             big:POLY.filter(pl=>pl.big).length};
@@ -797,64 +800,104 @@ const SL={W:560,H:Math.round(560*WORLD_H/WORLD_W)};
 }
 function vrr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 function vpath(g,ring){g.beginPath();ring.forEach(([x,y],j)=>{const [px,py]=VPRJ(x,y);j?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();}
+function vglow(g,px,py,r,core,mid){               /* žiariaci uzol ako v renderi */
+  const gr=g.createRadialGradient(px,py,0,px,py,r);
+  gr.addColorStop(0,core);gr.addColorStop(.35,mid);gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill();
+}
+function vscaled(g,pl,sc){                        /* polygón zväčšený od centroidu — bold fľak, reálna poloha */
+  const [cxp,cyp]=VPRJ(pl.cx,pl.cy);
+  for(const ring of pl.rings){
+    g.beginPath();
+    ring.forEach(([x,y],j)=>{
+      const [px,py]=VPRJ(x,y);
+      const sx=cxp+(px-cxp)*sc, sy=cyp+(py-cyp)*sc;
+      j?g.lineTo(sx,sy):g.moveTo(sx,sy);
+    });
+    g.closePath();
+  }
+}
 function drawSlab(i){
   const c=vslabs[i],d=2;
   c.width=SL.W*d;c.height=SL.H*d;
   const g=c.getContext('2d');g.scale(d,d);
   const col=['#4A51A8','#E84B8A','#C77800'][i];
-  vrr(g,1,1,SL.W-2,SL.H-2,14);
-  g.fillStyle=['rgba(90,97,181,.10)','rgba(232,75,138,.07)','rgba(245,158,11,.10)'][i];g.fill();
-  g.strokeStyle=col;g.globalAlpha=.6;g.lineWidth=1.6;g.stroke();g.globalAlpha=1;
-  g.save();vrr(g,1,1,SL.W-2,SL.H-2,14);g.clip();
-  g.strokeStyle='rgba(16,20,38,.05)';g.lineWidth=1;                 /* jemný grid skla */
-  for(let x=28;x<SL.W;x+=28){g.beginPath();g.moveTo(x,0);g.lineTo(x,SL.H);g.stroke();}
-  for(let y=28;y<SL.H;y+=28){g.beginPath();g.moveTo(0,y);g.lineTo(SL.W,y);g.stroke();}
+  vrr(g,2,2,SL.W-4,SL.H-4,16);                                      /* sklo: wash + žiariaci okraj */
+  g.fillStyle=['rgba(96,104,196,.16)','rgba(232,75,138,.10)','rgba(247,196,110,.16)'][i];g.fill();
+  g.shadowColor=col;g.shadowBlur=11;
+  g.strokeStyle=col;g.globalAlpha=.9;g.lineWidth=2;g.stroke();
+  g.shadowBlur=0;g.globalAlpha=1;
+  g.save();vrr(g,2,2,SL.W-4,SL.H-4,16);g.clip();
+  g.strokeStyle='rgba(16,20,38,.04)';g.lineWidth=1;                 /* jemný grid skla */
+  for(let x=32;x<SL.W;x+=32){g.beginPath();g.moveTo(x,0);g.lineTo(x,SL.H);g.stroke();}
+  for(let y=32;y<SL.H;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(SL.W,y);g.stroke();}
   g.beginPath();boundaryW.forEach(([x,y],j)=>{const [px,py]=VPRJ(x,y);j?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();
-  g.strokeStyle='rgba(16,20,38,.16)';g.lineWidth=1.1;g.stroke();    /* hranica BA */
+  g.strokeStyle='rgba(16,20,38,.2)';g.lineWidth=1.2;g.stroke();     /* hranica BA */
   if(typeof DANUBE!=='undefined'){                                  /* Dunaj — mapa sa hneď číta */
-    g.strokeStyle='rgba(58,86,160,.3)';g.lineWidth=3;g.lineCap='round';g.lineJoin='round';
+    g.strokeStyle='rgba(58,86,160,.4)';g.lineWidth=3.5;g.lineCap='round';g.lineJoin='round';
     for(const seg of DANUBE){g.beginPath();seg.forEach(([lo,la],j)=>{const [px,py]=VPRJ(...W2(lo,la));j?g.lineTo(px,py):g.moveTo(px,py);});g.stroke();}
   }
-  if(i===0){                                                        /* STAVY — svetlo parciel */
+  if(i===0){                                                        /* STAVY — žiariace uzly svetla */
     for(const pl of POLY){
-      const awake=pl.p.plan===1;
-      g.fillStyle=awake?'rgba(245,158,11,.9)':'rgba(74,81,168,.75)';
-      g.shadowColor=awake?'rgba(245,158,11,.8)':'transparent';
-      g.shadowBlur=awake?(pl.big?13:6):0;
+      const [px,py]=VPRJ(pl.cx,pl.cy),awake=pl.p.plan===1;
+      if(awake)vglow(g,px,py,7+Math.sqrt(pl.p.ha)*2.3,'rgba(255,240,205,.95)','rgba(245,158,11,.5)');
+      else vglow(g,px,py,4+Math.sqrt(pl.p.ha)*1.3,'rgba(120,128,220,.8)','rgba(74,81,168,.35)');
+      g.fillStyle=awake?'rgba(245,158,11,.95)':'rgba(74,81,168,.85)';
       for(const ring of pl.rings){vpath(g,ring);g.fill();}
     }
-    g.shadowBlur=0;
-  }else if(i===1){                                                  /* RIZIKO — šrafy sez */
-    const pat=document.createElement('canvas');pat.width=pat.height=7;
-    const pg=pat.getContext('2d');pg.strokeStyle='rgba(232,75,138,.95)';pg.lineWidth=1.6;
-    pg.beginPath();pg.moveTo(-2,9);pg.lineTo(9,-2);pg.stroke();pg.beginPath();pg.moveTo(-2,2);pg.lineTo(2,-2);pg.stroke();
+  }else if(i===1){                                                  /* RIZIKO — bold šrafované fľaky */
+    const pat=document.createElement('canvas');pat.width=pat.height=8;
+    const pg=pat.getContext('2d');pg.strokeStyle='rgba(232,75,138,.8)';pg.lineWidth=1.8;
+    pg.beginPath();pg.moveTo(-2,10);pg.lineTo(10,-2);pg.stroke();pg.beginPath();pg.moveTo(-2,3);pg.lineTo(3,-2);pg.stroke();
     const hp=g.createPattern(pat,'repeat');
     for(const pl of POLY){
-      if(pl.p.sez!==1){g.strokeStyle='rgba(16,20,38,.12)';g.lineWidth=.8;for(const ring of pl.rings){vpath(g,ring);g.stroke();}continue;}
-      for(const ring of pl.rings){vpath(g,ring);g.fillStyle=hp;g.fill();g.strokeStyle=col;g.lineWidth=1.4;g.stroke();}
+      if(pl.p.sez!==1)continue;
+      const sc=Math.min(3.4,Math.max(1.6,15/(2+Math.sqrt(pl.p.ha))));
+      vscaled(g,pl,sc);
+      g.fillStyle='rgba(232,75,138,.14)';g.fill();
+      g.fillStyle=hp;g.fill();
+      g.shadowColor='rgba(232,75,138,.55)';g.shadowBlur=8;
+      g.strokeStyle=col;g.lineWidth=1.8;g.stroke();g.shadowBlur=0;
     }
-  }else{                                                            /* TYPOLÓGIA — ikony + menovky obrov */
-    const bigs=POLY.filter(pl=>pl.big).sort((a,b)=>b.p.ha-a.p.ha);
+  }else{                                                            /* TYPOLÓGIA — ikony + menovky ako chipy */
     for(const pl of POLY){
-      const [px,py]=VPRJ(pl.cx,pl.cy),r=1.1+Math.sqrt(pl.p.ha)*.6;
-      g.fillStyle=pl.big?'rgba(245,158,11,.95)':'rgba(199,120,0,.55)';
+      const [px,py]=VPRJ(pl.cx,pl.cy),r=1.4+Math.sqrt(pl.p.ha)*.8;
+      if(pl.big)vglow(g,px,py,r+9,'rgba(255,236,190,.9)','rgba(245,158,11,.4)');
+      g.fillStyle=pl.big?'rgba(230,140,0,.95)':'rgba(199,120,0,.55)';
       g.beginPath();g.arc(px,py,r,0,7);g.fill();
-      if(pl.big){g.strokeStyle='rgba(199,120,0,.8)';g.lineWidth=1;g.beginPath();g.arc(px,py,r+2.5,0,7);g.stroke();}
+      if(pl.big){g.strokeStyle='rgba(199,120,0,.9)';g.lineWidth=1.2;g.beginPath();g.arc(px,py,r+3,0,7);g.stroke();}
     }
-    g.font=`600 9px 'JetBrains Mono',monospace`;g.textBaseline='middle';
-    bigs.forEach((pl,j)=>{
+    g.font=`700 10.5px 'JetBrains Mono',monospace`;g.textBaseline='middle';
+    const placed=[];
+    POLY.filter(pl=>pl.big).sort((a,b)=>b.p.ha-a.p.ha).forEach((pl,j)=>{
       const [px,py]=VPRJ(pl.cx,pl.cy);
-      let nm=pl.p.n.length>16?pl.p.n.slice(0,15)+'…':pl.p.n;
-      const up=j%2?-1:1, ty=py+up*(6+Math.sqrt(pl.p.ha)*.6);
-      g.strokeStyle='rgba(255,250,240,.9)';g.lineWidth=3;g.strokeText(nm,px+6,ty);
-      g.fillStyle='#101426';g.fillText(nm,px+6,ty);
+      let nm=pl.p.n.length>15?pl.p.n.slice(0,14)+'…':pl.p.n;
+      const tw=g.measureText(nm).width, cw=tw+18, ch=19;
+      let bx=clamp(px+9,8,SL.W-cw-8), by=py+(j%2?-1:1)*13-ch/2;
+      for(let k=0;k<9;k++){                                          /* chipy sa neprekrývajú */
+        if(!placed.some(r=>bx<r.x+r.w+3&&bx+cw+3>r.x&&by<r.y+r.h+3&&by+ch+3>r.y))break;
+        by+=(k%2?-1:1)*(14+k*7);
+      }
+      by=clamp(by,6,SL.H-ch-6);
+      placed.push({x:bx,y:by,w:cw,h:ch});
+      g.shadowColor='rgba(16,20,38,.18)';g.shadowBlur=5;
+      vrr(g,bx,by,cw,ch,9);g.fillStyle='rgba(255,253,248,.95)';g.fill();g.shadowBlur=0;
+      g.strokeStyle='rgba(199,120,0,.5)';g.lineWidth=1;vrr(g,bx,by,cw,ch,9);g.stroke();
+      g.fillStyle='#F59E0B';g.beginPath();g.arc(bx+9,by+ch/2,2.6,0,7);g.fill();
+      g.fillStyle='#101426';g.fillText(nm,bx+15,by+ch/2+.5);
     });
   }
   g.restore();
-  g.font=`700 12px 'JetBrains Mono',monospace`;g.fillStyle='#101426';
-  g.fillText(['01 · STAVY — SVETLO','02 · RIZIKO — ŠRAFY','03 · TYPOLÓGIA — MENOVKY'][i],15,23);
-  g.font=`600 10px 'JetBrains Mono',monospace`;g.fillStyle=col;g.textAlign='right';
-  g.fillText([`${VCNT.awake} / ${N} svieti`,`${VCNT.sez} záťaží`,`${VCNT.big} obrov`][i],SL.W-15,23);
+  /* titulok vrstvy — chip v rohu */
+  g.font=`700 13px 'JetBrains Mono',monospace`;
+  const tt=['01 · STAVY — SVETLO','02 · RIZIKO — ŠRAFY','03 · TYPOLÓGIA — MENOVKY'][i];
+  const ttw=g.measureText(tt).width;
+  g.shadowColor='rgba(16,20,38,.15)';g.shadowBlur=6;
+  vrr(g,12,12,ttw+22,26,10);g.fillStyle='rgba(255,253,248,.96)';g.fill();g.shadowBlur=0;
+  g.strokeStyle=col;g.globalAlpha=.6;g.lineWidth=1.2;vrr(g,12,12,ttw+22,26,10);g.stroke();g.globalAlpha=1;
+  g.fillStyle='#101426';g.textBaseline='middle';g.fillText(tt,23,26);
+  g.font=`700 11px 'JetBrains Mono',monospace`;g.fillStyle=col;g.textAlign='right';g.textBaseline='alphabetic';
+  g.fillText([`${VCNT.awake} / ${N} SVIETI`,`${VCNT.sez} ZÁŤAŽÍ`,`${VCNT.big} OBROV`][i],SL.W-16,29);
   g.textAlign='left';
 }
 let VBW=0;                                       /* CSS šírka stacku */
@@ -862,7 +905,7 @@ function vfit(){
   if(!vstage)return;
   const b=vstage.getBoundingClientRect();
   if(b.width<10)return;
-  VBW=Math.min(b.width*.6,440);
+  VBW=Math.min(b.width*.55,380);
   const h=VBW*SL.H/SL.W;
   vstackEl.style.width=VBW+'px';vstackEl.style.height=h+'px';
   vstackEl.style.margin=`-${h/2}px 0 0 -${VBW/2}px`;
@@ -905,8 +948,8 @@ if(vstage){
   });
   vscene.addEventListener('pointermove',e=>{
     if(!VST.drag)return;
-    VST.tXt=clamp(VST.drag.tX0-(e.clientY-VST.drag.y0)*.16,36,78);
-    VST.tZt=clamp(VST.drag.tZ0+(e.clientX-VST.drag.x0)*.1,-34,20);
+    VST.tXt=clamp(VST.drag.tX0-(e.clientY-VST.drag.y0)*.16,46,80);
+    VST.tZt=clamp(VST.drag.tZ0+(e.clientX-VST.drag.x0)*.1,-28,16);
   });
   const vdragEnd=()=>{VST.drag=null;vscene.classList.remove('grabbing');};
   vscene.addEventListener('pointerup',vdragEnd);vscene.addEventListener('pointercancel',vdragEnd);
@@ -918,10 +961,10 @@ function vstackUpdate(vp,t){
   const en=ss(clamp(vp*2.3));
   vbase.style.opacity=Math.min(1,en*1.7).toFixed(3);
   vbase.style.transform=`translate(-50%,${((1-en)*30).toFixed(1)}px)`;
-  if(!VST.drag&&!REDUCED){VST.tXt=57-SMY*4.5;VST.tZt=-8+SMX*6;}
+  if(!VST.drag&&!REDUCED){VST.tXt=66-SMY*4;VST.tZt=-5+SMX*5;}
   VST.tX+=(VST.tXt-VST.tX)*.07;VST.tZ+=(VST.tZt-VST.tZ)*.07;
-  const swy=REDUCED||VST.drag?0:Math.sin(t*.00021)*2.1;
-  const swx=REDUCED||VST.drag?0:Math.sin(t*.00017+2)*1.4;
+  const swy=REDUCED||VST.drag?0:Math.sin(t*.00021)*1.6;
+  const swx=REDUCED||VST.drag?0:Math.sin(t*.00017+2)*1.1;
   vstackEl.style.transform=`rotateX(${(VST.tX+swx).toFixed(2)}deg) rotateZ(${(VST.tZ+swy).toFixed(2)}deg)`;
   for(let i=0;i<3;i++){
     const so=ss(clamp(vp*3.2-.28*i));            /* zdola nahor, dosadne presne pri dojazde */
@@ -933,7 +976,7 @@ function vstackUpdate(vp,t){
   }
   const bEn=ss(clamp(vp*3.2-.5));
   vbeams.forEach(el=>{
-    el.style.transform=`rotateX(-90deg) translateY(58px) scaleY(${bEn.toFixed(3)})`;
+    el.style.transform=`rotateX(-90deg) translateY(84px) scaleY(${bEn.toFixed(3)})`;
     el.style.opacity=(bEn*(VST.foc>=0?.35:1)).toFixed(3);
   });
   VST.tipO+=(VST.tipT-VST.tipO)*.14;
