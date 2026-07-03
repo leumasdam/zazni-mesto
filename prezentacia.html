@@ -282,18 +282,11 @@ body.lightmode .dots i.on{background:#C77800}
 /* 7c · VRSTVY SVETLA */
 .vrow{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center}
 .vrow>*,.vcards .card{min-width:0}
-/* VRSTVY — interaktívny 3D stack: clay základňa + 3 živé dátové vrstvy */
+/* VRSTVY — render rozrezaný na 4 registrované vrstvy, animované samostatne */
 .vstage{position:relative;height:min(62vh,600px);user-select:none}
-.vscene{position:absolute;inset:0;perspective:2300px;perspective-origin:50% 36%;cursor:grab}
-.vscene.grabbing{cursor:grabbing}
-.vbase{position:absolute;left:50%;bottom:1%;width:100%;max-width:840px;transform:translateX(-50%);-webkit-user-drag:none}
-.vstack{position:absolute;left:52%;top:56%;transform-style:preserve-3d;pointer-events:none;will-change:transform}
-.vstack .slab{position:absolute;inset:0;width:100%;height:100%;border-radius:16px;pointer-events:auto;will-change:transform,opacity}
-.vbeam{position:absolute;width:2.5px;pointer-events:none;transform-origin:50% 100%;
-  background:linear-gradient(to top,rgba(245,158,11,.9),rgba(255,214,140,.35) 72%,transparent);
-  box-shadow:0 0 7px rgba(245,158,11,.55)}
-.vbeam::after{content:'';position:absolute;top:-5px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,236,190,.95) 0 18%,rgba(245,158,11,.55) 40%,transparent 70%)}
+.vwrap{position:absolute;inset:0}
+.vlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;
+  will-change:transform,opacity,filter;-webkit-user-drag:none}
 .vtip{position:absolute;z-index:5;pointer-events:none;opacity:0;background:#101426;color:#FFF6E3;
   font:600 11px/1.4 'JetBrains Mono',monospace;letter-spacing:.03em;padding:9px 13px;border-radius:9px;
   white-space:nowrap;transform:translate(-50%,-135%);box-shadow:0 10px 28px rgba(16,20,38,.28)}
@@ -592,17 +585,14 @@ body.lightmode .dots i.on{background:#C77800}
     <span class="ghost">07</span><div class="head"><span>07 · Projekcia nad mestom</span><b>Vrstvy svetla</b></div>
     <div class="vrow">
       <div class="vstage" id="vstage" aria-label="Interaktívny explodovaný pohľad: tri dátové vrstvy svetla nad fyzickým modelom mesta">
-        <div class="vscene" id="vscene">
-          <img class="vbase" id="vbase" src="assets/vrstvy-city.png" alt="Fyzický model mesta — projekčné plátno" draggable="false">
-          <div class="vstack" id="vstack">
-            <div class="vbeam" data-b="0"></div><div class="vbeam" data-b="1"></div><div class="vbeam" data-b="2"></div>
-            <canvas class="slab" data-l="0" aria-label="Vrstva 01 — STAVY: svetlo parciel z registra"></canvas>
-            <canvas class="slab" data-l="1" aria-label="Vrstva 02 — RIZIKO: šrafy envirozáťaží"></canvas>
-            <canvas class="slab" data-l="2" aria-label="Vrstva 03 — TYPOLÓGIA: ikony a menovky obrov"></canvas>
-          </div>
+        <div class="vwrap" id="vwrap">
+          <img class="vlay" data-l="0" src="assets/vrstvy-l0.png" alt="Fyzický model mesta — projekčné plátno" draggable="false">
+          <img class="vlay" data-l="1" src="assets/vrstvy-l1.png" alt="Vrstva 01 — STAVY: svetlo parciel z registra" draggable="false">
+          <img class="vlay" data-l="2" src="assets/vrstvy-l2.png" alt="Vrstva 02 — RIZIKO: šrafy envirozáťaží" draggable="false">
+          <img class="vlay" data-l="3" src="assets/vrstvy-l3.png" alt="Vrstva 03 — TYPOLÓGIA: ikony a menovky" draggable="false">
         </div>
         <div class="vtip" id="vtip"></div>
-        <span class="vhint">ťahaj — iný uhol · prejdi vrstvou — popis</span>
+        <span class="vhint">prejdi vrstvou — popis</span>
       </div>
       <div class="grid vcards" id="gridVrstvy">
         <div class="card vk"><h3><i style="background:#5A61B5"></i>STAVY — svetlo</h3><p>Základná vrstva: jas parcely = miera života. Spí → drieme → prebúdza sa → žije, priamo z registra.</p><span class="src">polia ZAMER · P_VYUZITIE · 113 polygónov</span></div>
@@ -775,213 +765,82 @@ function stateColor(s){
   return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
 }
 
-/* ---------- VRSTVY SVETLA — interaktívny 3D stack (clay základňa + 3 živé dátové vrstvy) ---------- */
-const vstage=document.getElementById('vstage'),vscene=document.getElementById('vscene'),
-      vstackEl=document.getElementById('vstack'),vbase=document.getElementById('vbase'),
+/* ---------- VRSTVY SVETLA — render rozrezaný na 4 vrstvy, každá žije samostatne ---------- */
+const vstage=document.getElementById('vstage'),vwrap=document.getElementById('vwrap'),
       vtip=document.getElementById('vtip');
-const vslabs=[...document.querySelectorAll('.vstack .slab')];
-const vbeams=[...document.querySelectorAll('.vbeam')];
-const VZ=[16,138,260];                          /* translateZ výšky vrstiev — veľký rozostup ako v renderi */
-const VST={tX:66,tZ:-5,tXt:66,tZt:-5,foc:-1,fk:[0,0,0],drag:null,tipO:0,tipT:0};
+const vlays=[...document.querySelectorAll('.vlay')];
+const VST={foc:-1,fk:[0,0,0,0],tipO:0,tipT:0};
 const VCNT={awake:POLY.filter(pl=>pl.p.plan===1).length,
             sez:POLY.filter(pl=>pl.p.sez===1).length,
             big:POLY.filter(pl=>pl.big).length};
 const VINFO=[
-  `${VCNT.awake} so zámerom svieti · ${N-VCNT.awake} spí — jas číta register`,
-  `${VCNT.sez} envirozáťaží · šrafy sú vzor, nie farba`,
-  `${VCNT.big} obrov ≥ 8 ha · mierka ikony = výmera`];
-
-/* mapa → lokálne súradnice slabu (zdieľané kreslením aj kotvami lúčov) */
-const SL={W:560,H:Math.round(560*WORLD_H/WORLD_W)};
-{
-  const pad=44,sc=Math.min((SL.W-pad*2)/WORLD_W,(SL.H-pad*2)/WORLD_H);
-  const ox=(SL.W-WORLD_W*sc)/2, oy=(SL.H-WORLD_H*sc)/2;
-  var VPRJ=(x,y)=>[ox+x*sc,oy+y*sc];
-}
-function vrr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function vpath(g,ring){g.beginPath();ring.forEach(([x,y],j)=>{const [px,py]=VPRJ(x,y);j?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();}
-function vglow(g,px,py,r,core,mid){               /* žiariaci uzol ako v renderi */
-  const gr=g.createRadialGradient(px,py,0,px,py,r);
-  gr.addColorStop(0,core);gr.addColorStop(.35,mid);gr.addColorStop(1,'rgba(255,255,255,0)');
-  g.fillStyle=gr;g.beginPath();g.arc(px,py,r,0,7);g.fill();
-}
-function vscaled(g,pl,sc){                        /* polygón zväčšený od centroidu — bold fľak, reálna poloha */
-  const [cxp,cyp]=VPRJ(pl.cx,pl.cy);
-  for(const ring of pl.rings){
-    g.beginPath();
-    ring.forEach(([x,y],j)=>{
-      const [px,py]=VPRJ(x,y);
-      const sx=cxp+(px-cxp)*sc, sy=cyp+(py-cyp)*sc;
-      j?g.lineTo(sx,sy):g.moveTo(sx,sy);
-    });
-    g.closePath();
-  }
-}
-function drawSlab(i){
-  const c=vslabs[i],d=2;
-  c.width=SL.W*d;c.height=SL.H*d;
-  const g=c.getContext('2d');g.scale(d,d);
-  const col=['#4A51A8','#E84B8A','#C77800'][i];
-  vrr(g,2,2,SL.W-4,SL.H-4,16);                                      /* sklo: wash + žiariaci okraj */
-  g.fillStyle=['rgba(96,104,196,.16)','rgba(232,75,138,.10)','rgba(247,196,110,.16)'][i];g.fill();
-  g.shadowColor=col;g.shadowBlur=11;
-  g.strokeStyle=col;g.globalAlpha=.9;g.lineWidth=2;g.stroke();
-  g.shadowBlur=0;g.globalAlpha=1;
-  g.save();vrr(g,2,2,SL.W-4,SL.H-4,16);g.clip();
-  g.strokeStyle='rgba(16,20,38,.04)';g.lineWidth=1;                 /* jemný grid skla */
-  for(let x=32;x<SL.W;x+=32){g.beginPath();g.moveTo(x,0);g.lineTo(x,SL.H);g.stroke();}
-  for(let y=32;y<SL.H;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(SL.W,y);g.stroke();}
-  g.beginPath();boundaryW.forEach(([x,y],j)=>{const [px,py]=VPRJ(x,y);j?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();
-  g.strokeStyle='rgba(16,20,38,.2)';g.lineWidth=1.2;g.stroke();     /* hranica BA */
-  if(typeof DANUBE!=='undefined'){                                  /* Dunaj — mapa sa hneď číta */
-    g.strokeStyle='rgba(58,86,160,.4)';g.lineWidth=3.5;g.lineCap='round';g.lineJoin='round';
-    for(const seg of DANUBE){g.beginPath();seg.forEach(([lo,la],j)=>{const [px,py]=VPRJ(...W2(lo,la));j?g.lineTo(px,py):g.moveTo(px,py);});g.stroke();}
-  }
-  if(i===0){                                                        /* STAVY — žiariace uzly svetla */
-    for(const pl of POLY){
-      const [px,py]=VPRJ(pl.cx,pl.cy),awake=pl.p.plan===1;
-      if(awake)vglow(g,px,py,7+Math.sqrt(pl.p.ha)*2.3,'rgba(255,240,205,.95)','rgba(245,158,11,.5)');
-      else vglow(g,px,py,4+Math.sqrt(pl.p.ha)*1.3,'rgba(120,128,220,.8)','rgba(74,81,168,.35)');
-      g.fillStyle=awake?'rgba(245,158,11,.95)':'rgba(74,81,168,.85)';
-      for(const ring of pl.rings){vpath(g,ring);g.fill();}
-    }
-  }else if(i===1){                                                  /* RIZIKO — bold šrafované fľaky */
-    const pat=document.createElement('canvas');pat.width=pat.height=8;
-    const pg=pat.getContext('2d');pg.strokeStyle='rgba(232,75,138,.8)';pg.lineWidth=1.8;
-    pg.beginPath();pg.moveTo(-2,10);pg.lineTo(10,-2);pg.stroke();pg.beginPath();pg.moveTo(-2,3);pg.lineTo(3,-2);pg.stroke();
-    const hp=g.createPattern(pat,'repeat');
-    for(const pl of POLY){
-      if(pl.p.sez!==1)continue;
-      const sc=Math.min(3.4,Math.max(1.6,15/(2+Math.sqrt(pl.p.ha))));
-      vscaled(g,pl,sc);
-      g.fillStyle='rgba(232,75,138,.14)';g.fill();
-      g.fillStyle=hp;g.fill();
-      g.shadowColor='rgba(232,75,138,.55)';g.shadowBlur=8;
-      g.strokeStyle=col;g.lineWidth=1.8;g.stroke();g.shadowBlur=0;
-    }
-  }else{                                                            /* TYPOLÓGIA — ikony + menovky ako chipy */
-    for(const pl of POLY){
-      const [px,py]=VPRJ(pl.cx,pl.cy),r=1.4+Math.sqrt(pl.p.ha)*.8;
-      if(pl.big)vglow(g,px,py,r+9,'rgba(255,236,190,.9)','rgba(245,158,11,.4)');
-      g.fillStyle=pl.big?'rgba(230,140,0,.95)':'rgba(199,120,0,.55)';
-      g.beginPath();g.arc(px,py,r,0,7);g.fill();
-      if(pl.big){g.strokeStyle='rgba(199,120,0,.9)';g.lineWidth=1.2;g.beginPath();g.arc(px,py,r+3,0,7);g.stroke();}
-    }
-    g.font=`700 10.5px 'JetBrains Mono',monospace`;g.textBaseline='middle';
-    const placed=[];
-    POLY.filter(pl=>pl.big).sort((a,b)=>b.p.ha-a.p.ha).forEach((pl,j)=>{
-      const [px,py]=VPRJ(pl.cx,pl.cy);
-      let nm=pl.p.n.length>15?pl.p.n.slice(0,14)+'…':pl.p.n;
-      const tw=g.measureText(nm).width, cw=tw+18, ch=19;
-      let bx=clamp(px+9,8,SL.W-cw-8), by=py+(j%2?-1:1)*13-ch/2;
-      for(let k=0;k<9;k++){                                          /* chipy sa neprekrývajú */
-        if(!placed.some(r=>bx<r.x+r.w+3&&bx+cw+3>r.x&&by<r.y+r.h+3&&by+ch+3>r.y))break;
-        by+=(k%2?-1:1)*(14+k*7);
-      }
-      by=clamp(by,6,SL.H-ch-6);
-      placed.push({x:bx,y:by,w:cw,h:ch});
-      g.shadowColor='rgba(16,20,38,.18)';g.shadowBlur=5;
-      vrr(g,bx,by,cw,ch,9);g.fillStyle='rgba(255,253,248,.95)';g.fill();g.shadowBlur=0;
-      g.strokeStyle='rgba(199,120,0,.5)';g.lineWidth=1;vrr(g,bx,by,cw,ch,9);g.stroke();
-      g.fillStyle='#F59E0B';g.beginPath();g.arc(bx+9,by+ch/2,2.6,0,7);g.fill();
-      g.fillStyle='#101426';g.fillText(nm,bx+15,by+ch/2+.5);
-    });
-  }
-  g.restore();
-  /* titulok vrstvy — chip v rohu */
-  g.font=`700 13px 'JetBrains Mono',monospace`;
-  const tt=['01 · STAVY — SVETLO','02 · RIZIKO — ŠRAFY','03 · TYPOLÓGIA — MENOVKY'][i];
-  const ttw=g.measureText(tt).width;
-  g.shadowColor='rgba(16,20,38,.15)';g.shadowBlur=6;
-  vrr(g,12,12,ttw+22,26,10);g.fillStyle='rgba(255,253,248,.96)';g.fill();g.shadowBlur=0;
-  g.strokeStyle=col;g.globalAlpha=.6;g.lineWidth=1.2;vrr(g,12,12,ttw+22,26,10);g.stroke();g.globalAlpha=1;
-  g.fillStyle='#101426';g.textBaseline='middle';g.fillText(tt,23,26);
-  g.font=`700 11px 'JetBrains Mono',monospace`;g.fillStyle=col;g.textAlign='right';g.textBaseline='alphabetic';
-  g.fillText([`${VCNT.awake} / ${N} SVIETI`,`${VCNT.sez} ZÁŤAŽÍ`,`${VCNT.big} OBROV`][i],SL.W-16,29);
-  g.textAlign='left';
-}
-let VBW=0;                                       /* CSS šírka stacku */
-function vfit(){
-  if(!vstage)return;
-  const b=vstage.getBoundingClientRect();
-  if(b.width<10)return;
-  VBW=Math.min(b.width*.55,380);
-  const h=VBW*SL.H/SL.W;
-  vstackEl.style.width=VBW+'px';vstackEl.style.height=h+'px';
-  vstackEl.style.margin=`-${h/2}px 0 0 -${VBW/2}px`;
-  /* kotvy lúčov: 3 najväčší prebudení obri, rozprestretí po mape */
-  const an=POLY.filter(pl=>pl.big&&pl.p.plan===1).sort((a,b)=>a.cx-b.cx);
-  [an[0],an[Math.floor(an.length/2)],an[an.length-1]].forEach((pl,j)=>{
-    if(!pl)return;
-    const [px,py]=VPRJ(pl.cx,pl.cy);
-    const bh=VZ[2]+86;                           /* pretŕča pod z=0 smerom k modelu */
-    const el=vbeams[j];
-    el.style.left=(px/SL.W*VBW-17)+'px';
-    el.style.top=(py/SL.H*h-bh)+'px';
-    el.style.height=bh+'px';
-  });
+  'fyzický model — projekčné plátno expozície',
+  `STAVY · ${VCNT.awake} so zámerom svieti, ${N-VCNT.awake} spí — jas číta register`,
+  `RIZIKO · ${VCNT.sez} envirozáťaží — šrafy sú vzor, nie farba`,
+  `TYPOLÓGIA · ikony a menovky, ${VCNT.big} obrov ≥ 8 ha`];
+/* hit-test: alfa kanály vrstiev vo zmenšených canvasoch */
+const VA_W=240,VA_H=161;
+const valpha=vlays.map(()=>null);
+vlays.forEach((im,i)=>{
+  const grab=()=>{try{
+    const c=document.createElement('canvas');c.width=VA_W;c.height=VA_H;
+    const g=c.getContext('2d',{willReadFrequently:true});
+    g.drawImage(im,0,0,VA_W,VA_H);
+    valpha[i]=g.getImageData(0,0,VA_W,VA_H).data;
+  }catch(e){}};
+  im.complete&&im.naturalWidth?grab():im.addEventListener('load',grab);
+});
+function vhit(e){                                  /* ktorá vrstva je pod kurzorom (zhora dole) */
+  const b=vwrap.getBoundingClientRect();
+  const sc=Math.min(b.width/1199,b.height/803);
+  const ox=(b.width-1199*sc)/2, oy=(b.height-803*sc)/2;
+  const ix=(e.clientX-b.left-ox)/sc, iy=(e.clientY-b.top-oy)/sc;
+  if(ix<0||iy<0||ix>=1199||iy>=803)return -1;
+  const px=(Math.floor(iy/803*VA_H)*VA_W+Math.floor(ix/1199*VA_W))*4+3;
+  for(let i=3;i>=0;i--)if(valpha[i]&&valpha[i][px]>40)return i;
+  return -1;
 }
 if(vstage){
-  vslabs.forEach((c,i)=>drawSlab(i));
-  vfit();addEventListener('resize',vfit);
-  const setTip=(txt,x,y)=>{VST.tipT=1;vtip.textContent=txt;
-    const b=vstage.getBoundingClientRect();
-    vtip.style.left=clamp(x-b.left,70,b.width-70)+'px';vtip.style.top=(y-b.top)+'px';};
-  vslabs.forEach((c,i)=>{
-    c.addEventListener('pointerenter',()=>{VST.foc=i;});
-    c.addEventListener('pointermove',e=>{if(!VST.drag)setTip(VINFO[i],e.clientX,e.clientY);});
-    c.addEventListener('pointerleave',()=>{if(VST.foc===i)VST.foc=-1;VST.tipT=0;});
+  vstage.addEventListener('pointermove',e=>{
+    const h=vhit(e);
+    VST.foc=h;
+    if(h>=0){
+      VST.tipT=1;vtip.textContent=VINFO[h];
+      const b=vstage.getBoundingClientRect();
+      vtip.style.left=clamp(e.clientX-b.left,80,b.width-80)+'px';
+      vtip.style.top=(e.clientY-b.top)+'px';
+    }else VST.tipT=0;
   });
-  vbase.addEventListener('pointermove',e=>{if(!VST.drag)setTip('fyzický model — projekčné plátno expozície',e.clientX,e.clientY);});
-  vbase.addEventListener('pointerleave',()=>{VST.tipT=0;});
-  /* karty vpravo ovládajú fokus vrstiev */
+  vstage.addEventListener('pointerleave',()=>{VST.foc=-1;VST.tipT=0;});
+  /* karty vpravo ovládajú fokus vrstiev (karta i → vrstva i+1) */
   [...document.querySelectorAll('#gridVrstvy .card.vk:not(.rule)')].forEach((card,i)=>{
     if(i>2)return;
-    card.addEventListener('pointerenter',()=>{VST.foc=i;});
-    card.addEventListener('pointerleave',()=>{if(VST.foc===i)VST.foc=-1;});
+    card.addEventListener('pointerenter',()=>{VST.foc=i+1;});
+    card.addEventListener('pointerleave',()=>{if(VST.foc===i+1)VST.foc=-1;});
   });
-  /* ťahaním iný uhol (myš — dotyk necháva swipe krokom) */
-  vscene.addEventListener('pointerdown',e=>{
-    if(e.pointerType!=='mouse')return;
-    VST.drag={x0:e.clientX,y0:e.clientY,tX0:VST.tXt,tZ0:VST.tZt};
-    VST.tipT=0;vscene.classList.add('grabbing');vscene.setPointerCapture(e.pointerId);
-  });
-  vscene.addEventListener('pointermove',e=>{
-    if(!VST.drag)return;
-    VST.tXt=clamp(VST.drag.tX0-(e.clientY-VST.drag.y0)*.16,46,80);
-    VST.tZt=clamp(VST.drag.tZ0+(e.clientX-VST.drag.x0)*.1,-28,16);
-  });
-  const vdragEnd=()=>{VST.drag=null;vscene.classList.remove('grabbing');};
-  vscene.addEventListener('pointerup',vdragEnd);vscene.addEventListener('pointercancel',vdragEnd);
 }
+const VFLOAT=[0,.9,2.3,3.4];                       /* dýchanie: indigo minimálne (nesie prekryv mesta) */
+const VLIFT=[0,3,9,14];                            /* fokus: vyzdvihnutie vrstvy */
 function vstackUpdate(vp,t){
   if(!vstage)return;
   if(vp<=0||vp>=1){vstage.style.visibility='hidden';return;}
   vstage.style.visibility='visible';
-  const en=ss(clamp(vp*2.3));
-  vbase.style.opacity=Math.min(1,en*1.7).toFixed(3);
-  vbase.style.transform=`translate(-50%,${((1-en)*30).toFixed(1)}px)`;
-  if(!VST.drag&&!REDUCED){VST.tXt=66-SMY*4;VST.tZt=-5+SMX*5;}
-  VST.tX+=(VST.tXt-VST.tX)*.07;VST.tZ+=(VST.tZt-VST.tZ)*.07;
-  const swy=REDUCED||VST.drag?0:Math.sin(t*.00021)*1.6;
-  const swx=REDUCED||VST.drag?0:Math.sin(t*.00017+2)*1.1;
-  vstackEl.style.transform=`rotateX(${(VST.tX+swx).toFixed(2)}deg) rotateZ(${(VST.tZ+swy).toFixed(2)}deg)`;
-  for(let i=0;i<3;i++){
-    const so=ss(clamp(vp*3.2-.28*i));            /* zdola nahor, dosadne presne pri dojazde */
-    const tgt=VST.foc===i?1:(VST.foc>=0?-1:0);
-    VST.fk[i]+=(tgt-VST.fk[i])*.09;
-    const lift=Math.max(0,VST.fk[i])*30, drop=Math.max(0,-VST.fk[i]);
-    vslabs[i].style.transform=`translateZ(${(VZ[i]*so+lift).toFixed(1)}px)`;
-    vslabs[i].style.opacity=(so*(1-drop*.74)).toFixed(3);
+  for(let i=0;i<4;i++){
+    const en=ss(clamp(vp*4-.3*i));                 /* mesto → stavy → riziko → typológia, dosadne pri dojazde */
+    const tgt=VST.foc===i?1:(VST.foc>0&&i>0?-1:0); /* fokus stlmí len ostatné VRSTVY, mesto nechá */
+    VST.fk[i]+=(tgt-VST.fk[i])*.1;
+    const fl=REDUCED?0:Math.sin(t*.0002+i*1.9)*VFLOAT[i];
+    const px=REDUCED?0:SMX*(i*1.6), py=REDUCED?0:SMY*(i*1.1);
+    const y=-(1-en)*(34+i*26)+fl+py-Math.max(0,VST.fk[i])*VLIFT[i];
+    vlays[i].style.transform=`translate(${px.toFixed(1)}px,${y.toFixed(1)}px)`;
+    vlays[i].style.opacity=(en*(1-Math.max(0,-VST.fk[i])*.55)).toFixed(3);
+    const fb=Math.max(0,VST.fk[i]);
+    vlays[i].style.filter=fb>.02?`brightness(${(1+fb*.12).toFixed(3)}) drop-shadow(0 6px 18px rgba(16,20,38,${(fb*.18).toFixed(2)}))`:'none';
   }
-  const bEn=ss(clamp(vp*3.2-.5));
-  vbeams.forEach(el=>{
-    el.style.transform=`rotateX(-90deg) translateY(84px) scaleY(${bEn.toFixed(3)})`;
-    el.style.opacity=(bEn*(VST.foc>=0?.35:1)).toFixed(3);
-  });
   VST.tipO+=(VST.tipT-VST.tipO)*.14;
   vtip.style.opacity=VST.tipO.toFixed(3);
 }
+
 
 /* ---------- WebGL mesto (three.js + bloom) — fallback na 2D canvas, ?nogl=1 vypne ---------- */
 let GL=null,glcv=null;
