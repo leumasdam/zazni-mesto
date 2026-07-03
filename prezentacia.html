@@ -39,7 +39,8 @@ a{color:inherit}
   transform:translateX(-104%);will-change:transform,opacity;
   box-shadow:0 0 90px rgba(0,0,0,.4);
 }
-.wpanelB{transform:translateY(104%)}
+.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.88);
+  -webkit-backdrop-filter:blur(18px) saturate(115%);backdrop-filter:blur(18px) saturate(115%)}
 /* light mode obsahu na bielych paneloch */
 .ovl.light .head b{color:#101426}
 .ovl.light .deck .head{text-shadow:none}
@@ -1013,7 +1014,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   });
 }
 
-const chapvid=document.getElementById('chapvid');
+const chapvid=document.getElementById('chapvid');let prevVv=0;
 /* kurzorový parallax — plynulé dobiehanie */
 let MX=0,MY=0,SMX=0,SMY=0;
 addEventListener('pointermove',e=>{MX=e.clientX/innerWidth-.5;MY=e.clientY/innerHeight-.5;},{passive:true});
@@ -1160,17 +1161,24 @@ function chores(t){
   });
 
   /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
-  const vSpan=clamp((Ps-ACT.video[0])/(ACT.tuba[1]-ACT.video[0]));
-  const vv=ss(Math.min(1,vSpan*3.4,(1-vSpan)*3.4));
-  const blurK=clamp(aP('tuba')*1.6);
+  const v0=ACT.video[0]-.014;                     /* nástup ešte počas odchodu panelu — žiadny čierny beat */
+  const vSpan=clamp((Ps-v0)/(ACT.tuba[1]-v0));
+  const vv=ss(Math.min(1,vSpan*2.8,(1-vSpan)*3.4));
+  const blurK=ss(clamp(aP('tuba')*1.6));
   chapvid.style.opacity=vv.toFixed(3);
-  chapvid.style.filter=`blur(${(blurK*7).toFixed(1)}px) brightness(${(1-.3*blurK).toFixed(2)}) saturate(1.08)`;
+  chapvid.style.filter=blurK>.02?`blur(${(blurK*5).toFixed(1)}px) brightness(${(1-.22*blurK).toFixed(2)}) saturate(1.08)`:'none';
   chapvid.style.transform=`scale(${(1.02+vSpan*.06).toFixed(3)})`;
   if(!REDUCED){
-    if(vv>.04){if(chapvid.paused)chapvid.play().catch(()=>{});}
-    else if(!chapvid.paused)chapvid.pause();
-    try{chapvid.playbackRate=tubaCover>.4?.35:.7;}catch(e){}   /* teaser pomaly, pod sheetom ešte pomalšie */
+    if(vv>.04){
+      if(chapvid.paused)chapvid.play().catch(()=>{});
+      if(prevVv<=.04){try{chapvid.currentTime=0;}catch(e){}}   /* každý príchod = film od začiatku */
+    }else if(!chapvid.paused)chapvid.pause();
+    try{
+      const tgtRate=.75-.42*tubaCover;
+      chapvid.playbackRate+= (tgtRate-chapvid.playbackRate)*.06; /* plynulé spomalenie, žiadne skoky */
+    }catch(e){}
   }
+  prevVv=vv;
   document.getElementById('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
 
   /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
