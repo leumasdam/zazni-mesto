@@ -40,6 +40,8 @@ a{color:inherit}
 }
 /* light mode obsahu na bielych paneloch */
 .ovl.light .head b{color:#101426}
+.ovl.light .deck .head{text-shadow:none}
+.ovl.light .head span{color:#C77800}
 .ovl.light .card{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);
   box-shadow:0 14px 40px rgba(16,20,38,.10);backdrop-filter:none}
 .ovl.light .card h3{color:#101426}
@@ -94,7 +96,7 @@ body.lightmode .brand em{color:#C77800}
 
 /* obor kapitola */
 #ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(28px,4.4vw,54px);margin-bottom:22px}
+#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(36px,6.2vw,92px);line-height:1;letter-spacing:-.025em;margin-bottom:26px}
 #ovlObor .oborbox{cursor:pointer;transition:filter .8s}
 #ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4))}
 #ovlObor .oborbox svg{width:min(30vh,260px);height:min(30vh,260px)}
@@ -168,20 +170,32 @@ body.lightmode .dots i.on{background:#C77800}
 .ovl{position:fixed;inset:0;z-index:20;pointer-events:none;opacity:0}
 .ovl>*{pointer-events:auto}
 
-/* 1 · PRITIAHNI — hero */
+/* 1 · PRITIAHNI — hero: obria typografia cez celý viewport */
 #ovlHero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-#ovlHero .kicker{font-family:var(--fm);font-size:11.5px;letter-spacing:.28em;color:var(--amber-300);text-transform:uppercase}
-#ovlHero h1{font-family:var(--fd);font-weight:700;font-size:clamp(44px,8.4vw,118px);line-height:1.02;
-  letter-spacing:-.015em;margin:20px 0 14px;text-transform:uppercase}
-#ovlHero h1 .lit{color:var(--warm-100);text-shadow:0 0 64px rgba(255,233,184,.5)}
-#ovlHero h1 .dim{color:var(--indigo-500)}
-#ovlHero p{color:var(--text-mid);font-size:clamp(15px,1.5vw,19px);max-width:46ch;line-height:1.6}
+#ovlHero::before{content:'';position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+  width:120vmin;height:80vmin;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(245,158,11,.13),rgba(59,66,133,.08) 45%,transparent 70%)}
+#ovlHero .kicker{font-family:var(--fm);font-size:11.5px;letter-spacing:.34em;color:var(--amber-300);text-transform:uppercase}
+#ovlHero h1{display:flex;flex-direction:column;align-items:center;font-family:var(--fd);font-weight:700;
+  font-size:clamp(72px,15.5vw,236px);line-height:.88;letter-spacing:-.035em;margin:26px 0 8px;text-transform:uppercase}
+#ovlHero h1 .lit{color:var(--warm-100);text-shadow:0 0 90px rgba(255,233,184,.55),0 0 24px rgba(255,233,184,.25)}
+#ovlHero h1 .dim{color:transparent;-webkit-text-stroke:clamp(1.6px,.24vw,3.5px) var(--indigo-300);opacity:.9}
+.herorow{display:flex;align-items:center;gap:clamp(24px,4vw,64px);margin-top:36px;flex-wrap:wrap;justify-content:center}
+.herorow p{color:var(--text-mid);font-size:clamp(15px,1.5vw,19px);max-width:42ch;line-height:1.6;text-align:left;margin:0}
 #ovlHero .cta{
-  margin-top:34px;display:inline-flex;align-items:center;gap:12px;
-  min-height:56px;padding:15px 30px;border-radius:99px;background:var(--amber-500);color:var(--night-950);
-  font-family:var(--fd);font-weight:700;font-size:16px;box-shadow:0 0 44px rgba(245,158,11,.35);transition:all .25s;
+  display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;
+  min-height:60px;padding:17px 34px;border-radius:99px;background:var(--amber-500);color:var(--night-950);
+  font-family:var(--fd);font-weight:700;font-size:17px;box-shadow:0 0 44px rgba(245,158,11,.35);transition:all .25s;
 }
 #ovlHero .cta:hover{background:var(--amber-300);box-shadow:0 0 70px rgba(245,158,11,.55)}
+/* zrnitý filmový materiál cez celú story */
+#grain{position:fixed;inset:-60%;z-index:31;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.65'/%3E%3C/svg%3E");
+  animation:grainShift .9s steps(2) infinite}
+@keyframes grainShift{0%{transform:translate(0,0)}50%{transform:translate(-11%,-7%)}100%{transform:translate(7%,10%)}}
+/* svetelný pulz projektora pri prepnutí kroku */
+#flash{position:fixed;inset:0;z-index:32;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse 90% 60% at 50% 100%,rgba(255,233,184,.5),rgba(245,158,11,.12) 45%,transparent 70%)}
 
 /* kartové bloky — vždy v strede, vytlačené zdola */
 .ovl.mid{display:flex;align-items:center;justify-content:center}
@@ -198,9 +212,19 @@ body.lightmode .dots i.on{background:#C77800}
 .card h3{font-family:var(--fd);font-size:17px;margin:10px 0 6px}
 .card p{font-size:13px;color:var(--text-mid);line-height:1.55}
 .card .src{font-family:var(--fm);font-size:10px;color:var(--text-low);display:block;margin-top:12px;letter-spacing:.05em}
-.deck .head{max-width:1240px;margin:0 auto 20px;display:flex;align-items:baseline;gap:18px}
-.deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(24px,2.8vw,38px)}
-.deck .head span{font-family:var(--fm);font-size:11px;letter-spacing:.2em;color:var(--amber-300);text-transform:uppercase}
+.deck .head{max-width:1240px;margin:0 auto 26px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(34px,4.6vw,74px);line-height:1;letter-spacing:-.025em}
+.deck .head span{font-family:var(--fm);font-size:11px;letter-spacing:.3em;color:var(--amber-300);text-transform:uppercase}
+/* ghost numerál — mierka za obsahom */
+.deck{position:relative}
+.ghost{position:absolute;right:-10px;top:-.6em;z-index:-1;pointer-events:none;user-select:none;
+  font-family:var(--fd);font-weight:700;font-size:clamp(180px,28vw,440px);line-height:1;letter-spacing:-.04em;
+  color:transparent;-webkit-text-stroke:1.5px rgba(139,145,221,.20)}
+.ovl.light .ghost{-webkit-text-stroke:1.5px rgba(51,47,158,.13)}
+/* svetlý text na tme — jemná kompenzácia váhy */
+.card p{letter-spacing:.012em}
+#gridObjav .num,#gridPochop .num{font-size:clamp(56px,6.6vw,104px);letter-spacing:-.03em}
+#gridSkal .num{font-family:var(--fd);font-weight:700;font-size:clamp(46px,4.6vw,76px);line-height:1;letter-spacing:-.03em}
 
 /* 4 · PREDSTAV SI — HUD vlny */
 #ovlWave{display:flex;align-items:flex-end;justify-content:center;padding-bottom:52px}
@@ -324,9 +348,13 @@ body.lightmode .dots i.on{background:#C77800}
 @media (prefers-reduced-motion:reduce){
   .hint span{animation:none}
   .floatboard img{animation:none}
-  #ovlHero .kicker,#ovlHero h1,#ovlHero p,#ovlHero .cta{animation:none;opacity:1}
+  #grain{animation:none}
+  #ovlHero .kicker,#ovlHero h1,#ovlHero .herorow p,#ovlHero .cta{animation:none;opacity:1}
 }
 @media (max-width:860px){
+  .ghost{display:none}
+  .herorow{flex-direction:column;gap:18px}
+  .herorow p{text-align:center}
   .chapcap{white-space:normal;max-width:88vw;text-align:center;line-height:1.7}
   .turnhead{white-space:normal;max-width:92vw}
   .hint{white-space:nowrap}
@@ -345,6 +373,8 @@ body.lightmode .dots i.on{background:#C77800}
 <div id="panelL" class="wpanel"></div>
 <div id="panelR" class="wpanel"></div>
 <div id="finalebg"><img src="assets/hrad-okno.png" alt=""></div>
+<div id="grain"></div>
+<div id="flash"></div>
 <div id="vignette"></div>
 <canvas id="pfx"></canvas>
 
@@ -356,16 +386,18 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 1 · PRITIAHNI -->
 <div class="ovl" id="ovlHero">
   <span class="kicker">MIB · TU-BA · interaktívna expozícia brownfieldov · web = pokračovanie</span>
-  <h1><span class="lit">Zažni</span> <span class="dim">mesto</span></h1>
-  <p>Od nevyužitých území k živým štvrtiam.<br>
-  Pod týmto textom spí <b style="color:var(--warm-100)" id="heroN">113</b> skutočných miest z registra MIB — a tvoj scroll ich rozsvieti.</p>
-  <button class="cta" id="ctaStart">☀ Rozsvietiť mesto <span>↓</span></button>
+  <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
+  <div class="herorow">
+    <p>Od nevyužitých území k živým štvrtiam.
+    Pod týmto textom spí <b style="color:var(--warm-100)" id="heroN">113</b> skutočných miest z registra MIB — a tvoj scroll ich rozsvieti.</p>
+    <button class="cta" id="ctaStart">☀ Rozsvietiť mesto <span>↓</span></button>
+  </div>
 </div>
 
 <!-- 2 · OBJAV — čísla -->
 <div class="ovl mid" id="ovlObjav">
   <div class="deck">
-    <div class="head"><span>02 · Objav</span><b>Koľko mesta spí</b></div>
+    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Koľko mesta spí</b></div>
     <div class="grid" id="gridObjav">
       <div class="card">
         <div class="num" data-n="113">0</div>
@@ -392,7 +424,7 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 3 · POCHOP — vlastníctvo -->
 <div class="ovl mid" id="ovlPochop">
   <div class="deck">
-    <div class="head"><span>03 · Pochop</span><b>Kto drží kľúč</b></div>
+    <span class="ghost">03</span><div class="head"><span>03 · Pochop</span><b>Kto drží kľúč</b></div>
     <div class="grid" id="gridPochop">
       <div class="card">
         <div class="num" data-n="56">0</div>
@@ -433,7 +465,7 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 6 · JAZYK SVETLA — legenda a vysvetlivky -->
 <div class="ovl light mid" id="ovlLegenda">
   <div class="deck">
-    <div class="head"><span>05 · Jazyk svetla</span><b>Legenda — ako čítať mesto</b></div>
+    <span class="ghost">05</span><div class="head"><span>05 · Jazyk svetla</span><b>Ako čítať mesto</b></div>
     <div id="gridLegenda">
       <div class="grid grid4">
         <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne · pulz 4 s</span></div>
@@ -511,7 +543,7 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 7c · VRSTVY SVETLA — anatómia projekcie (biely panel) -->
 <div class="ovl light mid" id="ovlVrstvy">
   <div class="deck">
-    <div class="head"><span>07 · Projekcia</span><b>Vrstvy svetla nad mestom</b></div>
+    <span class="ghost">07</span><div class="head"><span>07 · Projekcia nad mestom</span><b>Vrstvy svetla</b></div>
     <div class="vrow">
       <div class="vimg" id="vimg"><img src="assets/vrstvy-projekcie.png" alt="Explodovaný pohľad: tri dátové vrstvy projekcie nad fyzickým modelom mesta"></div>
       <div class="grid vcards" id="gridVrstvy">
@@ -533,7 +565,7 @@ body.lightmode .dots i.on{background:#C77800}
 <div class="ovl mid" id="ovlTuba">
   <div class="deck">
     <div class="deckimg board"><img src="assets/tuba-priestor.png" alt="Priestor TU-BA: projektory, fyzický model, tablety/AR, dotyková obrazovka, stena budúcnosti"></div>
-    <div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
+    <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
     <div class="grid" id="gridTuba">
       <div class="card"><h3>Model je mapa.</h3><p>Scéna pre všetkých — priestor, stavy, svetlo. Nič ju nesupluje.</p><span class="src">projekčný mapping · kalibrácia raz</span></div>
       <div class="card"><h3>Obrazovka je dirigent.</h3><p>Jediná mení, čo svieti — vrstvy, filtre, čas. Tablet je ďalekohľad: detail, AR minulosť·dnes·budúcnosť; scénu neprepíše, vie len poprosiť „ukáž na modeli".</p><span class="src">websocket · master scény</span></div>
@@ -547,12 +579,12 @@ body.lightmode .dots i.on{background:#C77800}
 <div class="ovl light mid" id="ovlSkal">
   <div class="deck">
     <div class="deckimg"><img src="assets/slucka.png" alt="Zážitková slučka: Pritiahni · Objav · Pochop · Predstav si · Zapoj sa — 5 krokov, 4 minúty, jeden rozsvietený obor" loading="lazy"></div>
-    <div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
+    <span class="ghost">09</span><div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
     <div class="grid grid4" id="gridSkal">
-      <div class="card"><div class="num" style="font-size:40px">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
-      <div class="card"><div class="num" style="font-size:40px">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
-      <div class="card"><div class="num" style="font-size:40px">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num" style="font-size:40px">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 51 kontrol</span></div>
+      <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
+      <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
+      <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 51 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -711,7 +743,7 @@ const STEPS=[
   {t:.94,  n:'Živý prototyp'},
   {t:1,    n:'Zapoj sa'},
 ];
-let STEP=0,tw=null,autoT=null;
+let STEP=0,tw=null,autoT=null,FL=0;
 const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 function goStep(i,manual=true){
   i=Math.max(0,Math.min(STEPS.length-1,i));
@@ -722,6 +754,7 @@ function goStep(i,manual=true){
   const dist=Math.abs(s.t-Ps);
   const dur=REDUCED?0:Math.min(5600,(900+dist*11000)*(s.slow||1));
   tw={from:Ps,to:s.t,t0:performance.now(),dur};
+  FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
   document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
 }
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
@@ -750,9 +783,27 @@ function draw(t){
   bg.addColorStop(0,'#05070F');bg.addColorStop(.5,'#090C18');bg.addColorStop(1,'#05070F');
   cx.fillStyle=bg;cx.fillRect(0,0,VW,VH);
 
-  /* kamera: pomalý nájazd + drift */
-  const zoom=1+p*.16, drift=p*VH*.05;
-  cx.translate(VW/2,VH/2-drift);cx.scale(zoom,zoom);cx.translate(-VW/2,-VH/2);
+  /* kamera: keyframy po aktoch — nájazdy a pany, kým žije mapa (kinematická kontinuita) */
+  /* [Ps, zoom, panX(podiel VW), panY(podiel VH)] */
+  const CAM=[
+    [0,               1.04,  0,    0   ],
+    [ACT.objav[0],    1.06,  0,    0   ],
+    [ACT.objav[1],    1.17,  .055, -.02],
+    [ACT.pochop[1],   1.26, -.05,  .03 ],
+    [ACT.predstav[0], 1.12,  0,    0   ],
+    [ACT.predstav[1], 1.32,  .02, -.06 ],
+    [ACT.jazyk[1],    1.46,  0,   -.12 ],
+  ];
+  let zoom=CAM[CAM.length-1][1],camX=0,camY=CAM[CAM.length-1][3];
+  for(let i=0;i<CAM.length-1;i++){
+    const a=CAM[i],b=CAM[i+1];
+    if(p<=b[0]||i===CAM.length-2){
+      const k=clamp((p-a[0])/((b[0]-a[0])||1));
+      zoom=lerp(a[1],b[1],k);camX=lerp(a[2],b[2],k);camY=lerp(a[3],b[3],k);
+      break;
+    }
+  }
+  cx.translate(VW/2+camX*VW,VH/2+camY*VH);cx.scale(zoom,zoom);cx.translate(-VW/2,-VH/2);
   cx.translate(OX,OY);cx.scale(BASE,BASE);
   const px=1/(BASE*zoom);                        /* 1px v svetových jednotkách */
 
@@ -777,7 +828,8 @@ function draw(t){
   const ownA=aP('pochop');                       /* zvýraznenie vlastníctva v akte 3 */
   const ownPulse=Math.sin(clamp(ownA)*Math.PI);  /* nabehne a odíde */
 
-  /* brownfieldy */
+  /* brownfieldy — v hero momente pulzujú výraznejšie (prvá sekunda musí žiť) */
+  const HB=1+(1-clamp(p*14))*.6;
   let lit=0;
   for(const pl of POLY){
     const s=polyState(pl);
@@ -792,7 +844,7 @@ function draw(t){
     }
     /* pulz spiacich */
     const pulse=s<.15?(.5+.28*Math.sin(t*.0016+pl.phase)):1;
-    const alpha=(.5+s*.5)*pulse;
+    const alpha=Math.min(1,(.5+s*.5)*pulse*HB);
     cx.fillStyle=stateColor(s);
     cx.globalAlpha=alpha;
     cx.beginPath();
@@ -840,7 +892,12 @@ function deckUpdate(ovl,grid,ap,mode='wipeR'){
   ovl.style.opacity=vis.toFixed(3);
   ovl.style.pointerEvents=vis>.15?'auto':'none';
   const deck=ovl.querySelector('.deck');
-  if(deck)deck.style.transform=`translateY(${((1-Math.min(1,ap*2))*14).toFixed(2)}vh)`;
+  if(deck){
+    const en=Math.min(1,ap*2);
+    const en2=Math.min(1,en*1.18);   /* blur/scale dobehne skôr — panelové kapitoly majú posunuté ap */
+    deck.style.transform=`translateY(${((1-en)*14).toFixed(2)}vh) scale(${(.962+en2*.038).toFixed(4)})`;
+    deck.style.filter=en2<1?`blur(${((1-en2)*7).toFixed(1)}px)`:'none';
+  }
   /* všetko dokončené presne v bode dojazdu kroku (ap = 0.5) */
   if(mode==='wipeR'||mode==='wipeL'||mode==='wipeD'){
     const wipe=clamp(ap*2.3)*130;
@@ -1014,6 +1071,8 @@ function loop(t){
     if(k>=1){Ps=tw.to;tw=null;onArrive();}
   }
   SMX+=(MX-SMX)*.07;SMY+=(MY-SMY)*.07;
+  FL*=.93;
+  document.getElementById('flash').style.opacity=(FL>.01?FL*.3:0).toFixed(3);
   window.__lit=draw(t);
   chores(t);
   requestAnimationFrame(loop);
