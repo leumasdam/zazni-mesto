@@ -98,7 +98,7 @@ function init(canvas,data){
   let CW=2,CH=2;
   function resize(w,h,dpr){
     CW=w;CH=h;
-    renderer.setPixelRatio(Math.min(dpr||1,2));
+    renderer.setPixelRatio(Math.min(dpr||1,1.5));  /* bloom na 2× DPR je perf žrút */
     renderer.setSize(w,h,false);
     composer.setSize(w,h);
     cam.aspect=w/h;cam.updateProjectionMatrix();
