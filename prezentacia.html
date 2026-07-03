@@ -27,6 +27,7 @@ a{color:inherit}
 
 /* ============ mesto (canvas) ============ */
 #city{position:fixed;inset:0;z-index:-2}
+#glcity{position:fixed;inset:0;width:100%;height:100%;z-index:-3}
 #vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 105% 90% at 50% 42%,transparent 55%,rgba(5,7,15,.85));}
 #pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
@@ -646,6 +647,7 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <script src="geo.js"></script>
+<script src="vendor/zazni-gl.js"></script>
 <script>
 /* ============================================================
    ZAŽNI MESTO · scroll-story — mesto sa rozsvecuje scrollom
@@ -732,6 +734,21 @@ function stateColor(s){
   return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
 }
 
+/* ---------- WebGL mesto (three.js + bloom) — fallback na 2D canvas, ?nogl=1 vypne ---------- */
+let GL=null,glcv=null;
+if(!new URL(location).searchParams.get('nogl')&&window.ZazniGL){
+  try{
+    glcv=document.createElement('canvas');glcv.id='glcity';
+    document.body.insertBefore(glcv,cv);
+    GL=ZazniGL.init(glcv,{
+      polys:POLY.map(pl=>({pts:pl.rings[0],t:pl.t,phase:pl.phase,big:pl.big,own:pl.p.own,ha:pl.p.ha,cx:pl.cx,cy:pl.cy})),
+      boundary:boundaryW,dots:DOTS,W:WORLD_W,H:WORLD_H,ramp:RAMP
+    });
+    if(GL)GL.resize(VW,VH,DPR);else glcv.remove();
+  }catch(e){GL=null;if(glcv)glcv.remove();}
+}
+addEventListener('resize',()=>{if(GL)GL.resize(innerWidth,innerHeight,Math.min(devicePixelRatio||1,2));});
+
 /* ---------- akty na virtuálnej časovej osi 0–1 ---------- */
 const ACT={
   pritiahni:[0,.05], objav:[.05,.14], pochop:[.14,.22], predstav:[.22,.38],
@@ -792,12 +809,6 @@ function polyState(pl){
 /* ---------- kreslenie ---------- */
 function draw(t){
   const p=Ps;
-  cx.setTransform(DPR,0,0,DPR,0,0);
-  /* pozadie */
-  const bg=cx.createLinearGradient(0,0,0,VH);
-  bg.addColorStop(0,'#05070F');bg.addColorStop(.5,'#090C18');bg.addColorStop(1,'#05070F');
-  cx.fillStyle=bg;cx.fillRect(0,0,VW,VH);
-
   /* kamera: keyframy po aktoch — nájazdy a pany, kým žije mapa (kinematická kontinuita) */
   /* [Ps, zoom, panX(podiel VW), panY(podiel VH)] */
   const CAM=[
@@ -818,11 +829,41 @@ function draw(t){
       break;
     }
   }
+  const ctxA=aP('objav');                        /* kontext mesta sa vynára v akte 2 */
+  const ownA0=aP('pochop');
+  const ownPulse0=Math.sin(clamp(ownA0)*Math.PI);
+  const HB=1+(1-clamp(p*14))*.6;                 /* hero pulz */
+  const wave=aP('predstav');
+
+  /* === WebGL vetva: mesto kreslí three.js s bloomom; 2D canvas ostáva len na menovky === */
+  if(GL){
+    cx.setTransform(DPR,0,0,DPR,0,0);
+    cx.clearRect(0,0,VW,VH);
+    const lit=GL.frame({t,wave,ctxA,own:ownPulse0,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB});
+    for(const pl of POLY){
+      if(!pl.big)continue;
+      const s=polyState(pl);
+      if(s<.6)continue;
+      const q=GL.project(pl.cx,pl.cy);
+      if(!q.vis)continue;
+      cx.globalAlpha=clamp((s-.6)/.4)*.95;
+      cx.fillStyle='#FFE9B8';
+      cx.font=`600 11px "JetBrains Mono",monospace`;
+      cx.fillText(pl.p.n.toUpperCase(),q.x+8,q.y-8);
+      cx.globalAlpha=1;
+    }
+    return lit;
+  }
+
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  /* pozadie */
+  const bg=cx.createLinearGradient(0,0,0,VH);
+  bg.addColorStop(0,'#05070F');bg.addColorStop(.5,'#090C18');bg.addColorStop(1,'#05070F');
+  cx.fillStyle=bg;cx.fillRect(0,0,VW,VH);
+
   cx.translate(VW/2+camX*VW,VH/2+camY*VH);cx.scale(zoom,zoom);cx.translate(-VW/2,-VH/2);
   cx.translate(OX,OY);cx.scale(BASE,BASE);
   const px=1/(BASE*zoom);                        /* 1px v svetových jednotkách */
-
-  const ctxA=aP('objav');                        /* kontext mesta sa vynára v akte 2 */
 
   /* hranica */
   cx.beginPath();
@@ -844,7 +885,6 @@ function draw(t){
   const ownPulse=Math.sin(clamp(ownA)*Math.PI);  /* nabehne a odíde */
 
   /* brownfieldy — v hero momente pulzujú výraznejšie (prvá sekunda musí žiť) */
-  const HB=1+(1-clamp(p*14))*.6;
   let lit=0;
   for(const pl of POLY){
     const s=polyState(pl);
@@ -1009,7 +1049,9 @@ function chores(t){
   ovlOb.style.transform=`translateY(${(1-ob)*28}px)`;
 
   /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
-  cv.style.opacity=(1-clamp(aP('jazyk')*2.4)).toFixed(3);   /* mapa už sa nevracia */
+  const mapFade=(1-clamp(aP('jazyk')*2.4)).toFixed(3);      /* mapa už sa nevracia */
+  cv.style.opacity=mapFade;
+  if(glcv)glcv.style.opacity=mapFade;
 
   function rollPanel(el,ap,fromLeft){
     if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
