@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V3 · ZAŽNI MESTO — svetlo pre spiace mesto</title>
+<meta name="description" content="Koncept interaktívnej expozície brownfieldov pre TU-BA — editorial verzia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9E8E4;--paper2:#F1F0EC;--ink:#0C0D10;--ink2:#54565C;--line:rgba(12,13,16,.14);
+  --amber:#C77800;--indigo:#3B4285;
+  --fd:'Space Grotesk',sans-serif;--ft:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--ft);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{-webkit-user-drag:none;user-select:none}
+
+/* ————— rám stránky ————— */
+#nav{position:fixed;inset:0 0 auto;z-index:40;display:flex;align-items:center;justify-content:space-between;
+  padding:22px 34px;font:600 12px/1 var(--ft);letter-spacing:.02em}
+#nav .lnk{display:flex;gap:26px}
+#nav .lnk a{position:relative;padding-bottom:4px;color:var(--ink2)}
+#nav .lnk a:hover{color:var(--ink)}
+#nav .lnk a.on{color:var(--ink)}
+#nav .lnk a.on::after{content:'';position:absolute;left:0;bottom:0;width:100%;height:1.5px;background:var(--ink)}
+#brand{position:absolute;left:50%;transform:translateX(-50%);font:700 15px var(--fd)}
+#brand i{font-style:normal;color:var(--amber)}
+#lang{font:500 11px var(--fm);border:1px solid var(--line);padding:6px 9px;border-radius:4px}
+#lang b{color:var(--ink)}#lang span{color:var(--ink2)}
+
+#idx{position:fixed;left:34px;top:50%;transform:translateY(-50%);z-index:40;font:500 10.5px var(--fm);color:var(--ink2)}
+#idx .no{display:flex;align-items:center;gap:10px}
+#idx .no b{font-size:12px;color:var(--ink);letter-spacing:.08em}
+#idx .no i{display:block;width:44px;height:2px;background:var(--ink)}
+#idx .tick{margin-top:10px;display:grid;gap:6px}
+#idx .tick s{display:block;width:14px;height:1.5px;background:var(--line);text-decoration:none;transition:all .4s}
+#idx .tick s.on{width:26px;background:var(--ink)}
+
+#dots{position:fixed;right:34px;top:50%;transform:translateY(-50%);z-index:40;display:grid;gap:9px}
+#dots i{width:5px;height:5px;border-radius:50%;background:rgba(12,13,16,.22);cursor:pointer;transition:all .35s}
+#dots i.on{background:var(--amber);transform:scale(1.5)}
+
+#chev{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:40;color:var(--ink2);
+  animation:chv 2.2s ease-in-out infinite;cursor:pointer}
+@keyframes chv{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
+#hint{position:fixed;right:34px;bottom:22px;z-index:40;font:500 9.5px var(--fm);letter-spacing:.16em;color:var(--ink2);text-transform:uppercase}
+
+/* ————— stránky ————— */
+.pg{position:fixed;inset:0;visibility:hidden;pointer-events:none}
+.pg.on{visibility:visible;pointer-events:auto}
+.wrapc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* obrí titulok — dve linky, maskovaný reveal */
+.disp{font:700 clamp(44px,7.6vw,124px)/0.98 var(--fd);letter-spacing:-.015em;text-transform:uppercase;text-align:center;z-index:6;position:relative}
+.disp .ln{display:block;overflow:hidden;padding-top:.14em;margin-top:-.14em}  /* headroom pre mäkčene nad verzálkami */
+.disp .ln span{display:inline-block;transform:translateY(125%);transition:transform 1s cubic-bezier(.19,1,.22,1)}
+.pg.live .disp .ln span{transform:none}
+.pg .disp .ln:nth-child(2) span{transition-delay:.09s}
+.kick{font:700 10.5px var(--fm);letter-spacing:.3em;text-transform:uppercase;color:var(--amber);margin-bottom:16px;text-align:center;
+  opacity:0;transition:opacity .7s .1s}
+.pg.live .kick{opacity:1}
+
+/* produktové hero + plávajúce chipy */
+.stage{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(1.045);filter:blur(8px);transition:opacity .9s .28s,transform 1.2s .28s cubic-bezier(.19,1,.22,1),filter .9s .28s}
+.pg.live .stage{opacity:1;transform:none;filter:none}
+.stage img{max-width:100%;max-height:100%;object-fit:contain}
+.chip{position:absolute;z-index:8;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(12,13,16,.08);border-radius:12px;padding:13px 16px 12px;max-width:230px;
+  box-shadow:0 18px 40px rgba(12,13,16,.10);
+  opacity:0;transform:translateY(22px);transition:opacity .7s,transform .9s cubic-bezier(.19,1,.22,1)}
+.pg.live .chip{opacity:1;transform:none}
+.chip b{display:flex;align-items:center;gap:8px;font:600 12.5px var(--ft);margin-bottom:5px}
+.chip b i{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+.chip p{font:400 11px/1.5 var(--ft);color:var(--ink2)}
+.chip .pl{position:absolute;right:12px;bottom:10px;font:700 12px var(--fm);color:var(--ink2)}
+.pg.live .chip{animation:flt 6.5s ease-in-out infinite}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.chip:nth-of-type(odd){animation-delay:1.6s}
+
+/* bočné odseky a spodné stĺpce */
+.aside{position:absolute;z-index:7;max-width:220px;font:400 12px/1.65 var(--ft);color:var(--ink2);
+  opacity:0;transform:translateY(14px);transition:opacity .8s .5s,transform .8s .5s}
+.pg.live .aside{opacity:1;transform:none}
+.aside b{color:var(--ink)}
+.cols{position:absolute;z-index:7;left:0;right:0;bottom:44px;display:flex;justify-content:space-between;padding:0 12vw;
+  opacity:0;transition:opacity .8s .62s}
+.pg.live .cols{opacity:1}
+.cols .c{max-width:200px}
+.cols .c h4{font:600 12.5px var(--ft);margin-bottom:4px}
+.cols .c p{font:400 11px/1.5 var(--ft);color:var(--ink2)}
+.cols .c small{display:block;margin-top:5px;font:500 9.5px var(--fm);letter-spacing:.08em;color:var(--ink2)}
+
+/* štatistické stĺpce (editorial čísla) */
+.stats{display:flex;gap:6vw;z-index:6;margin-top:5vh}
+.stats .s{text-align:center;opacity:0;transform:translateY(26px);transition:opacity .7s,transform .95s cubic-bezier(.19,1,.22,1)}
+.pg.live .stats .s{opacity:1;transform:none}
+.pg.live .stats .s:nth-child(2){transition-delay:.12s}.pg.live .stats .s:nth-child(3){transition-delay:.24s}
+.stats .n{font:700 clamp(54px,7vw,110px)/1 var(--fd);letter-spacing:-.02em}
+.stats .n small{font-size:.42em;color:var(--ink2);font-weight:600}
+.stats h4{font:600 13px var(--ft);margin:8px 0 4px}
+.stats p{font:400 11.5px/1.5 var(--ft);color:var(--ink2);max-width:210px;margin:0 auto}
+.stats .src{display:block;margin-top:7px;font:500 9px var(--fm);letter-spacing:.1em;color:var(--ink2);text-transform:uppercase}
+
+/* rámovaný tmavý media blok (mapa / video ako exponát) */
+.media{position:relative;z-index:5;border-radius:14px;overflow:hidden;background:#07090F;
+  box-shadow:0 34px 80px rgba(12,13,16,.28);
+  opacity:0;transform:scale(1.03);transition:opacity .9s .26s,transform 1.1s .26s cubic-bezier(.19,1,.22,1)}
+.pg.live .media{opacity:1;transform:none}
+.media canvas,.media video{display:block;width:100%;height:100%;object-fit:cover}
+.media .cap{position:absolute;left:14px;bottom:12px;font:500 9.5px var(--fm);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,246,227,.75)}
+.legend{display:flex;gap:18px;margin-top:22px;z-index:6;font:500 10px var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);
+  opacity:0;transition:opacity .8s .6s}
+.pg.live .legend{opacity:1}
+.legend s{text-decoration:none;display:flex;align-items:center;gap:7px}
+.legend i{width:9px;height:9px;border-radius:50%}
+
+/* CTA */
+.ctarow{display:flex;gap:14px;margin-top:4.5vh;z-index:6;opacity:0;transform:translateY(16px);transition:opacity .7s .4s,transform .8s .4s}
+.pg.live .ctarow{opacity:1;transform:none}
+.btn{font:600 12.5px var(--ft);padding:15px 26px;border-radius:999px;border:1.5px solid var(--ink);transition:all .25s}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.pri:hover{background:var(--amber);border-color:var(--amber)}
+.btn.sec:hover{background:rgba(12,13,16,.06)}
+
+/* wall fx */
+#wallfx{position:fixed;inset:0;z-index:70;pointer-events:none}
+
+/* jemný papierový grad + zrno */
+#tone{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 8%,var(--paper2) 0%,var(--paper) 58%,#E2E1DC 100%)}
+#grain{position:fixed;inset:-60%;z-index:64;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+@media (max-width:1000px){
+  .aside,.cols,#idx,#hint{display:none}
+  .stats{flex-wrap:wrap;gap:26px;justify-content:center}
+  #nav{padding:16px 18px}#dots{right:14px}
+  .chip{max-width:180px;padding:10px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .disp .ln span,.stage,.chip,.aside,.cols,.stats .s,.media,.ctarow,.kick,.legend{transition:none!important;animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+}
+html.flat .disp .ln span,html.flat .stage,html.flat .chip,html.flat .aside,html.flat .cols,html.flat .stats .s,html.flat .media,html.flat .ctarow,html.flat .kick,html.flat .legend{transition:none!important;animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+</style>
+</head>
+<body>
+<div id="tone"></div>
+
+<nav id="nav">
+  <div class="lnk"><a href="index.html">Manuál</a><a href="obrazovka.html">Prototyp</a><a class="on" href="prezentacia.html">Príbeh v1</a></div>
+  <div id="brand">Zažni <i>mesto</i>.</div>
+  <div id="lang"><b>SK</b> <span>· MIB</span></div>
+</nav>
+
+<div id="idx"><div class="no"><b>001</b><i></i></div><div class="tick" id="ticks"></div></div>
+<div id="dots"></div>
+<svg id="chev" width="22" height="26" viewBox="0 0 22 26" fill="none"><path d="M2 7l9 8 9-8" stroke="currentColor" stroke-width="2"/><path d="M2 15l9 8 9-8" stroke="currentColor" stroke-width="2" opacity=".45"/></svg>
+<span id="hint">scroll · šípky · swipe</span>
+
+<!-- 0 · HERO -->
+<section class="pg" data-t="ZAŽNI MESTO">
+  <div class="wrapc">
+    <div class="kick">Koncept expozície brownfieldov · TU—BA</div>
+    <h1 class="disp"><span class="ln"><span>Svetlo pre</span></span><span class="ln"><span>spiace mesto</span></span></h1>
+    <div class="stage" style="width:min(62vw,860px);height:49vh;margin-top:-6vh">
+      <img src="assets/seq/turn/frame-13.png" alt="Fyzický model expozície ZAŽNI MESTO — projekcia, tablety, dotyková obrazovka">
+    </div>
+    <div class="chip" style="left:16vw;top:47vh"><b><i style="background:var(--indigo)"></i>113 brownfieldov</b><p>579,4 ha spiacich miest — register MIB, polygón po polygóne.</p></div>
+    <div class="chip" style="right:15vw;top:56vh"><b><i style="background:var(--amber)"></i>Rozsvieť dotykom</b><p>Každý hlas návštevníka svieti na modeli — a stáva sa dátami.</p></div>
+    <div class="aside" style="left:12vw;top:30vh"><b>Brownfield je zhasnuté miesto.</b> Expozícia je miesto, kde ho ľudia rozsvecujú.</div>
+    <div class="cols">
+      <div class="c"><h4>Svetlo ako jazyk</h4><p>4 stavy jasu — spí, drieme, prebúdza sa, žije. Jas je miera života.</p><small>dizajn tokeny · 5 kanálov</small></div>
+      <div class="c" style="text-align:right"><h4>Dáta ako scéna</h4><p>Nič sa nefarbí ručne. Projekciu, obrazovku aj web číta jeden register.</p><small>ArcGIS · BF 2022 · audit 52</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1 · OBJAV -->
+<section class="pg" data-t="OBJAV">
+  <div class="wrapc">
+    <div class="kick">002 · Najprv rozsah</div>
+    <h1 class="disp"><span class="ln"><span>113 spiacich</span></span><span class="ln"><span>miest Bratislavy</span></span></h1>
+    <div class="stats">
+      <div class="s"><div class="n" data-n="113">0</div><h4>brownfieldov</h4><p>V 2019 ich bolo 131 — mesto sa prebúdza, my mu dávame vypínač.</p><span class="src">register MIB · aktualizácia 2022</span></div>
+      <div class="s"><div class="n" data-n="580"><small> ha</small></div><h4>spiacej plochy</h4><p>Približne osemsto futbalových ihrísk vnútri mesta.</p><span class="src">pole VYMERA_HA</span></div>
+      <div class="s"><div class="n" data-n="13">0</div><h4>obrov nad 8 ha</h4><p>Palma, Mlynské nivy, Istrochem, Filiálka, Matador, Nové Lido…</p><span class="src">mierka = význam</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · POCHOP -->
+<section class="pg" data-t="POCHOP">
+  <div class="wrapc">
+    <div class="kick">003 · Najdôležitejšie číslo témy</div>
+    <h1 class="disp"><span class="ln"><span>Kto drží kľúč</span></span></h1>
+    <div class="stats">
+      <div class="s"><div class="n" data-n="56">0</div><h4>kľúčov drží súkromník</h4><p>Takmer polovica území. Revitalizácia sa nedá nariadiť — dá sa vyjednať.</p><span class="src">pole DRUH_VLA</span></div>
+      <div class="s"><div class="n">5,5<small> %</small></div><h4>plochy drží mesto</h4><p>Priamo kontrolovateľné územia sú výnimka, nie pravidlo.</p><span class="src">13 mesto · 11 štát · 8 mix</span></div>
+      <div class="s"><div class="n" data-n="66">0</div><h4>už má zámer</h4><p>Pozornosť je prvé svetlo — tieto územia sa prebúdzajú prvé.</p><span class="src">pole ZAMER · plan = 1</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · PREDSTAV SI -->
+<section class="pg" data-t="PREDSTAV SI">
+  <div class="wrapc">
+    <div class="kick">004 · Vizuálny jazyk v jednom pohybe</div>
+    <h1 class="disp" style="font-size:clamp(38px,5.4vw,86px)"><span class="ln"><span>Svetlo ide mestom</span></span></h1>
+    <div class="media" style="width:min(66vw,980px);height:52vh;margin-top:3.2vh">
+      <canvas id="wavemap"></canvas>
+      <span class="cap">živé dáta registra · svetelná vlna od východu · <b id="wavelit" style="color:#FFE9B8">0</b>/113</span>
+    </div>
+    <div class="legend">
+      <s><i style="background:#3B4285"></i>spí</s><s><i style="background:#17B3A3"></i>drieme</s>
+      <s><i style="background:#F59E0B"></i>prebúdza sa</s><s><i style="background:#FFE9B8"></i>žije</s>
+    </div>
+    <div class="chip" style="right:12vw;top:34vh"><b><i style="background:#F59E0B"></i>Na modeli</b><p>Toto kreslia projektory na fyzické mesto — významné územia sa samy pomenujú.</p></div>
+  </div>
+</section>
+
+<!-- 4 · VRSTVY -->
+<section class="pg" data-t="VRSTVY SVETLA">
+  <div class="wrapc">
+    <div class="kick">005 · Anatómia projekcie</div>
+    <h1 class="disp" style="font-size:clamp(38px,5.4vw,86px)"><span class="ln"><span>Vrstvy svetla</span></span></h1>
+    <div class="stage" style="width:min(56vw,820px);height:56vh;margin-top:1vh">
+      <img src="assets/vrstvy-stack.png" alt="Tri dátové vrstvy svetla nad fyzickým mestom">
+    </div>
+    <div class="chip" style="left:13vw;top:30vh"><b><i style="background:#F59E0B"></i>Typológia + menovky</b><p>Ikony obrov a mená 13 území nad 8 ha. Mierka ikony = význam.</p><span class="pl">03</span></div>
+    <div class="chip" style="left:15vw;top:58vh"><b><i style="background:#E84B8A"></i>Riziko — šrafy</b><p>15 envirozáťaží ako vzor, nie farba. Vrstvy sa preto nikdy nebijú.</p><span class="pl">02</span></div>
+    <div class="chip" style="right:13vw;top:44vh"><b><i style="background:#5A61B5"></i>Stavy — svetlo</b><p>Jas parcely = miera života, priamo z registra.</p><span class="pl">01</span></div>
+    <div class="aside" style="right:12vw;bottom:12vh;text-align:right"><b>Jedno pravidlo scény:</b> projektory kreslia len dáta — rovnaké tokeny číta model, tablet aj web.</div>
+  </div>
+</section>
+
+<!-- 5 · OTOČKA -->
+<section class="pg" data-t="EXPOZÍCIA 360°">
+  <div class="wrapc">
+    <div class="kick">006 · Jedna scéna, štyri roly</div>
+    <h1 class="disp" style="font-size:clamp(38px,5.4vw,86px)"><span class="ln"><span>Expozícia z každej strany</span></span></h1>
+    <div class="stage" id="turnstage" style="width:min(62vw,900px);height:54vh;cursor:grab">
+      <img id="turnimg" src="assets/seq/turn/frame-13.png" alt="Model expozície TU-BA — otočný pohľad" draggable="false">
+    </div>
+    <div class="chip" style="left:12vw;top:36vh"><b><i style="background:var(--indigo)"></i>Fyzický model</b><p>Projekcia stavov zhora — model JE mapa.</p></div>
+    <div class="chip" style="right:12vw;top:33vh"><b><i style="background:#17B3A3"></i>Tablety / AR</b><p>Osobný ďalekohľad: minulosť · dnes · budúcnosť.</p></div>
+    <div class="chip" style="right:14vw;bottom:16vh"><b><i style="background:var(--amber)"></i>Dotyková obrazovka</b><p>Dirigent pri hrane — ovládaš od okraja, aj z vozíka.</p></div>
+    <div class="aside" style="left:13vw;bottom:15vh"><b>Potiahni model rukou</b> — otočíš si ho sám, presne ako na výstave.</div>
+  </div>
+</section>
+
+<!-- 6 · TU-BA -->
+<section class="pg" data-t="TU—BA">
+  <div class="wrapc">
+    <div class="kick">007 · Kto čo hrá</div>
+    <h1 class="disp" style="font-size:clamp(38px,5.4vw,86px)"><span class="ln"><span>Jedna scéna, štyri vrstvy</span></span></h1>
+    <div class="stage" style="width:min(58vw,860px);height:52vh;margin-top:1vh">
+      <img src="assets/tuba-priestor.png" alt="Priestor TU-BA: projektory, model, tablety, dotyková obrazovka, stena budúcnosti">
+    </div>
+    <div class="chip" style="left:13vw;top:34vh"><b><i style="background:var(--indigo)"></i>Model je mapa</b><p>Scéna pre všetkých — priestor, stavy, svetlo. Nič ju nesupluje.</p></div>
+    <div class="chip" style="right:13vw;top:40vh"><b><i style="background:var(--amber)"></i>Web je pokračovanie</b><p>QR z výstavy vedie presne sem — mesto si rozsvietiš doma.</p></div>
+    <div class="aside" style="right:12vw;bottom:12vh;text-align:right">Obrazovka je dirigent, tablet ďalekohľad — scénu neprepíše, vie len poprosiť <b>„ukáž na modeli“</b>.</div>
+  </div>
+</section>
+
+<!-- 7 · ZAPOJ SA -->
+<section class="pg" data-t="ZAPOJ SA">
+  <div class="wrapc">
+    <div class="kick">008 · Nástroj, nie výstava</div>
+    <h1 class="disp"><span class="ln"><span>Rozsvieť</span></span><span class="ln"><span>ho sám</span></span></h1>
+    <div class="ctarow">
+      <a class="btn pri" href="obrazovka.html">Živý prototyp expozície</a>
+      <a class="btn sec" href="index.html">Dizajn manuál</a>
+      <a class="btn sec" href="prezentacia.html">Príbeh v1 — tmavá verzia</a>
+    </div>
+    <div class="cols">
+      <div class="c"><h4>Jeden zdroj pravdy</h4><p>Nové dáta = nový kanál. Zajtra unesie nájomné bývanie či zeleň.</p><small>kvalitu stráži audit · 52 kontrol</small></div>
+      <div class="c" style="text-align:right"><h4>1. fáza metodiky MIB</h4><p>Hlasy návštevníkov sa ukladajú ako dataset preferencií pre mesto.</p><small>participácia · živé čísla</small></div>
+    </div>
+  </div>
+</section>
+
+<canvas id="wallfx" aria-hidden="true"></canvas>
+<div id="grain"></div>
+
+<script src="geo.js"></script>
+<script>
+'use strict';
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ss=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10);};
+const Q=new URL(location).searchParams;
+if(Q.get('flat'))document.documentElement.classList.add('flat');
+
+/* ————— stránky / kroky ————— */
+const PGS=[...document.querySelectorAll('.pg')];
+const N=PGS.length;
+let STEP=clamp(+(Q.get('step')||0),0,N-1);
+const dots=document.getElementById('dots'),ticks=document.getElementById('ticks');
+PGS.forEach((_,i)=>{
+  const d=document.createElement('i');d.onclick=()=>go(i);dots.appendChild(d);
+  const s=document.createElement('s');ticks.appendChild(s);
+});
+const idxNo=document.querySelector('#idx .no b');
+
+function setActive(i){
+  PGS.forEach((p,j)=>{
+    p.classList.toggle('on',j===i);
+    if(j===i)requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('live')));
+    else p.classList.remove('live');
+  });
+  [...dots.children].forEach((d,j)=>d.classList.toggle('on',j===i));
+  [...ticks.children].forEach((t,j)=>t.classList.toggle('on',j<=i));
+  idxNo.textContent=String(i+1).padStart(3,'0');
+  countUp(PGS[i]);
+}
+function countUp(pg){
+  pg.querySelectorAll('.n[data-n]').forEach(el=>{
+    const tgt=+el.dataset.n,t0=performance.now();
+    const tickf=t=>{
+      const p=REDUCED?1:clamp((t-t0)/1300);
+      el.childNodes[0].nodeValue=Math.round(tgt*(1-Math.pow(1-p,4)));
+      if(p<1)requestAnimationFrame(tickf);
+    };
+    requestAnimationFrame(tickf);
+  });
+}
+
+/* ————— TEXT-WALL prechod (podľa referencie) ————— */
+const wallcv=document.getElementById('wallfx'),wgx=wallcv.getContext('2d');
+const DPR=Math.min(devicePixelRatio||1,2);
+let VW=innerWidth,VH=innerHeight;
+function fit(){VW=innerWidth;VH=innerHeight;
+  wallcv.width=VW*DPR;wallcv.height=VH*DPR;wallcv.style.width=VW+'px';wallcv.style.height=VH+'px';}
+fit();addEventListener('resize',fit);
+let WALL=null,woff=null,swapped=false,pend=-1;
+const WALLP=Q.get('wallp');
+function wallGo(i){
+  pend=i;
+  if(REDUCED){setActive(i);pend=-1;return;}
+  WALL={t0:performance.now(),txt:PGS[i].dataset.t};swapped=false;
+  woff=document.createElement('canvas');woff.width=VW*DPR;woff.height=VH*DPR;
+}
+function wallDraw(now){
+  if(WALLP!==null&&!WALL){WALL={t0:now,txt:PGS[STEP].dataset.t};swapped=true;}
+  if(!WALL)return;
+  let p=(now-WALL.t0)/1250;
+  if(WALLP!==null)p=+WALLP;
+  if(p>=.48&&!swapped){swapped=true;setActive(pend);pend=-1;}
+  if(p>=1){WALL=null;wgx.clearRect(0,0,wallcv.width,wallcv.height);return;}
+  const sheetIn=ss(Math.min(1,p*3.2)),sheetOut=ss(Math.max(0,(p-.74)*3.85));
+  const sheetX=(1-sheetIn)*VW-sheetOut*VW;
+  const A=Math.sin(Math.PI*clamp((p-.1)/.68));
+  const g=woff.getContext('2d');
+  g.setTransform(DPR,0,0,DPR,0,0);
+  g.fillStyle='#E9E8E4';g.fillRect(0,0,VW,VH);
+  const fs=Math.max(40,VH/6.2),rh=fs*1.16;
+  g.font=`700 ${fs}px "Space Grotesk",system-ui,sans-serif`;
+  g.textBaseline='middle';
+  const unit=WALL.txt+'   ';
+  const tw=Math.max(60,g.measureText(unit).width);
+  const rows=Math.ceil(VH/rh)+2;
+  for(let r=0;r<rows;r++){
+    const e=ss(clamp(p*2.9-r*.055));
+    const slide=(r%2?1:-1)*(1-e)*VW*.55;
+    g.fillStyle=r%2?'rgba(12,13,16,.26)':'#0C0D10';
+    const base=-((r*tw*.5)%tw)-tw+slide;
+    for(let x=base;x<VW+tw;x+=tw)g.fillText(unit,x,(r+.5)*rh-rh*.55);
+  }
+  wgx.setTransform(DPR,0,0,DPR,0,0);
+  wgx.clearRect(0,0,VW,VH);
+  wgx.save();wgx.translate(sheetX,0);
+  const map=y=>{const ny=(y/VH-.5)*2;return VH*(.5+(ny/2)*(1-A*.24*(1-ny*ny)));};
+  for(let y=0;y<VH;y+=4){
+    const sy=map(y),sy2=map(y+4),ny=(y/VH-.5)*2;
+    const sc=(1+A*.36*(1-ny*ny))*(1+A*.05);
+    wgx.drawImage(woff,0,sy*DPR,VW*DPR,Math.max(1,(sy2-sy))*DPR,(VW-VW*sc)/2,y,VW*sc,4.5);
+  }
+  wgx.restore();
+}
+
+/* ————— vstupy ————— */
+let lastIn=0;
+function go(i,man=true){
+  i=clamp(i,0,N-1);
+  if(i===STEP)return;
+  const now=performance.now();
+  if(now-lastIn<820)return;
+  lastIn=now;
+  STEP=i;
+  if(man&&autoT){clearTimeout(autoT);autoT=null;}
+  wallGo(i);
+  history.replaceState(null,'','?step='+i);
+}
+addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>18)go(STEP+(e.deltaY>0?1:-1));},{passive:true});
+addEventListener('keydown',e=>{
+  if(['ArrowDown','ArrowRight','PageDown',' '].includes(e.key))go(STEP+1);
+  if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key))go(STEP-1);
+  if(e.key==='Home')go(0);if(e.key==='End')go(N-1);
+});
+let ty0=null;
+addEventListener('touchstart',e=>{ty0=e.touches[0].clientY;},{passive:true});
+addEventListener('touchend',e=>{
+  if(ty0===null)return;
+  const dy=ty0-e.changedTouches[0].clientY;ty0=null;
+  if(Math.abs(dy)>46)go(STEP+(dy>0?1:-1));
+},{passive:true});
+document.getElementById('chev').onclick=()=>go(STEP+1);
+
+/* kiosk */
+const AUTO=+(Q.get('auto')||0);let autoT=null;
+function armAuto(){if(!AUTO||REDUCED)return;clearTimeout(autoT);
+  autoT=setTimeout(()=>{STEP=STEP+1<N?STEP+1:0;wallGo(STEP);armAuto();},(AUTO>1?AUTO:5.2)*1000);}
+armAuto();
+
+/* ————— živá mini-mapa vlny (dáta z geo.js) ————— */
+const F=BFGEO.features;
+const ring=BALINE.geometry.type==='Polygon'?BALINE.geometry.coordinates[0]:BALINE.geometry.coordinates[0][0];
+const K=Math.cos(48.14*Math.PI/180);
+const lons=ring.map(c=>c[0]),lats=ring.map(c=>c[1]);
+const mnX=Math.min(...lons),mxY=Math.max(...lats),mxX=Math.max(...lons),mnY=Math.min(...lats);
+const W2=(x,y)=>[(x-mnX)*K,(mxY-y)];
+const WW=(mxX-mnX)*K,WH=(mxY-mnY);
+const BND=ring.map(c=>W2(c[0],c[1]));
+const PLY=F.map((f,i)=>{
+  const g=f.geometry;
+  const rings=(g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(p=>p[0])).map(r=>r.map(c=>W2(c[0],c[1])));
+  const p=f.properties,[cx,cy]=W2(p.lon,p.lat);
+  return {rings,cx,cy,big:p.ha>=8,ha:p.ha,phase:(i*2.399)%6.283};
+});
+PLY.sort((a,b)=>b.cx-a.cx);
+PLY.forEach((pl,i)=>{pl.t=i/(PLY.length-1)*.82+((i*7)%10)/10*.12;});
+const RAMP=[[59,66,133],[23,179,163],[245,158,11],[255,233,184]];
+const stCol=s=>{
+  const t=clamp(s)*3,i=Math.min(2,Math.floor(t)),f=t-i,a=RAMP[i],b=RAMP[i+1];
+  return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
+};
+const wm=document.getElementById('wavemap'),wmx=wm.getContext('2d');
+const litEl=document.getElementById('wavelit');
+let wmT0=0;
+function wavemap(t){
+  const box=wm.parentElement.getBoundingClientRect();
+  if(box.width<10)return;
+  if(wm.width!==Math.round(box.width*DPR)){wm.width=box.width*DPR;wm.height=box.height*DPR;}
+  const w=box.width,h=box.height;
+  wmx.setTransform(DPR,0,0,DPR,0,0);
+  wmx.fillStyle='#07090F';wmx.fillRect(0,0,w,h);
+  const sc=Math.max(w/WW,h/WH)*1.02,ox=(w-WW*sc)/2,oy=(h-WH*sc)/2-h*.04;
+  const P=(x,y)=>[ox+x*sc,oy+y*sc];
+  if(!wmT0)wmT0=t;
+  const cyc=REDUCED?1:((t-wmT0)/12500)%1.3;                 /* vlna 9 s + 3 s výdrž, dokola */
+  const wv=clamp(cyc/1);
+  wmx.beginPath();BND.forEach(([x,y],i)=>{const[a,b]=P(x,y);i?wmx.lineTo(a,b):wmx.moveTo(a,b);});wmx.closePath();
+  wmx.fillStyle='rgba(13,17,34,.85)';wmx.fill();
+  wmx.strokeStyle='rgba(61,69,104,.7)';wmx.lineWidth=1.2;wmx.stroke();
+  if(typeof DANUBE!=='undefined'){
+    wmx.strokeStyle='rgba(42,62,120,.9)';wmx.lineWidth=Math.max(2.5,w*.006);wmx.lineCap='round';wmx.lineJoin='round';
+    for(const seg of DANUBE){wmx.beginPath();seg.forEach(([lo,la],i)=>{const[a,b]=P(...W2(lo,la));i?wmx.lineTo(a,b):wmx.moveTo(a,b);});wmx.stroke();}
+  }
+  let lit=0;
+  for(const pl of PLY){
+    const s=clamp((wv*1.5-pl.t)*2.6);
+    if(s>.55)lit++;
+    const pulse=s<.15?(.55+.3*Math.sin(t*.0016+pl.phase)):1;
+    if(s>.4){
+      const[a,b]=P(pl.cx,pl.cy);
+      const r=(Math.sqrt(pl.ha)*.0035+.004)*sc;
+      const gr=wmx.createRadialGradient(a,b,0,a,b,r);
+      gr.addColorStop(0,'rgba(255,233,184,'+(.5*clamp((s-.4)/.6))+')');gr.addColorStop(1,'transparent');
+      wmx.fillStyle=gr;wmx.beginPath();wmx.arc(a,b,r,0,7);wmx.fill();
+    }
+    wmx.fillStyle=stCol(s);
+    wmx.globalAlpha=Math.min(1,(.62+s*.38)*pulse);
+    wmx.beginPath();
+    for(const r of pl.rings){r.forEach(([x,y],i)=>{const[a,b]=P(x,y);i?wmx.lineTo(a,b):wmx.moveTo(a,b);});wmx.closePath();}
+    wmx.fill();wmx.globalAlpha=1;
+  }
+  litEl.textContent=lit;
+}
+
+/* ————— otočka: drag rotate ————— */
+const TURN_N=25,TURN=[];
+for(let i=0;i<TURN_N;i++){const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;TURN.push(im);}
+const turnimg=document.getElementById('turnimg'),turnstage=document.getElementById('turnstage');
+let tOff=13,tDrag=null,tShown=13;
+turnstage.addEventListener('pointerdown',e=>{tDrag={x0:e.clientX,o0:tOff};turnstage.style.cursor='grabbing';turnstage.setPointerCapture(e.pointerId);});
+turnstage.addEventListener('pointermove',e=>{if(tDrag)tOff=tDrag.o0+(e.clientX-tDrag.x0)/34;});
+const tEnd=()=>{tDrag=null;turnstage.style.cursor='grab';};
+turnstage.addEventListener('pointerup',tEnd);turnstage.addEventListener('pointercancel',tEnd);
+function turnTick(t){
+  const sway=REDUCED||tDrag?0:Math.sin(t*.00022)*1.1;
+  const i=((Math.round(tOff+sway)%TURN_N)+TURN_N)%TURN_N;
+  if(i!==tShown&&TURN[i].complete){tShown=i;turnimg.src=TURN[i].src;}
+}
+
+/* ————— kurzorová parallaxa hero/chipov ————— */
+let MX=0,MY=0,SMX=0,SMY=0;
+addEventListener('pointermove',e=>{MX=e.clientX/VW*2-1;MY=e.clientY/VH*2-1;});
+function parallax(){
+  SMX+=(MX-SMX)*.06;SMY+=(MY-SMY)*.06;
+  const pg=PGS[STEP];
+  if(REDUCED||!pg)return;
+  const st=pg.querySelector('.stage');
+  if(st&&!st.id)st.style.translate=`${(SMX*-9).toFixed(1)}px ${(SMY*-6).toFixed(1)}px`;
+  pg.querySelectorAll('.chip').forEach((c,i)=>{c.style.translate=`${(SMX*(7+i*3)).toFixed(1)}px ${(SMY*(4+i*2)).toFixed(1)}px`;});
+}
+
+/* ————— slučka ————— */
+function loop(t){
+  parallax();
+  if(STEP===3||WALLP!==null)wavemap(t);
+  if(STEP===5)turnTick(t);
+  wallDraw(t);
+  requestAnimationFrame(loop);
+}
+setActive(STEP);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
