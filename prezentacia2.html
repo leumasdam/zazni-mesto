@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V2 · ZAŽNI MESTO · Od nevyužitých území k živým štvrtiam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night-950:#05070F;--night-900:#0B0E1A;--night-800:#131729;--night-700:#1C2138;
+  --night-600:#2A3150;--night-500:#3D4568;
+  --indigo-700:#3B4285;--indigo-500:#5A61B5;--indigo-300:#8B91DD;
+  --teal-500:#17B3A3;--amber-500:#F59E0B;--amber-300:#FFB94A;
+  --warm-100:#FFF6E3;--warm-300:#FFE9B8;
+  --text-hi:#F4F2FF;--text-mid:#B4B7D4;--text-low:#767A9C;
+  --fd:'Space Grotesk',sans-serif;--ft:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --glass:rgba(11,14,26,.55);--glass-b:rgba(139,145,221,.22);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+html{background:var(--night-950)}
+body{font-family:var(--ft);color:var(--text-hi);background:transparent}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:inherit}
+
+/* ============ mesto (canvas) ============ */
+#city{position:fixed;inset:0;z-index:-2}
+#glcity{position:fixed;inset:0;width:100%;height:100%;z-index:-3}
+#vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse 105% 90% at 50% 42%,transparent 55%,rgba(5,7,15,.85));}
+#pfx{position:fixed;inset:0;z-index:30;pointer-events:none;mix-blend-mode:screen}
+/* kapitolové pozadia — video a fotky, nabiehajú podľa aktu */
+#chapvid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;will-change:transform,opacity,filter}
+/* biele panely — vyrollujú sa z boku (litvanyi/zenko štýl) */
+.wpanel{
+  position:fixed;inset:0;background:#F4F2EE;z-index:5;visibility:hidden;
+  transform:translateX(-104%);will-change:transform,opacity;
+  box-shadow:0 0 90px rgba(0,0,0,.4);
+}
+.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.88);
+  -webkit-backdrop-filter:blur(18px) saturate(115%);backdrop-filter:blur(18px) saturate(115%)}
+/* light mode obsahu na bielych paneloch */
+.ovl.light .head b{color:#101426}
+.ovl.light .deck .head{text-shadow:none}
+.ovl.light .head span{color:#C77800}
+.ovl.light .card{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);
+  box-shadow:0 14px 40px rgba(16,20,38,.10);backdrop-filter:none}
+.ovl.light .card h3{color:#101426}
+.ovl.light .card p{color:#5C5F78}
+.ovl.light .card .src{color:#75788C}
+.ovl.light .num{color:#101426}
+.ovl.light .num small{color:#C77800}
+.ovl.light .chanbar .ch{color:#5C5F78}
+.ovl.light .chanbar .ch b{color:#101426}
+.ovl.light .kcard b{color:#101426}
+.ovl.light .kcard span{color:#5C5F78}
+/* ilustrácia v decku — splynie s bielym panelom */
+.deckimg{max-width:1240px;margin:0 auto 10px}
+.deckimg img{display:block;max-width:100%;max-height:46vh;width:auto;margin:0 auto;mix-blend-mode:multiply}
+body.lightmode .brand,body.lightmode .tubamark,body.lightmode .hint{color:#101426}
+body.lightmode .brand em{color:#C77800}
+
+/* legenda: 4 stavy naživo + kanály */
+.grid4{grid-template-columns:repeat(4,1fr)!important}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:16px}
+.stdemo{height:96px;border-radius:14px;background:#0B0E1A;border:1px solid #1C2138;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+/* kanálové mini-demá (z manuálu) */
+.kcard{padding:16px 16px 14px}
+.kdemo{height:62px;border-radius:12px;background:#0B0E1A;border:1px solid #1C2138;
+  display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.kcard b{font-family:var(--fd);font-size:14px;display:block}
+.kcard span{font-family:var(--fm);font-size:10px;color:#9a9dae;letter-spacing:.06em}
+/* prvky z prototypu */
+.uistrip{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.uistrip .lbl{font-family:var(--fm);font-size:10.5px;letter-spacing:.16em;color:#9a9dae;text-transform:uppercase;margin-right:6px}
+.uip{font-family:var(--fm);font-size:11px;padding:7px 14px;border-radius:99px;background:#0B0E1A;
+  color:#B4B7D4;border:1px solid #2A3150;display:inline-flex;align-items:center;gap:7px}
+.uip.amber{color:#FFB94A;border-color:rgba(245,158,11,.5)}
+.uip.indigo{color:#8B91DD;border-color:#3B4285}
+.uip.risk{color:#FF7EB0;border-color:#E84B8A}
+.uiseg{display:inline-flex;background:#0B0E1A;border:1px solid #2A3150;border-radius:99px;padding:3px;gap:2px}
+.uiseg span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;padding:5px 12px;border-radius:99px;color:#767A9C}
+.uiseg span.on{background:var(--amber-500);color:#0B0E1A;font-weight:700}
+.parcel{width:64px;height:64px;border-radius:13px}
+@keyframes pulseSleep{0%,100%{opacity:.45}50%{opacity:.95}}
+.p-sleep{background:#3B4285;animation:pulseSleep 4s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.75}12%{opacity:1}20%{opacity:.68}34%{opacity:.95}55%{opacity:.8}70%{opacity:1}}
+.p-temp{background:#17B3A3;box-shadow:0 0 14px rgba(23,179,163,.5);animation:flick 5.5s ease-in-out infinite}
+@keyframes rise{0%,100%{box-shadow:0 0 8px rgba(245,158,11,.3)}50%{box-shadow:0 0 34px rgba(245,158,11,.8)}}
+.p-awake{background:#F59E0B;animation:rise 3s ease-in-out infinite}
+.p-alive{background:#FFE9B8;box-shadow:0 0 44px rgba(255,233,184,.55)}
+.chanbar{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center}
+.chanbar .ch{display:flex;align-items:center;gap:10px;font-family:var(--fm);font-size:11.5px;letter-spacing:.08em;color:var(--text-mid)}
+.chanbar .ch b{color:var(--text-hi);font-family:var(--fd);font-size:14px;letter-spacing:0}
+.chanbar .sw{width:16px;height:16px;border-radius:5px;flex:0 0 auto}
+
+/* obor kapitola */
+#ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(36px,6.2vw,92px);line-height:1;letter-spacing:-.025em;margin-bottom:26px}
+#ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4))}
+#ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
+
+/* turntable kapitola */
+#ovlTurn{display:flex;align-items:center;justify-content:center}
+.turnwrap{position:relative;width:min(92vh,1020px);height:min(92vh,1020px)}
+.turnhud{position:absolute;left:30px;bottom:24px;text-align:left;z-index:3}
+.turnhud .kicker{font-size:10.5px;letter-spacing:.26em}
+#turncv{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))}
+.callout{position:absolute;max-width:230px;opacity:0;will-change:transform,opacity}
+.callout b{font-family:var(--fd);font-size:15px;display:block;color:var(--warm-100)}
+.callout span{font-family:var(--fm);font-size:11px;color:var(--text-mid);line-height:1.6;display:block;margin-top:4px}
+.c1{left:-240px;top:22%}
+.c2{right:-240px;top:16%}
+.c3{left:-240px;bottom:24%}
+.c4{right:-240px;bottom:18%}
+/* vodiace čiary — od textu k objektu v scéne */
+.tlines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.tlines line{stroke:var(--amber-500);stroke-width:1.5;opacity:0;
+  filter:drop-shadow(0 0 5px rgba(245,158,11,.6))}
+.tlines .tdot{fill:var(--amber-300);opacity:0;filter:drop-shadow(0 0 6px rgba(245,158,11,.8))}
+@media (max-width:1100px){.callout{position:static;max-width:none;margin-top:8px}.tlines{display:none}.turnwrap{width:min(56vh,92vw);height:auto}}
+
+/* kapitolové captiony */
+.chapcap{
+  position:absolute;left:50%;bottom:56px;transform:translateX(-50%);
+  font-family:var(--fm);font-size:11.5px;letter-spacing:.24em;color:var(--warm-300);text-transform:uppercase;
+  text-shadow:0 2px 12px rgba(5,7,15,.9);white-space:nowrap;
+}
+.chapcap i{display:inline-block;width:40px;height:2px;background:currentColor;vertical-align:middle;margin:0 8px}
+
+/* prototyp v toku */
+#proto{position:relative;z-index:20;height:100vh}
+#proto iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#proto .badge{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:44px;z-index:5;
+  background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-b);
+  border-radius:20px;padding:13px 26px;font-family:var(--fd);font-weight:600;font-size:14px;
+  display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;
+}
+#proto .badge .dot{width:8px;height:8px;border-radius:50%;background:#5AE07A;box-shadow:0 0 10px #5AE07A}
+#proto .badge small{font-family:var(--fm);font-size:9.5px;color:var(--text-low);font-weight:400}
+
+/* ============ chrome ============ */
+.bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(139,145,221,.12)}
+.bar i{display:block;height:100%;width:0;background:var(--amber-500);box-shadow:0 0 10px rgba(245,158,11,.8)}
+.brand{position:fixed;top:22px;left:28px;z-index:60;font-family:var(--fd);font-weight:700;font-size:15px;letter-spacing:.05em}
+.brand em{font-style:normal;color:var(--amber-300)}
+.tubamark{position:fixed;top:22px;right:28px;z-index:60;display:flex;align-items:center;gap:12px;
+  font-family:var(--fd);font-weight:700;font-size:15px;color:var(--warm-100)}
+.tubamark i{display:block;height:2px;width:clamp(40px,6vw,96px);background:currentColor;border-radius:99px}
+.hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
+  font-family:var(--fm);font-size:10.5px;letter-spacing:.26em;color:var(--text-low);transition:opacity .6s}
+/* kroková navigácia */
+.steps-ui{position:fixed;right:26px;bottom:26px;z-index:70;display:flex;flex-direction:column;gap:8px}
+.steps-ui button{
+  width:46px;height:46px;border-radius:50%;background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-b);color:var(--text-mid);font-size:17px;transition:all .25s;
+}
+.steps-ui button:hover{color:var(--warm-100);border-color:var(--amber-500)}
+.dots{position:fixed;right:34px;top:50%;transform:translateY(-50%);z-index:70;display:flex;flex-direction:column;gap:9px}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(139,145,221,.32);transition:all .3s;cursor:pointer}
+.dots i.on{background:var(--amber-500);box-shadow:0 0 9px rgba(245,158,11,.8);transform:scale(1.45)}
+body.lightmode .dots i{background:rgba(16,20,38,.25)}
+body.lightmode .dots i.on{background:#C77800}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+.hint span{display:inline-block;animation:bob 1.6s infinite}
+
+/* ============ overlay vrstvy (fixed, riadené scrollom) ============ */
+.ovl{position:fixed;inset:0;z-index:20;pointer-events:none;opacity:0}
+.ovl>*{pointer-events:auto}
+
+/* 1 · PRITIAHNI — hero: obria typografia cez celý viewport */
+#ovlHero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ovlHero::before{content:'';position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+  width:120vmin;height:80vmin;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(245,158,11,.13),rgba(59,66,133,.08) 45%,transparent 70%)}
+#ovlHero .kicker{font-family:var(--fm);font-size:11.5px;letter-spacing:.34em;color:var(--amber-300);text-transform:uppercase}
+#ovlHero h1{display:flex;flex-direction:column;align-items:center;font-family:var(--fd);font-weight:700;
+  font-size:clamp(72px,15.5vw,236px);line-height:.88;letter-spacing:-.035em;margin:26px 0 8px;text-transform:uppercase}
+#ovlHero h1 .lit{color:var(--warm-100);text-shadow:0 0 90px rgba(255,233,184,.55),0 0 24px rgba(255,233,184,.25)}
+#ovlHero h1 .dim{color:transparent;-webkit-text-stroke:clamp(1.6px,.24vw,3.5px) var(--indigo-300);opacity:.9}
+.herorow{display:flex;align-items:center;gap:clamp(24px,4vw,64px);margin-top:36px;flex-wrap:wrap;justify-content:center}
+.herorow p{color:var(--text-mid);font-size:clamp(15px,1.5vw,19px);max-width:42ch;line-height:1.6;text-align:left;margin:0}
+#ovlHero .cta{
+  display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;
+  min-height:60px;padding:17px 34px;border-radius:99px;background:var(--amber-500);color:var(--night-950);
+  font-family:var(--fd);font-weight:700;font-size:17px;box-shadow:0 0 44px rgba(245,158,11,.35);transition:all .25s;
+}
+#ovlHero .cta:hover{background:var(--amber-300);box-shadow:0 0 70px rgba(245,158,11,.55)}
+/* zrnitý filmový materiál cez celú story */
+#grain{position:fixed;inset:-60%;z-index:31;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.65'/%3E%3C/svg%3E");
+  animation:grainShift .9s steps(2) infinite}
+@keyframes grainShift{0%{transform:translate(0,0)}50%{transform:translate(-11%,-7%)}100%{transform:translate(7%,10%)}}
+/* svetelný pulz projektora pri prepnutí kroku */
+#wallfx{position:fixed;inset:0;z-index:60;pointer-events:none}
+#flash{position:fixed;inset:0;z-index:32;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse 90% 60% at 50% 100%,rgba(255,233,184,.5),rgba(245,158,11,.12) 45%,transparent 70%)}
+
+/* kartové bloky — vždy v strede, vytlačené zdola */
+.ovl.mid{display:flex;align-items:center;justify-content:center}
+.deck{width:100%;padding:0 48px;will-change:transform,filter,opacity}
+.deck .head{text-shadow:0 2px 18px rgba(5,7,15,.9)}
+.deck .grid{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.ovl.moving .card{backdrop-filter:none}
+.card{
+  background:var(--glass);backdrop-filter:blur(18px) saturate(130%);
+  border:1px solid var(--glass-b);border-radius:20px;padding:26px 26px 24px;
+  box-shadow:0 16px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.card .num{font-family:var(--fd);font-weight:700;font-size:clamp(40px,4.6vw,62px);line-height:1;color:var(--warm-100)}
+.card .num small{font-size:.45em;color:var(--indigo-300);font-weight:600}
+.card h3{font-family:var(--fd);font-size:17px;margin:10px 0 6px}
+.card p{font-size:13px;color:var(--text-mid);line-height:1.55}
+.card .src{font-family:var(--fm);font-size:10px;color:var(--text-low);display:block;margin-top:12px;letter-spacing:.05em}
+.deck .head{max-width:1240px;margin:0 auto 26px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(34px,4.6vw,74px);line-height:1;letter-spacing:-.025em;overflow:hidden;display:inline-block;padding-bottom:.08em;margin-bottom:-.08em}
+.deck .head .rl{display:inline-block;font-style:normal;transform:translateY(112%);will-change:transform}
+.deck .head span{font-family:var(--fm);font-size:11px;letter-spacing:.3em;color:var(--amber-300);text-transform:uppercase}
+/* ghost numerál — mierka za obsahom */
+.deck{position:relative}
+.ghost{position:absolute;right:-10px;top:-.6em;z-index:-1;pointer-events:none;user-select:none;
+  font-family:var(--fd);font-weight:700;font-size:clamp(180px,28vw,440px);line-height:1;letter-spacing:-.04em;
+  color:transparent;-webkit-text-stroke:1.5px rgba(139,145,221,.20)}
+.ovl.light .ghost{-webkit-text-stroke:1.5px rgba(51,47,158,.13)}
+/* svetlý text na tme — jemná kompenzácia váhy */
+.card p{letter-spacing:.012em}
+#gridObjav .num,#gridPochop .num{font-size:clamp(56px,6.6vw,104px);letter-spacing:-.03em}
+#gridSkal .num{font-family:var(--fd);font-weight:700;font-size:clamp(46px,4.6vw,76px);line-height:1;letter-spacing:-.03em}
+
+/* 4 · PREDSTAV SI — HUD vlny */
+#ovlWave{display:flex;align-items:flex-end;justify-content:center;padding-bottom:52px}
+.wavehud{
+  display:flex;align-items:center;gap:22px;padding:16px 28px;border-radius:99px;
+  background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glass-b);
+  box-shadow:0 16px 50px rgba(0,0,0,.45);
+}
+.wavehud .cnt{font-family:var(--fd);font-weight:700;font-size:30px;min-width:150px}
+.wavehud .cnt small{font-size:13px;color:var(--text-mid);font-weight:400;font-family:var(--fm)}
+.wavehud .states{display:flex;gap:14px;font-family:var(--fm);font-size:10.5px;letter-spacing:.1em}
+.wavehud .st{display:flex;align-items:center;gap:7px;color:var(--text-low);transition:color .4s}
+.wavehud .st i{width:11px;height:11px;border-radius:50%;background:var(--night-500);transition:all .4s}
+.wavehud .st.on{color:var(--text-hi)}
+.wavehud .st.on i{box-shadow:0 0 10px currentColor}
+.wavehud .st1.on i{background:#3B4285}.wavehud .st2.on i{background:#17B3A3}
+.wavehud .st3.on i{background:#F59E0B}.wavehud .st4.on i{background:#FFE9B8}
+#ovlWave .note{position:absolute;left:50%;top:110px;transform:translateX(-50%);
+  font-family:var(--fm);font-size:11.5px;letter-spacing:.22em;color:var(--warm-300);text-transform:uppercase;
+  text-shadow:0 2px 12px rgba(5,7,15,.9)}
+
+/* 5 · ZAPOJ SA — v toku, koniec stránky */
+#zapoj{position:relative;z-index:20;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:120px 24px 90px}
+#zapoj .kicker{font-family:var(--fm);font-size:11.5px;letter-spacing:.28em;color:var(--amber-300);text-transform:uppercase}
+#zapoj h2{font-family:var(--fd);font-weight:700;font-size:clamp(34px,5.4vw,72px);line-height:1.05;margin:18px 0 14px}
+#zapoj h2 .lit{color:var(--warm-100);text-shadow:0 0 54px rgba(255,233,184,.45)}
+#zapoj p{color:var(--text-mid);max-width:54ch;line-height:1.65;font-size:16px}
+#zapoj .links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:34px}
+#zapoj .links a{
+  display:inline-flex;min-height:54px;align-items:center;padding:14px 26px;border-radius:99px;
+  border:1px solid var(--glass-b);background:var(--glass);backdrop-filter:blur(12px);
+  font-family:var(--fd);font-weight:600;font-size:14.5px;color:var(--text-mid);text-decoration:none;transition:all .25s;
+}
+#zapoj .links a:hover{color:var(--night-950);background:var(--amber-500);border-color:var(--amber-500)}
+#zapoj .foot{margin-top:36px;font-family:var(--fm);font-size:11px;color:var(--text-low);line-height:1.8}
+/* pás reálnych fotiek TU-BA vo finále */
+.livestrip{display:flex;gap:14px;margin-top:38px;justify-content:center;flex-wrap:wrap}
+.livestrip img{width:min(220px,27vw);aspect-ratio:4/3;object-fit:cover;
+  border:1px solid var(--glass-b);box-shadow:0 18px 50px rgba(0,0,0,.55);
+  transition:transform .35s ease,box-shadow .35s ease}
+.livestrip img:nth-child(1){transform:rotate(-2.2deg)}
+.livestrip img:nth-child(3){transform:rotate(2deg)}
+.livestrip img:hover{transform:scale(1.07) rotate(0);box-shadow:0 26px 70px rgba(0,0,0,.7);z-index:2;position:relative}
+.livecap{display:block;margin-top:14px;font-family:var(--fm);font-size:10.5px;letter-spacing:.14em;
+  color:var(--warm-300);text-transform:uppercase;text-shadow:0 2px 14px rgba(5,7,15,.95),0 0 4px rgba(5,7,15,.9)}
+.reveal{opacity:0;transform:translateY(28px);filter:blur(10px);
+  transition:opacity .9s ease,transform .9s ease,filter .9s ease}
+.reveal.in{opacity:1;transform:none;filter:blur(0)}
+
+/* 7c · VRSTVY SVETLA */
+.vrow{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center}
+.vrow>*,.vcards .card{min-width:0}
+/* VRSTVY — render rozrezaný na 4 registrované vrstvy, animované samostatne */
+.vstage{position:relative;height:min(62vh,600px);user-select:none}
+.vwrap{position:absolute;inset:0}
+.vlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;
+  will-change:transform,opacity,filter;-webkit-user-drag:none}
+.vtip{position:absolute;z-index:5;pointer-events:none;opacity:0;background:#101426;color:#FFF6E3;
+  font:600 11px/1.4 'JetBrains Mono',monospace;letter-spacing:.03em;padding:9px 13px;border-radius:9px;
+  white-space:nowrap;transform:translate(-50%,-135%);box-shadow:0 10px 28px rgba(16,20,38,.28)}
+.vhint{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);font:600 10px 'JetBrains Mono',monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:rgba(16,20,38,.4);white-space:nowrap}
+.deck .grid.vcards{grid-template-columns:1fr;gap:14px;margin:0}
+.vcards .card{padding:16px 20px 14px}
+.vcards .card h3{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:15.5px}
+.vcards .card h3 i{width:13px;height:13px;border-radius:4px;flex:0 0 auto;box-shadow:0 0 10px currentColor}
+.vcards .card.rule{background:rgba(16,20,38,.05);border-style:dashed}
+.vcards .card.rule p{font-size:13px}
+.ovl.light .vcards .card.rule p b{color:#101426}
+@media (max-width:1100px){.vrow{grid-template-columns:1fr;gap:12px}.vstage{height:32vh}.vhint{display:none}}
+@media (max-width:860px){
+  .vstage{height:24vh}
+  .vcards .card{padding:11px 14px 10px}
+  .vcards .card p{font-size:11.5px}
+  .vcards .card .src{margin-top:6px;font-size:9px}
+  #ovlVrstvy .head{margin-bottom:8px}
+  #ovlVrstvy .head b{font-size:19px}
+}
+
+/* rad troch obrov: SPÍ (klikací) · ZÍVA · BDIE */
+.oborrow{display:flex;gap:clamp(28px,6vw,110px);align-items:flex-end;justify-content:center;margin:8px 0 4px}
+.oborpose{display:flex;flex-direction:column;align-items:center;gap:4px}
+.oborpose svg{width:min(24vh,220px);height:min(24vh,220px)}
+.oborpose b{font-family:var(--fd);font-size:16px;letter-spacing:.08em;color:#B9BEF0;margin-top:6px}
+.oborpose span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;color:var(--text-low);text-transform:uppercase}
+.oborpose:not(#oborBig){opacity:.92}
+#oborBig{cursor:pointer;transition:filter .8s}
+#oborBig:hover svg{filter:drop-shadow(0 0 30px rgba(139,145,221,.35))}
+@media (max-width:860px){.oborrow{gap:16px}.oborpose svg{width:min(16vh,26vw);height:min(16vh,26vw)}}
+
+/* TU-BA render board nad kartami */
+.deckimg.board{max-width:760px}
+.deckimg.board img{mix-blend-mode:normal;background:#F4F2EE;padding:9px;max-height:32vh;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 4px 16px rgba(0,0,0,.4);border-radius:4px}
+
+/* otočka: HUD stupňov, drag, tieň pod modelom */
+.turnhud .deg{display:inline-block;margin-left:12px;font-family:var(--fm);font-size:12px;color:var(--amber-300);
+  letter-spacing:.1em;min-width:44px;text-align:left}
+.turnhud .draghint{display:block;margin-top:5px;font-family:var(--fm);font-size:10px;letter-spacing:.2em;
+  color:var(--text-low);text-transform:uppercase}
+.turnwrap{cursor:grab;touch-action:pan-y}
+.turnwrap.grab{cursor:grabbing}
+.turnwrap::after{content:'';position:absolute;left:14%;right:14%;bottom:4%;height:7%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 70%);z-index:-1}
+
+/* finále — nočná fotka miestnosti */
+#finalebg{position:fixed;inset:0;z-index:8;visibility:hidden;opacity:0;overflow:hidden;pointer-events:none}
+#finalebg img{width:100%;height:100%;object-fit:cover;will-change:transform}
+#finalebg::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 55% at 50% 44%,rgba(5,7,15,.55),transparent 75%),
+  linear-gradient(180deg,rgba(5,7,15,.78),rgba(5,7,15,.5) 42%,rgba(5,7,15,.82))}
+
+/* mikrointerakcie: hover kariet (bez transformu — ten patrí choreografii) */
+.card{transition:border-color .3s,box-shadow .3s}
+.ovl .card:hover{border-color:rgba(245,158,11,.5);box-shadow:0 22px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.09)}
+.ovl.light .card:hover{border-color:rgba(199,120,0,.45);box-shadow:0 18px 46px rgba(16,20,38,.16)}
+#ctaStart,#zapoj .links a{will-change:transform}
+
+/* hero entrance — blur-in stagger pri načítaní */
+#ovlHero .kicker,#ovlHero h1,#ovlHero p,#ovlHero .cta{opacity:0;animation:heroIn 1.1s ease forwards}
+#ovlHero h1{animation-delay:.25s}
+#ovlHero p{animation-delay:.55s}
+#ovlHero .cta{animation-delay:.85s}
+@keyframes heroIn{from{opacity:0;transform:translateY(26px);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
+
+/* reduced motion fallback */
+@media (prefers-reduced-motion:reduce){
+  .hint span{animation:none}
+  #grain{animation:none}
+  #ovlHero .kicker,#ovlHero h1,#ovlHero .herorow p,#ovlHero .cta{animation:none;opacity:1}
+}
+@media (max-width:860px){
+  .ghost{display:none}
+  .herorow{flex-direction:column;gap:18px}
+  .herorow p{text-align:center}
+  .chapcap{white-space:normal;max-width:88vw;text-align:center;line-height:1.7}
+  .turnhead{white-space:normal;max-width:92vw}
+  .hint{white-space:nowrap}
+  .deck{padding:20px 16px 28px}
+  .deck .grid{grid-template-columns:1fr;gap:12px}
+  .card{padding:18px}
+  .wavehud{flex-direction:column;gap:10px;border-radius:22px;padding:14px 20px}
+  #ovlHero h1{font-size:13vw}
+}
+</style>
+</head>
+<body>
+
+<canvas id="city"></canvas>
+<video id="chapvid" muted loop playsinline preload="metadata" src="assets/hero.mp4"></video>
+<div id="panelL" class="wpanel"></div>
+<div id="panelR" class="wpanel"></div>
+<div id="panelB" class="wpanel wpanelB"></div>
+<div id="finalebg"><img src="assets/hrad-okno.png" alt=""></div>
+<div id="grain"></div>
+<canvas id="wallfx" aria-hidden="true"></canvas>
+<div id="flash"></div>
+<div id="vignette"></div>
+<canvas id="pfx"></canvas>
+
+<div class="bar"><i id="bar"></i></div>
+<span class="brand">ZAŽNI <em>MESTO</em></span>
+<span class="tubamark">TU<i></i>BA</span>
+<span class="hint" id="hint"><span>SCROLLUJ — ROZSVECUJEŠ ↓</span></span>
+
+<!-- 1 · PRITIAHNI -->
+<div class="ovl" id="ovlHero">
+  <span class="kicker">MIB · TU-BA · interaktívna expozícia brownfieldov · web = pokračovanie</span>
+  <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
+  <div class="herorow">
+    <p>Od nevyužitých území k živým štvrtiam.
+    Pod týmto textom spí <b style="color:var(--warm-100)" id="heroN">113</b> skutočných miest z registra MIB — a tvoj scroll ich rozsvieti.</p>
+    <button class="cta" id="ctaStart">☀ Rozsvietiť mesto <span>↓</span></button>
+  </div>
+</div>
+
+<!-- 2 · OBJAV — čísla -->
+<div class="ovl mid" id="ovlObjav">
+  <div class="deck">
+    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Koľko mesta spí</b></div>
+    <div class="grid" id="gridObjav">
+      <div class="card">
+        <div class="num" data-n="113">0</div>
+        <h3>brownfieldov</h3>
+        <p>Toľko zhasnutých miest eviduje register. A klesá — v 2019 ich bolo 131. Mesto sa prebúdza; my mu dávame vypínač.</p>
+        <span class="src">register BF · MIB · aktualizácia 2022</span>
+      </div>
+      <div class="card">
+        <div class="num" data-n="580">0<small> ha</small></div>
+        <h3>spiacej plochy</h3>
+        <p>Súčet výmer všetkých polygónov, ktoré práve vidíš pulzovať. V 2019: 629 ha.</p>
+        <span class="src">pole VYMERA_HA · súčet 579,4 ha</span>
+      </div>
+      <div class="card">
+        <div class="num" data-n="800">0</div>
+        <h3>futbalových ihrísk</h3>
+        <p>Aby si tú plochu vedel predstaviť. Šestnásť území je významných: Palma, Mlynské nivy, Istrochem, Filiálka, Matador, Nové Lido…</p>
+        <span class="src">prepočet 0,72 ha / ihrisko</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 · POCHOP — vlastníctvo -->
+<div class="ovl mid" id="ovlPochop">
+  <div class="deck">
+    <span class="ghost">03</span><div class="head"><span>03 · Pochop</span><b>Kto drží kľúč</b></div>
+    <div class="grid" id="gridPochop">
+      <div class="card">
+        <div class="num" data-n="56">0</div>
+        <h3>kľúčov drží súkromník</h3>
+        <p>Takmer polovica území — 49,6 % počtu, 45,9 % plochy. Na mape sa im práve rozžiarili obrysy. Najväčšia prekážka revitalizácie.</p>
+        <span class="src">pole DRUH_VLA · súkromní vlastníci</span>
+      </div>
+      <div class="card">
+        <div class="num" data-n="13">0<small> +11+8</small></div>
+        <h3>mesto · štát · mix</h3>
+        <p>Mesto priamo kontroluje len 5,5 % plochy brownfieldov. Preto sa revitalizácia nedá nariadiť — dá sa len vyjednať.</p>
+        <span class="src">13 mesto · 11 štát · 8 mesto+súkromník · 25 iné</span>
+      </div>
+      <div class="card">
+        <div class="num" data-n="66">0</div>
+        <h3>už má zámer</h3>
+        <p>Územia, na ktoré sa niekto pozrel — ohlásený projekt, súťaž, zmena územného plánu. Pozornosť je prvé svetlo: presne tie sa prebúdzajú prvé.</p>
+        <span class="src">pole ZAMER · 66 so zámerom / 47 bez</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 · PREDSTAV SI — HUD svetelnej vlny -->
+<div class="ovl" id="ovlWave">
+  <div class="note" id="waveNote">04 · Predstav si — svetlo ide mestom od východu</div>
+  <div class="wavehud">
+    <div class="cnt"><span id="litN">0</span><small> / 113 svieti</small></div>
+    <div class="states">
+      <span class="st st1" id="hs1"><i></i>SPÍ</span>
+      <span class="st st2" id="hs2"><i></i>DRIEME</span>
+      <span class="st st3" id="hs3"><i></i>PREBÚDZA SA</span>
+      <span class="st st4" id="hs4"><i></i>ŽIJE</span>
+    </div>
+  </div>
+</div>
+
+<!-- 6 · JAZYK SVETLA — legenda a vysvetlivky -->
+<div class="ovl light mid" id="ovlLegenda">
+  <div class="deck">
+    <span class="ghost">05</span><div class="head"><span>05 · Jazyk svetla</span><b>Ako čítať mesto</b></div>
+    <div id="gridLegenda">
+      <div class="grid grid4">
+        <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne · pulz 4 s</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-temp"></div></div><h3>DRIEME</h3><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">state.temporary · teal · flicker</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-awake"></div></div><h3>PREBÚDZA SA</h3><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">66 so zámerom · amber · glow-rise 3 s</span></div>
+        <div class="card"><div class="stdemo"><div class="parcel p-alive"></div></div><h3>ŽIJE</h3><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">26 vyradených od 2019 · warm</span></div>
+      </div>
+      <div class="grid5">
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3B4285,#F59E0B 65%,#FFE9B8)"></div></div><b>FARBA</b><span>stav · jas = život</span></div>
+        <div class="card kcard"><div class="kdemo"><svg width="34" height="34" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg></div><b>IKONA</b><span>typológia · 10 obrov</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:#3B4285;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 4px,#E84B8A 4px,#E84B8A 6px);opacity:.85"></div></div></div><b>VZOR</b><span>riziko · 15 záťaží</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;border:2.5px dashed #FFE9B8"></div></div><b>OBRYS</b><span>vlastníctvo · kto drží kľúč</span></div>
+        <div class="card kcard"><div class="kdemo"><div style="display:flex;align-items:flex-end;gap:6px"><div style="width:14px;height:14px;border-radius:5px;background:#3B4285"></div><div style="width:30px;height:30px;border-radius:8px;background:#3B4285;border:1.5px solid #8B91DD"></div></div></div><b>MIERKA</b><span>význam · 16 BF s menovkou</span></div>
+      </div>
+      <div class="card uistrip">
+        <span class="lbl">Prvky priamo z prototypu →</span>
+        <span class="uip indigo">😴 SPÍ · potenciál C</span>
+        <span class="uip amber">🌅 PREBÚDZA SA</span>
+        <span class="uip amber">★ 12 hlasov</span>
+        <span class="uip risk">⚠ Kontaminované (15)</span>
+        <span class="uip">obri 8+ ha</span>
+        <span class="uiseg"><span>MINULOSŤ</span><span class="on">DNES</span><span>BUDÚCNOSŤ</span></span>
+        <span class="uip" style="border-style:dashed">Kto drží kľúč · Súkromní vlastníci</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 · OBOR -->
+<div class="ovl" id="ovlObor">
+  <h2>Každý brownfield<br>je <span style="color:var(--warm-100)">spiaci obor</span></h2>
+  <div class="oborrow">
+    <div class="oborpose oborbox" id="oborBig">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g id="obAura" opacity="0" style="transition:opacity .8s">
+          <circle cx="48" cy="52" r="42" fill="rgba(245,158,11,.09)"/>
+          <path d="M10 38l-7-4M86 38l7-4M48 6V-2M20 14l-5-6M76 14l5-6" stroke="#FFB94A" stroke-width="2.6"/>
+        </g>
+        <g id="obBody" stroke="#8B91DD" stroke-width="3" style="transition:stroke .8s">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <g id="obSleep" style="transition:opacity .5s">
+          <path d="M34 60h7M50 60h7" stroke="#B9BEF0" stroke-width="3.2"/>
+          <path d="M42 70q4 3 8 0" stroke="#B9BEF0" stroke-width="2.4" opacity=".6"/>
+          <text x="66" y="24" fill="#8B91DD" font-family="monospace" font-size="10">z z</text>
+        </g>
+        <g id="obAwake" opacity="0" style="transition:opacity .5s">
+          <circle cx="37.5" cy="60" r="3.6" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.6" fill="#FFF6E3"/>
+          <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
+        </g>
+      </svg>
+      <b id="oborLbl1">SPÍ</b><span>bez zámeru · ťukni a zobuď</span>
+    </div>
+    <div class="oborpose">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g stroke="#17B3A3" stroke-width="3">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <path d="M34 60h7" stroke="#3FE0CE" stroke-width="3.2"/>
+        <circle cx="53.5" cy="60" r="3" stroke="#3FE0CE" stroke-width="2.6"/>
+        <ellipse cx="46" cy="71" rx="4" ry="5.5" stroke="#3FE0CE" stroke-width="2.6"/>
+        <path d="M24 20q-3-6 2-9M32 20q3-6-2-9" stroke="#3FE0CE" stroke-width="2" opacity=".6"/>
+      </svg>
+      <b style="color:#3FE0CE">ZÍVA</b><span>drieme · dočasné využitie</span>
+    </div>
+    <div class="oborpose">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="48" cy="52" r="40" fill="rgba(245,158,11,.08)"/>
+        <g stroke="#FFB94A" stroke-width="3">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <circle cx="37.5" cy="60" r="3.4" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.4" fill="#FFF6E3"/>
+        <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8"/>
+        <path d="M12 40l-6-4M84 40l6-4M48 8V2M22 16l-4-5M74 16l4-5" stroke="#FFB94A" stroke-width="2.4" opacity=".8"/>
+      </svg>
+      <b style="color:#FFB94A">BDIE</b><span>zámer v registri</span>
+    </div>
+  </div>
+  <p class="sub" id="oborHint">obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú</p>
+</div>
+
+<!-- 7b · TURNTABLE — expozícia z každej strany -->
+<div class="ovl" id="ovlTurn">
+  <div class="turnwrap">
+    <div class="turnhud">
+      <span class="kicker">06 · Priestor<span class="deg" id="turnDeg">0°</span></span>
+      <span class="draghint">✋ potiahni obraz — otočíš si sám</span>
+    </div>
+    <canvas id="turncv" aria-label="Model expozície TU-BA — otočný pohľad"></canvas>
+    <svg class="tlines" aria-hidden="true">
+      <line id="tl1" x1="-4%" y1="27%" x2="44%" y2="45%"/><circle id="td1" class="tdot" cx="44%" cy="45%" r="3"/>
+      <line id="tl2" x1="104%" y1="21%" x2="69.5%" y2="47.5%"/><circle id="td2" class="tdot" cx="69.5%" cy="47.5%" r="3"/>
+      <line id="tl3" x1="-4%" y1="79%" x2="23.5%" y2="52%"/><circle id="td3" class="tdot" cx="23.5%" cy="52%" r="3"/>
+      <line id="tl4" x1="104%" y1="85%" x2="45.5%" y2="59.5%"/><circle id="td4" class="tdot" cx="45.5%" cy="59.5%" r="3"/>
+    </svg>
+    <div class="callout c1"><b>FYZICKÝ MODEL</b><span>projekcia stavov zhora — model JE mapa</span></div>
+    <div class="callout c2"><b>TABLETY / AR</b><span>osobný ďalekohľad: minulosť · dnes · budúcnosť</span></div>
+    <div class="callout c3"><b>NÁVŠTEVNÍK</b><span>hlas rozsvieti model — a stane sa dátami pre MIB</span></div>
+    <div class="callout c4"><b>DOTYKOVÁ OBRAZOVKA</b><span>dirigent pri hrane — ovládaš od okraja, aj z vozíka</span></div>
+  </div>
+</div>
+
+<!-- 7c · VRSTVY SVETLA — anatómia projekcie (biely panel) -->
+<div class="ovl light mid" id="ovlVrstvy">
+  <div class="deck">
+    <span class="ghost">07</span><div class="head"><span>07 · Projekcia nad mestom</span><b>Vrstvy svetla</b></div>
+    <div class="vrow">
+      <div class="vstage" id="vstage" aria-label="Interaktívny explodovaný pohľad: tri dátové vrstvy svetla nad fyzickým modelom mesta">
+        <div class="vwrap" id="vwrap">
+          <img class="vlay" data-l="0" src="assets/vrstvy-l0.png" alt="Fyzický model mesta — projekčné plátno" draggable="false">
+          <img class="vlay" data-l="1" src="assets/vrstvy-l1.png" alt="Vrstva 01 — STAVY: svetlo parciel z registra" draggable="false">
+          <img class="vlay" data-l="2" src="assets/vrstvy-l2.png" alt="Vrstva 02 — RIZIKO: šrafy envirozáťaží" draggable="false">
+          <img class="vlay" data-l="3" src="assets/vrstvy-l3.png" alt="Vrstva 03 — TYPOLÓGIA: ikony a menovky" draggable="false">
+        </div>
+        <div class="vtip" id="vtip"></div>
+        <span class="vhint">prejdi vrstvou — popis</span>
+      </div>
+      <div class="grid vcards" id="gridVrstvy">
+        <div class="card vk"><h3><i style="background:#5A61B5"></i>STAVY — svetlo</h3><p>Základná vrstva: jas parcely = miera života. Spí → drieme → prebúdza sa → žije, priamo z registra.</p><span class="src">polia ZAMER · P_VYUZITIE · 113 polygónov</span></div>
+        <div class="card vk"><h3><i style="background:#E84B8A"></i>RIZIKO — šrafy</h3><p>15 environmentálnych záťaží ako vzor, nie farba. Preto sa vrstvy nikdy nebijú — každá má vlastný grafický atribút.</p><span class="src">pole KONTAMIN · SEZ_POPIS</span></div>
+        <div class="card vk"><h3><i style="background:#F59E0B"></i>TYPOLÓGIA + MENOVKY</h3><p>Ikony obrov a mená 13 území nad 8 ha. Mierka ikony = význam územia.</p><span class="src">pole PR_VYU_POP · VYMERA_HA</span></div>
+        <div class="card vk rule"><p><b>Jedno pravidlo scény:</b> projektory kreslia len dáta. Vrstvy sa zapínajú z dotykovej obrazovky — a rovnaké tokeny číta model, tablet aj web.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 · VIDEO kapitola -->
+<div class="ovl" id="ovlVideo">
+  <span class="chapcap">expozícia v pohybe · simulácia priestoru TU<i></i>BA · takto to kreslia projektory</span>
+</div>
+
+<!-- 9 · TU-BA naživo + médiá -->
+<div class="ovl light mid" id="ovlTuba">
+  <div class="deck">
+    <div class="deckimg"><img src="assets/tuba-priestor.png" alt="Priestor TU-BA: projektory, fyzický model, tablety/AR, dotyková obrazovka, stena budúcnosti"></div>
+    <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
+    <div class="grid" id="gridTuba">
+      <div class="card"><h3>Model je mapa.</h3><p>Scéna pre všetkých — priestor, stavy, svetlo. Nič ju nesupluje.</p><span class="src">projekčný mapping · kalibrácia raz</span></div>
+      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Jediná mení, čo svieti — vrstvy, filtre, čas. Tablet je ďalekohľad: detail, AR minulosť·dnes·budúcnosť; scénu neprepíše, vie len poprosiť „ukáž na modeli".</p><span class="src">websocket · master scény</span></div>
+      <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy vedie presne na túto stránku — mesto si rozsvietiš doma. Hlasy sa ukladajú ako dataset pre MIB.</p><span class="src">1. fáza metodiky: participácia</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 · ŠKÁLOVATEĽNOSŤ -->
+<div class="ovl light mid" id="ovlSkal">
+  <div class="deck">
+    <div class="deckimg"><img src="assets/slucka.png" alt="Zážitková slučka: Pritiahni · Objav · Pochop · Predstav si · Zapoj sa — 5 krokov, 4 minúty, jeden rozsvietený obor" loading="lazy"></div>
+    <span class="ghost">09</span><div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
+    <div class="grid grid4" id="gridSkal">
+      <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
+      <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
+      <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 51 kontrol</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 · ŽIVÝ PROTOTYP (overlay krok) -->
+<div class="ovl" id="ovlProto" style="z-index:22">
+  <div id="proto" style="position:absolute;inset:0">
+    <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
+    <div class="badge">
+      <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — klikaj priamo do prototypu · ďalej šípkami vpravo dole</span>
+      <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
+    </div>
+  </div>
+</div>
+
+<!-- ovládanie krokov -->
+<div class="steps-ui">
+  <button id="stepUp" aria-label="Predošlý krok">↑</button>
+  <button id="stepDn" aria-label="Ďalší krok">↓</button>
+</div>
+<div class="dots" id="dots"></div>
+
+<!-- 5 · ZAPOJ SA (overlay krok) -->
+<div class="ovl" id="ovlZapoj" style="overflow:auto">
+<section id="zapoj">
+  <span class="kicker reveal">05 · Zapoj sa</span>
+  <h2 class="reveal">Rozsvietil si mesto.<br><span class="lit">Teraz prebuď obra naozaj.</span></h2>
+  <p class="reveal">Na expozícii v TU-BA to isté urobíš dotykom: vyberieš územie, spoznáš jeho príbeh
+  a hlasom rozhodneš, čo tu má vyrásť. Každý hlas svieti na fyzickom modeli — a stáva sa dátami pre MIB.</p>
+  <div class="links reveal">
+    <a href="obrazovka.html">Prototyp expozície ↗</a>
+    <a href="index.html">Dizajn manuál ↗</a>
+    <a href="obri.html">Spiaci obri ↗</a>
+  </div>
+  <div class="livestrip reveal">
+    <img src="assets/tuba-live-1.jpg" alt="Plná miestnosť TU-BA počas talku" loading="lazy">
+    <img src="assets/tuba-live-2.jpg" alt="Návštevníci pri fyzickom modeli Bratislavy" loading="lazy">
+    <img src="assets/tuba-live-3.jpg" alt="Diskusia nad modelom v TU-BA" loading="lazy">
+  </div>
+  <span class="livecap reveal">toto nie je render — reálny TU-BA na talku o brownfieldoch; expozícia príde do plnej miestnosti</span>
+  <p class="foot reveal">dáta: register brownfieldov MIB (BF_aktualizácia_2022, ArcGIS) · 113 polygónov, žiadna ilustrácia<br>
+  ZAŽNI MESTO · koncept pre TU-BA · leumasdam.github.io/zazni-mesto · júl 2026</p>
+</section>
+</div>
+
+<script src="geo.js"></script>
+<script src="vendor/zazni-gl.js"></script>
+<script>
+/* ============================================================
+   ZAŽNI MESTO · scroll-story — mesto sa rozsvecuje scrollom
+   Reálne polygóny z geo.js; stav = f(scroll):
+   spí (indigo·pulz) → drieme (teal) → prebúdza sa (amber) → žije (teplá biela)
+   ============================================================ */
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ---------- dáta ---------- */
+const F=BFGEO.features;
+const N=F.length;
+const ring=BALINE.geometry.type==='Polygon'?BALINE.geometry.coordinates[0]:BALINE.geometry.coordinates[0][0];
+const lat0=48.14,K=Math.cos(lat0*Math.PI/180);
+const lons=ring.map(c=>c[0]),lats=ring.map(c=>c[1]);
+const mnX=Math.min(...lons),mxX=Math.max(...lons),mnY=Math.min(...lats),mxY=Math.max(...lats);
+const W2=(x,y)=>[(x-mnX)*K,(mxY-y)];            /* svet: km-ekvivalent v stupňoch */
+const WORLD_W=(mxX-mnX)*K, WORLD_H=(mxY-mnY);
+
+const boundaryW=ring.map(c=>W2(c[0],c[1]));
+function inBA(x,y){ /* bod v hraniciach (lon/lat) */
+  let ins=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const [xi,yi]=ring[i],[xj,yj]=ring[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;
+  }
+  return ins;
+}
+
+/* polygóny vo svetových súradniciach + poradie vlny (od východu) */
+const POLY=F.map((f,i)=>{
+  const g=f.geometry;
+  const rings=(g.type==='Polygon'?[g.coordinates[0]]:g.coordinates.map(p=>p[0]))
+    .map(r=>r.map(c=>W2(c[0],c[1])));
+  const p=f.properties;
+  return {rings,p,cx:W2(p.lon,p.lat)[0],cy:W2(p.lon,p.lat)[1],
+    big:p.ha>=8,phase:(i*2.399)%(Math.PI*2)};
+});
+POLY.sort((a,b)=>b.cx-a.cx);                     /* východ → západ */
+POLY.forEach((pl,i)=>{pl.t=i/(N-1)*.82+((i*7)%10)/10*.12;});   /* prah prebudenia + jemný jitter */
+
+/* mestské svetlá (kontext) */
+const DOTS=[];{
+  let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
+  let n=0,tries=0;
+  while(n<420&&tries<9000){
+    tries++;
+    const lon=mnX+rnd()*(mxX-mnX),lat=mnY+rnd()*(mxY-mnY);
+    const dc=Math.hypot((lon-17.11)/(mxX-mnX),(lat-48.15)/(mxY-mnY));
+    if(rnd()<dc*1.8||!inBA(lon,lat))continue;
+    const [x,y]=W2(lon,lat);
+    DOTS.push({x,y,r:.0006+rnd()*.0013,o:.12+rnd()*.5,tw:rnd()*6.28});
+    n++;
+  }
+}
+
+/* ---------- canvas ---------- */
+const cv=document.getElementById('city'),cx=cv.getContext('2d');
+let DPR=1,VW=0,VH=0,BASE=0,OX=0,OY=0;
+function fit(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  VW=innerWidth;VH=innerHeight;
+  cv.width=VW*DPR;cv.height=VH*DPR;
+  cv.style.width=VW+'px';cv.style.height=VH+'px';
+  BASE=Math.max(VW/WORLD_W,VH/WORLD_H)*1.06;     /* cover */
+  OX=(VW-WORLD_W*BASE)/2;OY=(VH-WORLD_H*BASE)/2;
+}
+fit();addEventListener('resize',()=>{fit();});
+
+/* glow sprite */
+const GLOW=document.createElement('canvas');GLOW.width=GLOW.height=160;{
+  const g=GLOW.getContext('2d');
+  const gr=g.createRadialGradient(80,80,0,80,80,80);
+  gr.addColorStop(0,'rgba(255,233,184,.55)');gr.addColorStop(.5,'rgba(255,196,90,.18)');gr.addColorStop(1,'transparent');
+  g.fillStyle=gr;g.fillRect(0,0,160,160);
+}
+
+/* farebná rampa stavov: 0 spí → .33 drieme → .66 prebúdza → 1 žije */
+const RAMP=[[59,66,133],[23,179,163],[245,158,11],[255,233,184]];
+function stateColor(s){
+  const t=clamp(s)*3, i=Math.min(2,Math.floor(t)), f=t-i;
+  const a=RAMP[i],b=RAMP[i+1];
+  return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
+}
+
+/* ---------- VRSTVY SVETLA — render rozrezaný na 4 vrstvy, každá žije samostatne ---------- */
+const vstage=document.getElementById('vstage'),vwrap=document.getElementById('vwrap'),
+      vtip=document.getElementById('vtip');
+const vlays=[...document.querySelectorAll('.vlay')];
+const VST={foc:-1,fk:[0,0,0,0],tipO:0,tipT:0};
+const VCNT={awake:POLY.filter(pl=>pl.p.plan===1).length,
+            sez:POLY.filter(pl=>pl.p.sez===1).length,
+            big:POLY.filter(pl=>pl.big).length};
+const VINFO=[
+  'fyzický model — projekčné plátno expozície',
+  `STAVY · ${VCNT.awake} so zámerom svieti, ${N-VCNT.awake} spí — jas číta register`,
+  `RIZIKO · ${VCNT.sez} envirozáťaží — šrafy sú vzor, nie farba`,
+  `TYPOLÓGIA · ikony a menovky, ${VCNT.big} obrov ≥ 8 ha`];
+/* hit-test: alfa kanály vrstiev vo zmenšených canvasoch */
+const VA_W=240,VA_H=161;
+const valpha=vlays.map(()=>null);
+vlays.forEach((im,i)=>{
+  const grab=()=>{try{
+    const c=document.createElement('canvas');c.width=VA_W;c.height=VA_H;
+    const g=c.getContext('2d',{willReadFrequently:true});
+    g.drawImage(im,0,0,VA_W,VA_H);
+    valpha[i]=g.getImageData(0,0,VA_W,VA_H).data;
+  }catch(e){}};
+  im.complete&&im.naturalWidth?grab():im.addEventListener('load',grab);
+});
+function vhit(e){                                  /* ktorá vrstva je pod kurzorom (zhora dole) */
+  const b=vwrap.getBoundingClientRect();
+  const sc=Math.min(b.width/1199,b.height/803);
+  const ox=(b.width-1199*sc)/2, oy=(b.height-803*sc)/2;
+  const ix=(e.clientX-b.left-ox)/sc, iy=(e.clientY-b.top-oy)/sc;
+  if(ix<0||iy<0||ix>=1199||iy>=803)return -1;
+  const px=(Math.floor(iy/803*VA_H)*VA_W+Math.floor(ix/1199*VA_W))*4+3;
+  for(let i=3;i>=0;i--)if(valpha[i]&&valpha[i][px]>40)return i;
+  return -1;
+}
+if(vstage){
+  vstage.addEventListener('pointermove',e=>{
+    const h=vhit(e);
+    VST.foc=h;
+    if(h>=0){
+      VST.tipT=1;vtip.textContent=VINFO[h];
+      const b=vstage.getBoundingClientRect();
+      vtip.style.left=clamp(e.clientX-b.left,80,b.width-80)+'px';
+      vtip.style.top=(e.clientY-b.top)+'px';
+    }else VST.tipT=0;
+  });
+  vstage.addEventListener('pointerleave',()=>{VST.foc=-1;VST.tipT=0;});
+  /* karty vpravo ovládajú fokus vrstiev (karta i → vrstva i+1) */
+  [...document.querySelectorAll('#gridVrstvy .card.vk:not(.rule)')].forEach((card,i)=>{
+    if(i>2)return;
+    card.addEventListener('pointerenter',()=>{VST.foc=i+1;});
+    card.addEventListener('pointerleave',()=>{if(VST.foc===i+1)VST.foc=-1;});
+  });
+}
+const VFLOAT=[0,.9,2.3,3.4];                       /* dýchanie: indigo minimálne (nesie prekryv mesta) */
+const VLIFT=[0,3,9,14];                            /* fokus: vyzdvihnutie vrstvy */
+function vstackUpdate(vp,t){
+  if(!vstage)return;
+  if(vp<=0||vp>=1){vstage.style.visibility='hidden';return;}
+  vstage.style.visibility='visible';
+  for(let i=0;i<4;i++){
+    const en=ss(clamp(vp*4-.3*i));                 /* mesto → stavy → riziko → typológia, dosadne pri dojazde */
+    const tgt=VST.foc===i?1:(VST.foc>0&&i>0?-1:0); /* fokus stlmí len ostatné VRSTVY, mesto nechá */
+    VST.fk[i]+=(tgt-VST.fk[i])*.1;
+    const fl=REDUCED?0:Math.sin(t*.0002+i*1.9)*VFLOAT[i];
+    const px=REDUCED?0:SMX*(i*1.6), py=REDUCED?0:SMY*(i*1.1);
+    const y=-(1-en)*(34+i*26)+fl+py-Math.max(0,VST.fk[i])*VLIFT[i];
+    vlays[i].style.transform=`translate(${px.toFixed(1)}px,${y.toFixed(1)}px)`;
+    vlays[i].style.opacity=(en*(1-Math.max(0,-VST.fk[i])*.55)).toFixed(3);
+    const fb=Math.max(0,VST.fk[i]);
+    vlays[i].style.filter=fb>.02?`brightness(${(1+fb*.12).toFixed(3)}) drop-shadow(0 6px 18px rgba(16,20,38,${(fb*.18).toFixed(2)}))`:'none';
+  }
+  VST.tipO+=(VST.tipT-VST.tipO)*.14;
+  vtip.style.opacity=VST.tipO.toFixed(3);
+}
+
+
+/* ---------- WebGL mesto (three.js + bloom) — fallback na 2D canvas, ?nogl=1 vypne ---------- */
+let GL=null,glcv=null;
+if(!new URL(location).searchParams.get('nogl')&&window.ZazniGL){
+  try{
+    glcv=document.createElement('canvas');glcv.id='glcity';
+    document.body.insertBefore(glcv,cv);
+    GL=ZazniGL.init(glcv,{
+      polys:POLY.map(pl=>({pts:pl.rings[0],t:pl.t,phase:pl.phase,big:pl.big,own:pl.p.own,ha:pl.p.ha,cx:pl.cx,cy:pl.cy})),
+      boundary:boundaryW,dots:DOTS,W:WORLD_W,H:WORLD_H,ramp:RAMP,
+      danube:(typeof DANUBE!=='undefined'?DANUBE.map(sg=>sg.map(([lo,la])=>W2(lo,la))):[])
+    });
+    if(GL)GL.resize(VW,VH,DPR);else glcv.remove();
+  }catch(e){GL=null;if(glcv)glcv.remove();}
+}
+addEventListener('resize',()=>{if(GL)GL.resize(innerWidth,innerHeight,Math.min(devicePixelRatio||1,2));});
+
+/* ---------- akty na virtuálnej časovej osi 0–1 ---------- */
+const ACT={
+  pritiahni:[0,.05], objav:[.05,.14], pochop:[.14,.22], predstav:[.22,.38],
+  jazyk:[.38,.48], obor:[.48,.555], turn:[.555,.655], vrstvy:[.655,.72], video:[.72,.775],
+  tuba:[.775,.855], skal:[.855,.915], proto:[.915,.965], zapoj:[.965,1]
+};
+let Ps=REDUCED?1:0;
+function aP(k){const[a,b]=ACT[k];return clamp((Ps-a)/(b-a));}
+function aPr(k){const[a,b]=ACT[k];return (Ps-a)/(b-a);}      /* bez clampu — presahy pre crossfade */
+const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
+
+/* ---------- kroky: jeden swipe = jeden stupeň; medzi krokmi to ide samo ---------- */
+const STEPS=[
+  {t:0,    n:'Zažni mesto'},
+  {t:.095, n:'Objav — čísla'},
+  {t:.18,  n:'Pochop — kto drží kľúč'},
+  {t:.364, n:'Svetelná vlna',slow:5.2},
+  {t:.43,  n:'Legenda',slow:1.5},
+  {t:.5175,n:'Spiaci obor'},
+  {t:.605, n:'Expozícia z každej strany',slow:5.5},
+  {t:.6875,n:'Vrstvy svetla',slow:1.3},
+  {t:.7475,n:'Expozícia — film',auto:2000},
+  {t:.815, n:'TU-BA + médiá'},
+  {t:.885, n:'Škálovateľnosť',slow:1.3},
+  {t:.94,  n:'Živý prototyp'},
+  {t:1,    n:'Zapoj sa'},
+];
+let STEP=0,autoT=null,FL=0;
+/* INERTNÝ CHASE: Ps naháňa cieľ exponenciálne — okamžitá odozva, hodvábny dojazd,
+   ďalší vstup možno poslať kedykoľvek (žiadne čakanie na animáciu). */
+let target=REDUCED?1:0,chase=.075,arrivedFor=-1;
+const ss=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10);};       /* smootherstep — mäkký štart aj dojazd */
+function goStep(i,manual=true){
+  i=Math.max(0,Math.min(STEPS.length-1,i));
+  if(manual&&autoT){clearTimeout(autoT);autoT=null;}
+  if(i===STEP&&Math.abs(Ps-STEPS[i].t)<.001)return;
+  STEP=i;
+  const s=STEPS[i];
+  target=s.t;
+  chase=.075/(s.slow||1);
+  arrivedFor=-1;
+  FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
+  if(performance.now()>1600)wallStart(i);         /* V2: text-wall prechod */
+  document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
+}
+/* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
+const AUTO=+(new URL(location).searchParams.get('auto')||0);
+function onArrive(){
+  const s=STEPS[STEP];
+  if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
+  else if(AUTO&&!REDUCED){
+    const dwell=(AUTO>1?AUTO:4.2)*1000;
+    autoT=setTimeout(()=>goStep(STEP+1<STEPS.length?STEP+1:0,false),dwell);
+  }
+}
+
+/* ---------- V2 · TEXT-WALL prechod: titul kapitoly sa rozmnoží na stenu, zvlní rybím okom a preleje sa ---------- */
+const wallcv=document.getElementById('wallfx'),wgx=wallcv.getContext('2d');
+const WALLT=['ZAŽNI MESTO','OBJAV','POCHOP','PREDSTAV SI','JAZYK SVETLA','SPIACI OBRI','EXPOZÍCIA 360°','VRSTVY SVETLA','PROJEKCIA','TU—BA','NÁSTROJ','PROTOTYP','ZAPOJ SA'];
+const WALLP=new URL(location).searchParams.get('wallp');   /* debug: zmraz prechod na progrese */
+let WALL=null,woff=null;
+function wallStart(i){
+  if(REDUCED)return;
+  WALL={t0:performance.now(),txt:WALLT[i]||STEPS[i].n.toUpperCase()};
+  wallcv.width=VW*DPR;wallcv.height=VH*DPR;
+  wallcv.style.width=VW+'px';wallcv.style.height=VH+'px';
+  woff=document.createElement('canvas');woff.width=VW*DPR;woff.height=VH*DPR;
+}
+function wallDraw(now){
+  if(WALLP!==null&&!WALL)wallStart(STEP);
+  if(!WALL){return;}
+  let p=(now-WALL.t0)/1250;
+  if(WALLP!==null)p=+WALLP;
+  if(p>=1){WALL=null;wgx.clearRect(0,0,wallcv.width,wallcv.height);return;}
+  const sheetIn=ss(Math.min(1,p*3.2));
+  const sheetOut=ss(Math.max(0,(p-.74)*3.85));
+  const sheetX=(1-sheetIn)*VW-sheetOut*VW;
+  const A=Math.sin(Math.PI*clamp((p-.1)/.68));              /* rybie oko: nabehne a povolí */
+  /* 1 · stena textu do offscreenu (riadky sa schádzajú z oboch strán) */
+  const g=woff.getContext('2d');
+  g.setTransform(DPR,0,0,DPR,0,0);
+  g.fillStyle='#EFEDE8';g.fillRect(0,0,VW,VH);
+  const fs=Math.max(40,VH/6.2),rh=fs*1.16;
+  g.font=`800 ${fs}px "Space Grotesk",system-ui,sans-serif`;
+  g.textBaseline='middle';
+  const unit=WALL.txt+'   ';
+  const tw=Math.max(60,g.measureText(unit).width);
+  const rows=Math.ceil(VH/rh)+2;
+  for(let r=0;r<rows;r++){
+    const e=ss(clamp(p*2.9-r*.055));
+    const dir=r%2?1:-1;
+    const slide=dir*(1-e)*VW*.55;
+    const y=(r+.5)*rh-rh*.55;
+    g.fillStyle=r%2?'rgba(16,20,38,.32)':'#101426';
+    const base=-((r*tw*.5)%tw)-tw+slide;
+    for(let x=base;x<VW+tw;x+=tw)g.fillText(unit,x,y);
+  }
+  /* 2 · warp: horizontálne pásy cez barrel profil — stred sa nafúkne, kraje stiahnu */
+  wgx.setTransform(DPR,0,0,DPR,0,0);
+  wgx.clearRect(0,0,VW,VH);
+  wgx.save();wgx.translate(sheetX,0);
+  const band=4,zoom=1+A*.05;
+  const map=y=>{const ny=(y/VH-.5)*2;return VH*(.5+(ny/2)*(1-A*.24*(1-ny*ny)));};
+  for(let y=0;y<VH;y+=band){
+    const sy=map(y),sy2=map(y+band);
+    const ny=(y/VH-.5)*2;
+    const sc=(1+A*.36*(1-ny*ny))*zoom;
+    wgx.drawImage(woff,0,sy*DPR,VW*DPR,Math.max(1,(sy2-sy))*DPR,
+      (VW-VW*sc)/2,y,VW*sc,band+.5);
+  }
+  wgx.restore();
+}
+
+/* stav polygónu: vlna prebúdzania v akte PREDSTAV SI, potom ostáva rozsvietené */
+function polyState(pl){
+  const wave=aP('predstav');
+  return clamp((wave*1.35-pl.t)*2.6);   /* pomalší prechod — indigo→teal→amber→biela má čas zaznieť */
+}
+
+/* hlava obra k menovke: oči sa otvoria LEN ak má územie zámer v registri (plan=1) */
+function oborHead(x,y,awake,alpha){
+  cx.globalAlpha=alpha;
+  const w=21,h=16,r=6;
+  cx.beginPath();
+  cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);
+  cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();
+  cx.fillStyle='rgba(8,11,22,.92)';cx.fill();
+  cx.strokeStyle=awake?'#FFE9B8':'#8B91DD';cx.lineWidth=1.3;cx.stroke();
+  const ey=y+h*.52,e1=x+w*.32,e2=x+w*.68;
+  if(awake){
+    cx.fillStyle='#FFE9B8';
+    cx.beginPath();cx.arc(e1,ey,1.9,0,7);cx.fill();
+    cx.beginPath();cx.arc(e2,ey,1.9,0,7);cx.fill();
+  }else{
+    cx.strokeStyle='#8B91DD';cx.lineWidth=1.6;cx.lineCap='round';
+    cx.beginPath();cx.moveTo(e1-2.2,ey);cx.lineTo(e1+2.2,ey);cx.stroke();
+    cx.beginPath();cx.moveTo(e2-2.2,ey);cx.lineTo(e2+2.2,ey);cx.stroke();
+  }
+  cx.globalAlpha=1;
+}
+
+/* ---------- kreslenie ---------- */
+function draw(t){
+  const p=Ps;
+  /* kamera: keyframy po aktoch — nájazdy a pany, kým žije mapa (kinematická kontinuita) */
+  /* [Ps, zoom, panX(podiel VW), panY(podiel VH)] */
+  const CAM=[
+    [0,               1.04,  0,     0   ],
+    [ACT.objav[0],    1.06,  .008,  0   ],
+    [ACT.objav[1],    1.16, -.022, -.015],
+    [ACT.pochop[1],   1.26, -.055,  .012],
+    [ACT.predstav[0], 1.22, -.04,   0   ],
+    [ACT.predstav[1], 1.0,  -.004, -.004],   /* vlna = pull-out na CELÉ mesto */
+    [ACT.jazyk[1],    1.07,  0,    -.05 ],
+  ];
+  let zoom=CAM[CAM.length-1][1],camX=0,camY=CAM[CAM.length-1][3];
+  for(let i=0;i<CAM.length-1;i++){
+    const a=CAM[i],b=CAM[i+1];
+    if(p<=b[0]||i===CAM.length-2){
+      const k=clamp((p-a[0])/((b[0]-a[0])||1));
+      zoom=lerp(a[1],b[1],k);camX=lerp(a[2],b[2],k);camY=lerp(a[3],b[3],k);
+      break;
+    }
+  }
+  const ctxA=aP('objav');                        /* kontext mesta sa vynára v akte 2 */
+  const ownA0=aP('pochop');
+  const ownPulse0=Math.sin(clamp(ownA0)*Math.PI);
+  const HB=1+(1-clamp(p*14))*.6;                 /* hero pulz */
+  const wave=aP('predstav');
+
+  /* === WebGL vetva: mesto kreslí three.js s bloomom; 2D canvas ostáva len na menovky === */
+  if(GL){
+    cx.setTransform(DPR,0,0,DPR,0,0);
+    cx.clearRect(0,0,VW,VH);
+    const lit=GL.frame({t,wave,ctxA,own:ownPulse0,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB});
+    for(const pl of POLY){
+      if(!pl.big)continue;
+      const s=polyState(pl);
+      if(s<.6)continue;
+      const q=GL.project(pl.cx,pl.cy);
+      if(!q.vis)continue;
+      const la=clamp((s-.6)/.4)*.95;
+      cx.globalAlpha=la;
+      cx.font=`600 11px "JetBrains Mono",monospace`;
+      cx.strokeStyle='rgba(5,7,15,.9)';cx.lineWidth=3.5;cx.lineJoin='round';
+      cx.strokeText(pl.p.n.toUpperCase(),q.x+8,q.y-8);
+      cx.fillStyle='#FFE9B8';
+      cx.fillText(pl.p.n.toUpperCase(),q.x+8,q.y-8);
+      oborHead(q.x+8,q.y-40,pl.p.plan===1&&s>.8,la);
+    }
+    return lit;
+  }
+
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  /* pozadie */
+  const bg=cx.createLinearGradient(0,0,0,VH);
+  bg.addColorStop(0,'#05070F');bg.addColorStop(.5,'#090C18');bg.addColorStop(1,'#05070F');
+  cx.fillStyle=bg;cx.fillRect(0,0,VW,VH);
+
+  cx.translate(VW/2+camX*VW,VH/2+camY*VH);cx.scale(zoom,zoom);cx.translate(-VW/2,-VH/2);
+  cx.translate(OX,OY);cx.scale(BASE,BASE);
+  const px=1/(BASE*zoom);                        /* 1px v svetových jednotkách */
+
+  /* hranica */
+  cx.beginPath();
+  boundaryW.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));
+  cx.closePath();
+  cx.fillStyle=`rgba(13,17,34,${.55+ctxA*.35})`;cx.fill();
+  cx.strokeStyle=`rgba(61,69,104,${.25+ctxA*.55})`;cx.lineWidth=1.4*px;cx.stroke();
+
+  /* mestské svetlá — konštantná obrazovková veľkosť (bodky, nie bokeh pri zoome) */
+  if(ctxA>0.02){
+    for(const d of DOTS){
+      const tw=.75+.25*Math.sin(t*.0012+d.tw);
+      cx.beginPath();cx.arc(d.x,d.y,d.r/(2.4*zoom),0,6.283);
+      cx.fillStyle=`rgba(255,233,184,${(d.o*ctxA*tw*.85).toFixed(3)})`;cx.fill();
+    }
+  }
+
+  const ownA=aP('pochop');                       /* zvýraznenie vlastníctva v akte 3 */
+  const ownPulse=Math.sin(clamp(ownA)*Math.PI);  /* nabehne a odíde */
+
+  /* brownfieldy — v hero momente pulzujú výraznejšie (prvá sekunda musí žiť) */
+  let lit=0;
+  for(const pl of POLY){
+    const s=polyState(pl);
+    if(s>.55)lit++;
+    /* glow pod prebudenými */
+    if(s>.4){
+      const g=clamp((s-.4)/.6);
+      const r=Math.sqrt(pl.p.ha)*.0035+.004;
+      cx.globalAlpha=g*.75;
+      cx.drawImage(GLOW,pl.cx-r,pl.cy-r,r*2,r*2);
+      cx.globalAlpha=1;
+    }
+    /* pulz spiacich */
+    const pulse=s<.15?(.5+.28*Math.sin(t*.0016+pl.phase)):1;
+    const alpha=Math.min(1,(.5+s*.5)*pulse*HB);
+    cx.fillStyle=stateColor(s);
+    cx.globalAlpha=alpha;
+    cx.beginPath();
+    for(const r of pl.rings){r.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));cx.closePath();}
+    cx.fill();
+    /* obrys: v akte POCHOP svietia súkromníci */
+    if(ownPulse>.03&&pl.p.own==='private'&&s<.2){
+      cx.globalAlpha=ownPulse*.95;
+      cx.strokeStyle='#FFE9B8';cx.lineWidth=2*px;cx.setLineDash([8*px,5*px]);
+      cx.stroke();cx.setLineDash([]);
+    }else if(pl.big||s>.3){
+      cx.globalAlpha=Math.max(.25,alpha*.9);
+      cx.strokeStyle=s>.5?'rgba(255,246,227,.8)':'rgba(139,145,221,.7)';
+      cx.lineWidth=(pl.big?1.6:1)*px;cx.stroke();
+    }
+    cx.globalAlpha=1;
+  }
+
+  /* menovky významných po prebudení */
+  cx.font=`${11*px*DPR/DPR}px JetBrains Mono, monospace`;
+  for(const pl of POLY){
+    if(!pl.big)continue;
+    const s=polyState(pl);
+    if(s<.6)continue;
+    const a=clamp((s-.6)/.4);
+    cx.globalAlpha=a*.95;
+    cx.fillStyle='#FFE9B8';
+    cx.font=`600 ${10.5*px}px "JetBrains Mono",monospace`;
+    cx.fillText(pl.p.n.toUpperCase(),pl.cx+.004,pl.cy-.004);
+    cx.globalAlpha=1;
+    cx.save();cx.setTransform(DPR,0,0,DPR,0,0);       /* obor v obrazovkových px */
+    const sx=(pl.cx*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,
+          sy=(pl.cy*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH;
+    oborHead(sx+6,sy-34,pl.p.plan===1&&s>.8,a*.95);
+    cx.restore();
+  }
+  return lit;
+}
+
+/* ---------- overlay choreografia ---------- */
+const ovlHero=document.getElementById('ovlHero'),
+      ovlObjav=document.getElementById('ovlObjav'),
+      ovlPochop=document.getElementById('ovlPochop'),
+      ovlWave=document.getElementById('ovlWave'),
+      hint=document.getElementById('hint'),
+      bar=document.getElementById('bar');
+
+/* JEDNA réžia pohybu: všetko vchádza sprava a odchádza doľava (smer čítania príbehu),
+   všetky krivky smootherstep — žiadne tvrdé štarty, dokončené presne pri dojazde. */
+function deckUpdate(ovl,grid,apRaw,pop=false){
+  const ap=clamp(apRaw);
+  const vis=ss(Math.max(0,Math.min(1,apRaw*2.6,(1.1-apRaw)*2.4)));  /* doznieva až 10 % do ďalšieho aktu — žiadny blackout beat */
+  ovl.style.opacity=vis.toFixed(3);
+  ovl.style.pointerEvents=vis>.15?'auto':'none';
+  const en=ss(Math.min(1,ap*2.3));             /* aj posunuté ap panelových kapitol dôjde na 1 */
+  const ex=ss(Math.max(0,(apRaw-.74)*2.9));
+  const deck=ovl.querySelector('.deck');
+  if(deck){
+    const dx=(1-en)*76-ex*92;
+    deck.style.transform=`translate(${dx.toFixed(1)}px,${((1-en)*9).toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
+    const bl=Math.max(1-en,ex*.7)*6;
+    deck.style.filter=bl>.06?`blur(${bl.toFixed(1)}px)`:'none';
+    ovl.classList.toggle('moving',bl>.06);     /* počas pohybu vypni glass blur kariet — žiadny dvojitý blur */
+  }
+  /* hĺbka: titul a ghost sa hýbu inou rýchlosťou než karty; titul vychádza spod orezu */
+  const head=ovl.querySelector('.head');
+  if(head){
+    const dx2=(1-en)*76-ex*92;
+    head.style.transform=`translateX(${(dx2*.38).toFixed(1)}px)`;
+    const rl=head.querySelector('.rl');
+    if(rl){
+      const eT=ss(clamp(ap*2.6));
+      rl.style.transform=`translateY(${((1-eT)*112).toFixed(1)}%)`;
+    }
+  }
+  const gh=ovl.querySelector('.ghost');
+  if(gh)gh.style.transform=`translateX(${(((1-en)*76-ex*92)*.72).toFixed(1)}px)`;
+  grid.style.maskImage='none';grid.style.webkitMaskImage='none';
+  const cards=grid.querySelectorAll('.card');
+  const stag=cards.length>1?Math.min(.1,.38/(cards.length-1)):0;   /* celý stagger ≤ .38 — aj 10 kariet dôjde pri dojazde */
+  cards.forEach((c,i)=>{
+    const e=ss(clamp(ap*3.2-i*stag));
+    c.style.opacity=e.toFixed(3);
+    c.style.transform=pop
+      ?`scale(${(.94+e*.06).toFixed(3)})`
+      :`translate(${((1-e)*48).toFixed(1)}px,${((1-e)*16).toFixed(1)}px)`;
+  });
+  /* count-up čísel viazaný na progres (quartic-out chvost — číslo sadne presne na cieľ) */
+  grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
+    const x=clamp(ap*2.6-i*.18);
+    const e=1-Math.pow(1-x,4);
+    const tgt=+el.dataset.n;
+    el.childNodes[0].nodeValue=Math.round(tgt*e);
+    const small=el.querySelector('small');
+    if(small)small.style.opacity=e>.92?1:.35;
+  });
+}
+
+const chapvid=document.getElementById('chapvid');let prevVv=0;
+/* kurzorový parallax — plynulé dobiehanie */
+let MX=0,MY=0,SMX=0,SMY=0;
+addEventListener('pointermove',e=>{MX=e.clientX/innerWidth-.5;MY=e.clientY/innerHeight-.5;},{passive:true});
+/* turntable: canvas crossfade medzi framami (plynulé aj z 25 snímok),
+   vstup zozadu → predok, potom ambientná rotácia; ťah myšou = float framy */
+const TURN_N=25,TURN=[];let turnOff=0,dragX=null,turnShown=-1,lastT=0;
+const turncv=document.getElementById('turncv'),tctx=turncv.getContext('2d');
+for(let i=0;i<TURN_N;i++){
+  const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;
+  im.onload=()=>{turnShown=-1;};              /* donačítaný frame vynúti prekreslenie */
+  TURN[i]=im;
+}
+TURN[0].addEventListener('load',()=>{turncv.width=TURN[0].naturalWidth;turncv.height=TURN[0].naturalHeight;turnShown=-1;});
+{
+  const twz=document.querySelector('.turnwrap');
+  twz.addEventListener('pointerdown',e=>{dragX=e.clientX;twz.classList.add('grab');twz.setPointerCapture(e.pointerId);});
+  twz.addEventListener('pointermove',e=>{
+    if(dragX==null)return;
+    turnOff-=(e.clientX-dragX)/34;
+    dragX=e.clientX;
+  });
+  addEventListener('pointerup',()=>{dragX=null;twz.classList.remove('grab');});
+}
+function chores(t){
+  const p=Ps;
+  bar.style.width=(p*100)+'%';
+  hint.style.opacity=p<.02?1:0;
+
+  /* 1 PRITIAHNI */
+  const h=1-ss(clamp(aP('pritiahni')*1.15));
+  ovlHero.style.opacity=h.toFixed(3);
+  ovlHero.style.pointerEvents=h>.3?'auto':'none';
+  ovlHero.style.transform=`translate(${((1-h)*-64).toFixed(1)}px,${((1-h)*-18).toFixed(1)}px)`;
+
+  /* 2 OBJAV / 3 POCHOP */
+  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aPr('objav'));
+  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aPr('pochop'));
+
+  /* 4 PREDSTAV SI */
+  const wv=aP('predstav');
+  ovlWave.style.opacity=Math.sin(clamp(wv)*Math.PI).toFixed(3);
+  document.getElementById('litN').textContent=window.__lit||0;
+  const stg=wv*4;
+  [['hs1',0],['hs2',1],['hs3',2],['hs4',3]].forEach(([id,i])=>{
+    document.getElementById(id).classList.toggle('on',stg>i*.9);
+  });
+  document.getElementById('waveNote').textContent=
+    wv<.33?'04 · Predstav si — svetlo ide mestom od východu'
+    :wv<.7?'zámery svitajú · drieme → prebúdza sa'
+    :'mesto ožíva · teplá biela = život';
+
+  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď je panel/foto na mieste */
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),(aPr('jazyk')-.14)*1.22);
+  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),(aPr('tuba')-.14)*1.22);
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),(aPr('skal')-.14)*1.22,true);
+  /* 7c VRSTVY — interaktívny stack: vrstvy sa poskladajú zdola, ťahaním iný uhol, hover popisy */
+  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
+  vstackUpdate(clamp((aP('vrstvy')-.14)*1.22),t);
+
+  /* 6 OBOR */
+  const ob=ss(wnd('obor'));
+  const ovlOb=document.getElementById('ovlObor');
+  ovlOb.style.opacity=ob.toFixed(3);
+  ovlOb.style.pointerEvents=ob>.3?'auto':'none';
+  ovlOb.style.transform=`translate(${((1-ob)*54).toFixed(1)}px,${((1-ob)*14).toFixed(1)}px)`;
+
+  /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
+  const mapFade=(1-ss(clamp(aP('jazyk')*1.7))).toFixed(3);  /* mapa doznieva pod panelom, už sa nevracia */
+  cv.style.opacity=mapFade;
+  if(glcv)glcv.style.opacity=mapFade;
+
+  function rollPanel(el,ap){
+    if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
+    el.style.visibility='visible';
+    const enter=ss(clamp(ap*2)),exit=ss(clamp((ap-.72)*3.6));   /* dosadne presne pri dojazde kroku */
+    const x=104-enter*104-exit*104;            /* vždy sprava — jeden smer celej story */
+    el.style.transform=`translateX(${x.toFixed(2)}%)`;
+    el.style.opacity=Math.min(1,enter*2.4).toFixed(3);          /* mäkký nábeh, žiadny výstrel hrany */
+    return enter*(1-exit);
+  }
+  function rollPanelY(el,ap){
+    if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
+    el.style.visibility='visible';
+    const enter=ss(clamp(ap*2)),exit=ss(clamp((ap-.72)*3.6));
+    el.style.transform=`translateY(${(104-enter*104-exit*104).toFixed(2)}%)`;   /* zdola hore a preč vrchom */
+    el.style.opacity=Math.min(1,enter*2.6).toFixed(3);
+    return enter*(1-exit);
+  }
+  const apJ=aP('jazyk'),apV=aP('vrstvy'),apS=aP('skal');
+  const tubaCover=rollPanelY(document.getElementById('panelB'),aP('tuba'));
+  const light=Math.max(tubaCover,
+    rollPanel(document.getElementById('panelR'),apS>0?apS:(apV>0?apV:apJ)));
+  document.body.classList.toggle('lightmode',light>.5);
+  document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
+  document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
+
+  /* 6b TURNTABLE — pomalá otočka, vysvetlivky sa hromadia po štvrtinách */
+  const tn=ss(wnd('turn'));
+  const ot=document.getElementById('ovlTurn');
+  ot.style.opacity=tn.toFixed(3);
+  ot.style.visibility=tn>.02?'visible':'hidden';
+  ot.style.transform=`translateX(${((1-tn)*46).toFixed(1)}px)`;
+  const entry=clamp(aP('turn')*2);             /* zozadu → predok, dotočené presne pri dojazde */
+  const R=entry*13+turnOff;                    /* 13 ≈ predok; vždy ostrý celý frame, žiadny blend */
+  if(TURN[0].complete&&turncv.width>2&&tn>.02){
+    const i0=((Math.round(R)%TURN_N)+TURN_N)%TURN_N;
+    if(i0!==turnShown&&TURN[i0].complete){
+      turnShown=i0;
+      tctx.clearRect(0,0,turncv.width,turncv.height);
+      tctx.drawImage(TURN[i0],0,0,turncv.width,turncv.height);
+    }
+  }
+  document.getElementById('turnDeg').textContent=Math.round(((R/TURN_N*360)%360+360)%360)+'°';
+  const swayDeg=(!REDUCED&&entry>=1)?Math.sin(t*.00026)*1.7:0;
+  /* čiary platia pre predný pohľad (frame 13): pri odtočení sa plynulo skryjú,
+     po návrate dopredu sa vrátia — nikdy neukazujú na zlé miesto */
+  let frontK;
+  {
+    let off=(((R-13)%TURN_N)+TURN_N)%TURN_N;    /* vzdialenosť od predného frame v frameoch */
+    if(off>TURN_N/2)off-=TURN_N;
+    frontK=ss(clamp(1-Math.abs(off)/2.2));
+  }
+  /* ambient: jemné 3D kývanie celej scény (nie framy — tie by ghostovali) + kurzorová parallaxa */
+  if(!REDUCED&&tn>.02){
+    document.querySelector('.turnwrap').style.transform=
+      `perspective(1100px) rotateY(${(SMX*7+swayDeg).toFixed(2)}deg) rotateX(${(-SMY*5).toFixed(2)}deg)`;
+  }
+  /* callouty + vodiace čiary k objektom — tá istá progres krivka ako decky */
+  document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
+    const e2=ss(clamp((entry-.3)*2.2-i*.14));
+    c.style.opacity=e2.toFixed(3);
+    c.style.transform=`translateY(${((1-e2)*16).toFixed(1)}px)`;
+    const ln=document.getElementById('tl'+(i+1)),td=document.getElementById('td'+(i+1));
+    const lop=e2*.92*frontK;
+    if(ln)ln.style.opacity=lop.toFixed(3);
+    if(td)td.style.opacity=lop.toFixed(3);
+  });
+
+  /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
+  const v0=ACT.video[0]-.014;                     /* nástup ešte počas odchodu panelu — žiadny čierny beat */
+  const vSpan=clamp((Ps-v0)/(ACT.tuba[1]-v0));
+  const vv=ss(Math.min(1,vSpan*2.8,(1-vSpan)*3.4));
+  const blurK=ss(clamp(aP('tuba')*1.6));
+  chapvid.style.opacity=vv.toFixed(3);
+  chapvid.style.filter=blurK>.02?`blur(${(blurK*5).toFixed(1)}px) brightness(${(1-.22*blurK).toFixed(2)}) saturate(1.08)`:'none';
+  chapvid.style.transform=`scale(${(1.02+vSpan*.06).toFixed(3)})`;
+  if(!REDUCED){
+    if(vv>.04){
+      if(chapvid.paused)chapvid.play().catch(()=>{});
+      if(prevVv<=.04){try{chapvid.currentTime=0;}catch(e){}}   /* každý príchod = film od začiatku */
+    }else if(!chapvid.paused)chapvid.pause();
+    try{
+      const tgtRate=.75-.42*tubaCover;
+      chapvid.playbackRate+= (tgtRate-chapvid.playbackRate)*.06; /* plynulé spomalenie, žiadne skoky */
+    }catch(e){}
+  }
+  prevVv=vv;
+  document.getElementById('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
+
+  /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
+  const pr=ss(wnd('proto'));
+  const op=document.getElementById('ovlProto');
+  op.style.opacity=pr.toFixed(3);
+  op.style.visibility=pr>.03?'visible':'hidden';
+  op.style.pointerEvents=pr>.5?'auto':'none';
+  const zp=ss(clamp(aP('zapoj')*1.6));
+  const oz=document.getElementById('ovlZapoj');
+  oz.style.opacity=zp.toFixed(3);
+  oz.style.visibility=zp>.03?'visible':'hidden';
+  oz.style.pointerEvents=zp>.5?'auto':'none';
+  document.querySelectorAll('#ovlZapoj .reveal').forEach(el=>el.classList.toggle('in',zp>.4));
+  /* finále: nočná TU-BA s hradom v okne — pomalý nájazd */
+  const fb=document.getElementById('finalebg');
+  fb.style.visibility=zp>.02?'visible':'hidden';
+  fb.style.opacity=(zp*.97).toFixed(3);
+  fb.firstElementChild.style.transform=
+    `scale(${(1.16-zp*.1).toFixed(3)}) translate(${(SMX*-10).toFixed(1)}px,${((1-zp)*16+SMY*-8).toFixed(1)}px)`;
+}
+
+/* ---------- hlavná slučka ---------- */
+function loop(t){
+  {
+    const dt=Math.min(50,t-(lastT||t));
+    const k=1-Math.pow(1-chase,dt/16.7);        /* frame-rate nezávislé dohladzovanie */
+    if(REDUCED)Ps=target;
+    else Ps+=(target-Ps)*k;
+    if(Math.abs(target-Ps)<.0004){
+      Ps=target;
+      if(arrivedFor!==STEP){arrivedFor=STEP;onArrive();}
+    }
+  }
+  SMX+=(MX-SMX)*.07;SMY+=(MY-SMY)*.07;
+  FL*=.93;
+  document.getElementById('flash').style.opacity=(FL>.01?FL*.3:0).toFixed(3);
+  window.__lit=draw(t);
+  chores(t);
+  wallDraw(t);
+  lastT=t;
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- vstupy: swipe / koliesko / klávesy / šípky / bodky ---------- */
+/* snd.tick z manuálu — 40 ms potvrdenie kroku, tesne nad prahom vnímania */
+let ACTX=null;
+function tick(){
+  if(REDUCED)return;
+  try{
+    ACTX=ACTX||new (window.AudioContext||window.webkitAudioContext)();
+    const o=ACTX.createOscillator(),g=ACTX.createGain();
+    o.type='square';o.frequency.value=1900;
+    g.gain.setValueAtTime(.045,ACTX.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,ACTX.currentTime+.04);
+    o.connect(g).connect(ACTX.destination);o.start();o.stop(ACTX.currentTime+.05);
+  }catch(e){}
+}
+let lastIn=0;
+function inputStep(d){
+  const now=performance.now();
+  if(now-lastIn<340)return;                     /* len debounce — vstup nečaká na animáciu */
+  lastIn=now;
+  const before=STEP;
+  goStep(STEP+(d>0?1:-1));
+  if(STEP!==before)tick();
+}
+addEventListener('wheel',e=>{e.preventDefault();if(Math.abs(e.deltaY)>=6)inputStep(e.deltaY);},{passive:false});
+let ty=null;
+addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});
+addEventListener('touchend',e=>{
+  if(ty==null)return;
+  const dy=ty-e.changedTouches[0].clientY;
+  if(Math.abs(dy)>44)inputStep(dy);
+  ty=null;
+},{passive:true});
+addEventListener('keydown',e=>{
+  if(['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();inputStep(1);}
+  if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();inputStep(-1);}
+  if(e.key==='Home')goStep(0);
+  if(e.key==='End')goStep(STEPS.length-1);
+});
+document.getElementById('stepDn').addEventListener('click',()=>inputStep(1));
+document.getElementById('stepUp').addEventListener('click',()=>inputStep(-1));
+/* bodky */
+{
+  const dw=document.getElementById('dots');
+  STEPS.forEach((s,i)=>{
+    const d=document.createElement('i');
+    d.title=s.n;
+    d.addEventListener('click',()=>goStep(i));
+    if(i===0)d.classList.add('on');
+    dw.appendChild(d);
+  });
+}
+
+/* obor — ťukni a zobuď */
+let oborUp=false;
+document.getElementById('oborBig').addEventListener('click',()=>{
+  oborUp=!oborUp;
+  document.getElementById('oborBig').classList.toggle('awake',oborUp);
+  document.getElementById('obAura').style.opacity=oborUp?1:0;
+  document.getElementById('obBody').setAttribute('stroke',oborUp?'#FFB94A':'#8B91DD');
+  document.getElementById('obSleep').style.opacity=oborUp?0:1;
+  document.getElementById('obAwake').style.opacity=oborUp?1:0;
+  const l1=document.getElementById('oborLbl1');
+  l1.textContent=oborUp?'BDIE ✓':'SPÍ';
+  l1.style.color=oborUp?'#FFB94A':'#B9BEF0';
+  l1.nextElementSibling.textContent=oborUp?'zobudený hlasom · ťukni a uspi':'bez zámeru · ťukni a zobuď';
+  document.getElementById('oborHint').innerHTML=oborUp
+    ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
+    :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú';
+  if(oborUp){try{
+    const a=new (window.AudioContext||window.webkitAudioContext)();
+    [523.25,659.25,783.99].forEach((fq,i)=>{
+      const o=a.createOscillator(),g=a.createGain();
+      o.frequency.value=fq;o.type='sine';
+      g.gain.setValueAtTime(0,a.currentTime+i*.09);
+      g.gain.linearRampToValueAtTime(.12,a.currentTime+i*.09+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+i*.09+1.1);
+      o.connect(g).connect(a.destination);o.start(a.currentTime+i*.09);o.stop(a.currentTime+i*.09+1.2);
+    });
+  }catch(e){}}
+});
+
+/* hover na callout zvýrazní jeho čiaru */
+document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
+  const ln=()=>document.getElementById('tl'+(i+1));
+  c.addEventListener('pointerenter',()=>{const l=ln();if(l){l.style.strokeWidth='2.6';l.style.filter='drop-shadow(0 0 9px rgba(245,158,11,.9))';}});
+  c.addEventListener('pointerleave',()=>{const l=ln();if(l){l.style.strokeWidth='';l.style.filter='';}});
+});
+
+/* maskované reveal-y titulov — riadok vychádza spod orezu */
+document.querySelectorAll('.deck .head b').forEach(b=>{b.innerHTML='<i class="rl">'+b.innerHTML+'</i>';});
+
+/* CTA → prvý krok */
+document.getElementById('ctaStart').addEventListener('click',()=>goStep(1));
+
+/* po dobehnutí hero entrance uvoľni animáciu (inak by blokovala magnetický transform CTA) */
+document.querySelectorAll('#ovlHero .kicker,#ovlHero h1,#ovlHero p,#ovlHero .cta').forEach(el=>{
+  el.addEventListener('animationend',()=>{el.style.opacity=1;el.style.animation='none';},{once:true});
+});
+
+/* magnetické tlačidlá — ťahajú sa za kurzorom */
+if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
+  b.addEventListener('pointermove',e=>{
+    const r=b.getBoundingClientRect();
+    b.style.transform=`translate(${((e.clientX-r.left-r.width/2)*.14).toFixed(1)}px,${((e.clientY-r.top-r.height/2)*.26).toFixed(1)}px)`;
+  });
+  b.addEventListener('pointerleave',()=>{b.style.transform='';});
+});
+
+/* deep-link ?step=N — skok rovno na stupeň (zdieľanie, ladenie) */
+{
+  const q=parseInt(new URL(location).searchParams.get('step'),10);
+  if(!isNaN(q)){
+    STEP=Math.max(0,Math.min(STEPS.length-1,q));
+    Ps=target=STEPS[STEP].t;
+    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+  }
+  const fp=parseFloat(new URL(location).searchParams.get('ps'));  /* ladenie medzistavov */
+  if(!isNaN(fp)){
+    Ps=target=clamp(fp);
+    STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);
+    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+  }
+}
+/* ladenie/perf: ?nofx=1 vypne častice a zrno */
+if(new URL(location).searchParams.get('nofx')){
+  document.getElementById('pfx').style.display='none';
+  document.getElementById('grain').style.display='none';
+}
+/* štart kioskovej slučky z úvodu */
+if(AUTO&&!REDUCED)autoT=setTimeout(()=>goStep(STEP+1<STEPS.length?STEP+1:0,false),3000);
+
+/* stagger pre záverečné reveal bloky (spúšťa ich chores podľa kroku) */
+document.querySelectorAll('.reveal').forEach((el,i)=>{
+  el.style.transitionDelay=(i*110)+'ms';
+});
+
+/* ---------- teplé častice (striedmo) ---------- */
+(function(){
+  if(REDUCED)return;
+  const pc=document.getElementById('pfx'),g=pc.getContext('2d');
+  let PP=[];
+  function rs(){
+    pc.width=innerWidth;pc.height=innerHeight;
+    PP=[];
+    const n=Math.floor(innerWidth*innerHeight/34000);
+    for(let i=0;i<n;i++)PP.push({
+      x:Math.random()*pc.width,y:Math.random()*pc.height,
+      vx:(Math.random()-.5)*.18,vy:-(.04+Math.random()*.14),
+      r:Math.random()*1.3+.4,o:Math.random()*.26+.05
+    });
+  }
+  function tick(){
+    g.clearRect(0,0,pc.width,pc.height);
+    for(const q of PP){
+      q.x+=q.vx;q.y+=q.vy;
+      if(q.x<0)q.x=pc.width;if(q.x>pc.width)q.x=0;
+      if(q.y<-4)q.y=pc.height+4;
+      g.beginPath();g.arc(q.x,q.y,q.r,0,6.283);
+      g.fillStyle=`rgba(255,233,184,${q.o})`;g.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  rs();addEventListener('resize',rs);tick();
+})();
+</script>
+</body>
+</html>
