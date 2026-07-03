@@ -27,7 +27,7 @@ function init(canvas,data){
   const scene=new THREE.Scene();
   scene.background=new THREE.Color(0x05070F);
   const D0=H*S*.94;
-  scene.fog=new THREE.Fog(0x05070F,D0*1.5,D0*3.4);
+  scene.fog=new THREE.Fog(0x05070F,D0*1.6,D0*4.4);
 
   const cam=new THREE.PerspectiveCamera(38,1,S*.01,D0*6);
 
@@ -154,10 +154,12 @@ function init(canvas,data){
   }
 
   function frame(st){
-    /* kamera: orbit okolo cieľa, výška z pitch, dolly zo zoomu, kurzorová 3D parallaxa */
-    const yaw=st.smx*.11+Math.sin(st.t*.00004)*.022;
-    const pitch=THREE.MathUtils.degToRad(53)-st.smy*.07;
-    const dist=D0/st.camZ;
+    /* kamera: orbit okolo cieľa, výška z pitch, dolly zo zoomu, kurzorová 3D parallaxa.
+       Počas vlny klesá AŽ NA LEŽATO (17°) + orbitálny sweep — flyover nad rozsvecujúcim sa mestom. */
+    const wk=st.wave<=0?0:(st.wave>=1?1:st.wave*st.wave*(3-2*st.wave));
+    const yaw=st.smx*.11+Math.sin(st.t*.00004)*.022+wk*.6;
+    const pitch=THREE.MathUtils.degToRad(53-36*wk)-st.smy*.07;
+    const dist=(D0/st.camZ)*(1-.2*wk);
     const tx=-st.camX*W*S*.9, tz=-st.camY*H*S*.9;  /* zhodný smer s 2D: svet sa hýbe S obsahom */
     cam.position.set(tx+Math.sin(yaw)*dist*Math.cos(pitch),Math.sin(pitch)*dist,tz+Math.cos(yaw)*dist*Math.cos(pitch));
     cam.lookAt(tx,0,tz);
