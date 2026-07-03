@@ -816,12 +816,12 @@ function draw(t){
   cx.fillStyle=`rgba(13,17,34,${.55+ctxA*.35})`;cx.fill();
   cx.strokeStyle=`rgba(61,69,104,${.25+ctxA*.55})`;cx.lineWidth=1.4*px;cx.stroke();
 
-  /* mestské svetlá */
+  /* mestské svetlá — konštantná obrazovková veľkosť (bodky, nie bokeh pri zoome) */
   if(ctxA>0.02){
     for(const d of DOTS){
       const tw=.75+.25*Math.sin(t*.0012+d.tw);
-      cx.beginPath();cx.arc(d.x,d.y,d.r,0,6.283);
-      cx.fillStyle=`rgba(255,233,184,${(d.o*ctxA*tw).toFixed(3)})`;cx.fill();
+      cx.beginPath();cx.arc(d.x,d.y,d.r/(2.4*zoom),0,6.283);
+      cx.fillStyle=`rgba(255,233,184,${(d.o*ctxA*tw*.85).toFixed(3)})`;cx.fill();
     }
   }
 
@@ -1183,6 +1183,11 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
   }
   const fp=parseFloat(new URL(location).searchParams.get('ps'));  /* ladenie medzistavov */
   if(!isNaN(fp)){Ps=clamp(fp);STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);}
+}
+/* ladenie/perf: ?nofx=1 vypne častice a zrno */
+if(new URL(location).searchParams.get('nofx')){
+  document.getElementById('pfx').style.display='none';
+  document.getElementById('grain').style.display='none';
 }
 /* štart kioskovej slučky z úvodu */
 if(AUTO&&!REDUCED)autoT=setTimeout(()=>goStep(STEP+1<STEPS.length?STEP+1:0,false),3000);
