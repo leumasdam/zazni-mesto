@@ -60,10 +60,12 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 > Expozícia z každej strany: model, tablety, dotyková obrazovka pri hrane, návštevník.
 > Pokojne si ju otočte — obraz sa dá ťahať.
 
-**VRSTVY SVETLA** *(biely panel sprava; render sa odkrýva zdola nahor — svetlo stúpa vrstvami)*
-> Anatómia projekcie: tri dátové vrstvy svetla nad fyzickým mestom. Stavy sú svetlo,
-> riziko sú šrafy, typológia sú ikony s menovkami. Každá vrstva má vlastný grafický atribút —
-> preto sa dajú ľubovoľne kombinovať a nikdy sa nebijú. Projektory kreslia len dáta.
+**VRSTVY SVETLA** *(biely panel sprava; vrstvy sa POSKLADAJÚ zdola — POTIAHNI myšou = iný uhol,
+prejdi vrstvou alebo kartou = popis + vrstva sa vyzdvihne)*
+> Anatómia projekcie: tri dátové vrstvy svetla nad fyzickým mestom — a nie sú to obrázky,
+> kreslia sa živé z registra, rovnako ako celá expozícia. Stavy sú svetlo, riziko sú šrafy,
+> typológia sú ikony s menovkami. Každá vrstva má vlastný grafický atribút — preto sa dajú
+> ľubovoľne kombinovať a nikdy sa nebijú. Projektory kreslia len dáta. *(potiahni, vyzdvihni vrstvu)*
 
 **VIDEO** *(panel odíde, mesto sa rozplynie do filmu — nechaj bežať ~10 s)*
 > A takto to vyzerá v priestore: projektory kreslia presne tie dáta, ktorými sme práve prešli, na fyzický model.

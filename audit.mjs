@@ -90,8 +90,9 @@ ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-
 ok('reduced-motion = statický rozsvietený stav',PRE.includes('prefers-reduced-motion')&&PRE.includes('REDUCED?1:'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
 ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti'));
-ok('rendre zapracované (vrstvy·TU-BA·finále hrad) + obor = 3 SVG pózy',['vrstvy-projekcie.png','tuba-priestor.png','hrad-okno.png'].every(s=>PRE.includes(s))&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
+ok('rendre zapracované (vrstvy·TU-BA·finále hrad) + obor = 3 SVG pózy',['vrstvy-city.png','tuba-priestor.png','hrad-okno.png'].every(s=>PRE.includes(s))&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
 ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("searchParams.get('step')")&&PRE.includes('pointerleave'));
+ok('VRSTVY = interaktívny 3D stack z reálnych dát (drag + fokus + popisy)',PRE.includes('vstackUpdate')&&PRE.includes('drawSlab')&&PRE.includes("pl.p.sez===1")&&PRE.includes('VST.foc')&&!PRE.includes('vrstvy-projekcie.png'));
 
 console.log(`\n${'='.repeat(46)}\nVÝSLEDOK: ${pass} ✓ · ${fail} ✗\n`);
 process.exit(fail?1:0);
