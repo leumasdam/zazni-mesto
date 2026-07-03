@@ -97,9 +97,7 @@ body.lightmode .brand em{color:#C77800}
 /* obor kapitola */
 #ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 #ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(36px,6.2vw,92px);line-height:1;letter-spacing:-.025em;margin-bottom:26px}
-#ovlObor .oborbox{cursor:pointer;transition:filter .8s}
 #ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4))}
-#ovlObor .oborbox svg{width:min(30vh,260px);height:min(30vh,260px)}
 #ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
 
 /* turntable kapitola */
@@ -297,17 +295,16 @@ body.lightmode .dots i.on{background:#C77800}
   #ovlVrstvy .head b{font-size:19px}
 }
 
-/* plávajúca clay tabuľa (obor) */
-.floatboard{
-  position:absolute;right:4vw;top:50%;width:min(20vw,290px);
-  background:#F4F2EE;padding:10px 10px 12px;border-radius:4px;
-  box-shadow:0 34px 90px rgba(0,0,0,.6),0 4px 18px rgba(0,0,0,.4);
-  will-change:transform;
-}
-.floatboard img{display:block;width:100%;animation:fbBob 7s ease-in-out infinite}
-.floatboard figcaption{font-family:var(--fm);font-size:9.5px;letter-spacing:.06em;color:#5C5F78;line-height:1.7;margin-top:9px;text-align:center}
-@keyframes fbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@media (max-width:1250px){.floatboard{display:none}}
+/* rad troch obrov: SPÍ (klikací) · ZÍVA · BDIE */
+.oborrow{display:flex;gap:clamp(28px,6vw,110px);align-items:flex-end;justify-content:center;margin:8px 0 4px}
+.oborpose{display:flex;flex-direction:column;align-items:center;gap:4px}
+.oborpose svg{width:min(24vh,220px);height:min(24vh,220px)}
+.oborpose b{font-family:var(--fd);font-size:16px;letter-spacing:.08em;color:#B9BEF0;margin-top:6px}
+.oborpose span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;color:var(--text-low);text-transform:uppercase}
+.oborpose:not(#oborBig){opacity:.92}
+#oborBig{cursor:pointer;transition:filter .8s}
+#oborBig:hover svg{filter:drop-shadow(0 0 30px rgba(139,145,221,.35))}
+@media (max-width:860px){.oborrow{gap:16px}.oborpose svg{width:min(16vh,26vw);height:min(16vh,26vw)}}
 
 /* TU-BA render board nad kartami */
 .deckimg.board{max-width:760px}
@@ -347,7 +344,6 @@ body.lightmode .dots i.on{background:#C77800}
 /* reduced motion fallback */
 @media (prefers-reduced-motion:reduce){
   .hint span{animation:none}
-  .floatboard img{animation:none}
   #grain{animation:none}
   #ovlHero .kicker,#ovlHero h1,#ovlHero .herorow p,#ovlHero .cta{animation:none;opacity:1}
 }
@@ -497,31 +493,54 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 7 · OBOR -->
 <div class="ovl" id="ovlObor">
   <h2>Každý brownfield<br>je <span style="color:var(--warm-100)">spiaci obor</span></h2>
-  <div class="oborbox" id="oborBig">
-    <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <g id="obAura" opacity="0" style="transition:opacity .8s">
-        <circle cx="48" cy="52" r="42" fill="rgba(245,158,11,.09)"/>
-        <path d="M10 38l-7-4M86 38l7-4M48 6V-2M20 14l-5-6M76 14l5-6" stroke="#FFB94A" stroke-width="2.6"/>
-      </g>
-      <g id="obBody" stroke="#8B91DD" stroke-width="3" style="transition:stroke .8s">
-        <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
-      </g>
-      <g id="obSleep" style="transition:opacity .5s">
-        <path d="M34 60h7M50 60h7" stroke="#B9BEF0" stroke-width="3.2"/>
-        <path d="M42 70q4 3 8 0" stroke="#B9BEF0" stroke-width="2.4" opacity=".6"/>
-        <text x="66" y="24" fill="#8B91DD" font-family="monospace" font-size="10">z z</text>
-      </g>
-      <g id="obAwake" opacity="0" style="transition:opacity .5s">
-        <circle cx="37.5" cy="60" r="3.6" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.6" fill="#FFF6E3"/>
-        <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
-      </g>
-    </svg>
+  <div class="oborrow">
+    <div class="oborpose oborbox" id="oborBig">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g id="obAura" opacity="0" style="transition:opacity .8s">
+          <circle cx="48" cy="52" r="42" fill="rgba(245,158,11,.09)"/>
+          <path d="M10 38l-7-4M86 38l7-4M48 6V-2M20 14l-5-6M76 14l5-6" stroke="#FFB94A" stroke-width="2.6"/>
+        </g>
+        <g id="obBody" stroke="#8B91DD" stroke-width="3" style="transition:stroke .8s">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <g id="obSleep" style="transition:opacity .5s">
+          <path d="M34 60h7M50 60h7" stroke="#B9BEF0" stroke-width="3.2"/>
+          <path d="M42 70q4 3 8 0" stroke="#B9BEF0" stroke-width="2.4" opacity=".6"/>
+          <text x="66" y="24" fill="#8B91DD" font-family="monospace" font-size="10">z z</text>
+        </g>
+        <g id="obAwake" opacity="0" style="transition:opacity .5s">
+          <circle cx="37.5" cy="60" r="3.6" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.6" fill="#FFF6E3"/>
+          <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
+        </g>
+      </svg>
+      <b id="oborLbl1">SPÍ</b><span>bez zámeru · ťukni a zobuď</span>
+    </div>
+    <div class="oborpose">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g stroke="#17B3A3" stroke-width="3">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <path d="M34 60h7" stroke="#3FE0CE" stroke-width="3.2"/>
+        <circle cx="53.5" cy="60" r="3" stroke="#3FE0CE" stroke-width="2.6"/>
+        <ellipse cx="46" cy="71" rx="4" ry="5.5" stroke="#3FE0CE" stroke-width="2.6"/>
+        <path d="M24 20q-3-6 2-9M32 20q3-6-2-9" stroke="#3FE0CE" stroke-width="2" opacity=".6"/>
+      </svg>
+      <b style="color:#3FE0CE">ZÍVA</b><span>drieme · dočasné využitie</span>
+    </div>
+    <div class="oborpose">
+      <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="48" cy="52" r="40" fill="rgba(245,158,11,.08)"/>
+        <g stroke="#FFB94A" stroke-width="3">
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
+        </g>
+        <circle cx="37.5" cy="60" r="3.4" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.4" fill="#FFF6E3"/>
+        <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8"/>
+        <path d="M12 40l-6-4M84 40l6-4M48 8V2M22 16l-4-5M74 16l4-5" stroke="#FFB94A" stroke-width="2.4" opacity=".8"/>
+      </svg>
+      <b style="color:#FFB94A">BDIE</b><span>zámer v registri</span>
+    </div>
   </div>
-  <p class="sub" id="oborHint">obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>ťukni a zobuď ho · oči = stav · ústa = energia · aura = jas</p>
-  <figure class="floatboard" id="fbObor">
-    <img src="assets/obri-clay.png" alt="Clay štúdia obra: spí, zíva, bdie">
-    <figcaption>clay štúdia pre expozíciu<br>SPÍ = bez zámeru · ZÍVA = drieme<br>BDIE = zámer v registri</figcaption>
-  </figure>
+  <p class="sub" id="oborHint">obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú</p>
 </div>
 
 <!-- 7b · TURNTABLE — expozícia z každej strany -->
@@ -989,8 +1008,6 @@ function chores(t){
   ovlOb.style.opacity=ob.toFixed(3);
   ovlOb.style.pointerEvents=ob>.3?'auto':'none';
   ovlOb.style.transform=`translateY(${(1-ob)*28}px)`;
-  document.getElementById('fbObor').style.transform=
-    `translateY(-50%) rotate(${(3+SMX*2.5).toFixed(2)}deg) translateX(${(SMX*-16-(1-ob)*30).toFixed(1)}px)`;
 
   /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
   cv.style.opacity=(1-clamp(aP('jazyk')*2.4)).toFixed(3);   /* mapa už sa nevracia */
@@ -1140,9 +1157,13 @@ document.getElementById('oborBig').addEventListener('click',()=>{
   document.getElementById('obBody').setAttribute('stroke',oborUp?'#FFB94A':'#8B91DD');
   document.getElementById('obSleep').style.opacity=oborUp?0:1;
   document.getElementById('obAwake').style.opacity=oborUp?1:0;
+  const l1=document.getElementById('oborLbl1');
+  l1.textContent=oborUp?'BDIE ✓':'SPÍ';
+  l1.style.color=oborUp?'#FFB94A':'#B9BEF0';
+  l1.nextElementSibling.textContent=oborUp?'zobudený hlasom · ťukni a uspi':'bez zámeru · ťukni a zobuď';
   document.getElementById('oborHint').innerHTML=oborUp
     ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
-    :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>ťukni a zobuď ho · oči = stav · ústa = energia · aura = jas';
+    :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú';
   if(oborUp){try{
     const a=new (window.AudioContext||window.webkitAudioContext)();
     [523.25,659.25,783.99].forEach((fq,i)=>{

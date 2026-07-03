@@ -51,10 +51,10 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 > Tu je celý slovník: štyri stavy svetla — spí, drieme, prebúdza sa, žije — a päť kanálov,
 > ktoré sa nikdy nebijú: farba, ikona, vzor, obrys, mierka. Nič sa nefarbí ručne, všetko číta register.
 
-**OBOR** *(KLIKNÚŤ — zobudí sa + chime; vpravo pláva clay štúdia)*
+**OBOR** *(tri pózy vedľa seba; na SPIACEHO KLIKNÚŤ — zobudí sa + chime)*
 > Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
-> Toto na expozícii urobí hlas návštevníka. Na tabuli vpravo je sochárska štúdia:
-> spí — bez zámeru, zíva — drieme, bdie — zámer v registri. Realita a želanie sa nemiešajú.
+> Tri pózy = tri stavy: spí — bez zámeru, zíva — drieme, bdie — zámer v registri.
+> Prvého zobudím dotykom — presne toto na expozícii urobí hlas návštevníka. Realita a želanie sa nemiešajú.
 
 **OTOČKA** *(model sa sám otočí o 360° — dá sa aj potiahnuť rukou, HUD ukazuje stupne)*
 > Expozícia z každej strany: model, tablety, dotyková obrazovka pri hrane, návštevník.
