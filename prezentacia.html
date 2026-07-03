@@ -1204,14 +1204,22 @@ function chores(t){
   ovlOb.style.transform=`translate(${((1-ob)*54).toFixed(1)}px,${((1-ob)*14).toFixed(1)}px)`;
 
   /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
-  const mapFade=(1-ss(clamp(aP('jazyk')*1.7))).toFixed(3);  /* mapa doznieva pod panelom, už sa nevracia */
+  /* PUSH prechod (vlna → legenda): panel príde sprava najprv NA POLOVICU (beat),
+     mapa je jeho hranou vytláčaná doľava v kontakte — potom obe dokončia. */
+  const twoBeat=a=>.5*ss(clamp(a*3.4))+.5*ss(clamp((a-.2)*3.8));
+  const apJ2=aP('jazyk');
+  const push=twoBeat(apJ2);
+  const pushX=Math.min(0,.04-1.04*push)*VW;    /* pravý okraj mapy = ľavá hrana panelu (štart 104 %) */
+  cv.style.transform=`translateX(${pushX.toFixed(1)}px)`;
+  if(glcv)glcv.style.transform=cv.style.transform;
+  const mapFade=(1-ss(clamp((apJ2-.18)*1.9))).toFixed(3);   /* počas vytláčania ostáva viditeľná, potom už sa nevracia */
   cv.style.opacity=mapFade;
   if(glcv)glcv.style.opacity=mapFade;
 
-  function rollPanel(el,ap){
+  function rollPanel(el,ap,enOv){
     if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
     el.style.visibility='visible';
-    const enter=ss(clamp(ap*2.6)),exit=ss(clamp((ap-.72)*3.6)); /* panel sadne tesne pred dojazdom — obsah naň dosadá */
+    const enter=enOv!=null?enOv:ss(clamp(ap*2.6)),exit=ss(clamp((ap-.72)*3.6)); /* panel sadne tesne pred dojazdom */
     const x=104-enter*104-exit*104;            /* vždy sprava — jeden smer celej story */
     el.style.transform=`translateX(${x.toFixed(2)}%)`;
     el.style.opacity=Math.min(1,enter*2.4).toFixed(3);          /* mäkký nábeh, žiadny výstrel hrany */
@@ -1228,7 +1236,8 @@ function chores(t){
   const apJ=aP('jazyk'),apV=aP('vrstvy'),apS=aP('skal');
   const tubaCover=rollPanelY(document.getElementById('panelB'),aP('tuba'));
   const light=Math.max(tubaCover,
-    rollPanel(document.getElementById('panelR'),apS>0?apS:(apV>0?apV:apJ)));
+    rollPanel(document.getElementById('panelR'),apS>0?apS:(apV>0?apV:apJ),
+      (apS>0||apV>0)?null:push));               /* legenda: panel = push krivka (kontakt s mapou) */
   document.body.classList.toggle('lightmode',light>.5);
   document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
   document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
