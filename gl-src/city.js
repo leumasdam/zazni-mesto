@@ -115,7 +115,7 @@ function init(canvas,data){
     const yaw=st.smx*.11+Math.sin(st.t*.00004)*.022;
     const pitch=THREE.MathUtils.degToRad(53)-st.smy*.07;
     const dist=D0/st.camZ;
-    const tx=st.camX*W*S*.9, tz=st.camY*H*S*.9;
+    const tx=-st.camX*W*S*.9, tz=-st.camY*H*S*.9;  /* zhodný smer s 2D: svet sa hýbe S obsahom */
     cam.position.set(tx+Math.sin(yaw)*dist*Math.cos(pitch),Math.sin(pitch)*dist,tz+Math.cos(yaw)*dist*Math.cos(pitch));
     cam.lookAt(tx,0,tz);
 
