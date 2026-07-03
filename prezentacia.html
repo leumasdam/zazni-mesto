@@ -104,11 +104,8 @@ body.lightmode .brand em{color:#C77800}
 #ovlTurn{display:flex;align-items:center;justify-content:center}
 .turnwrap{position:relative;width:min(78vh,760px);height:min(78vh,760px)}
 .turnhead{position:absolute;top:-4vh;left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center}
-#turnimg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))}
-.callout{
-  position:absolute;max-width:230px;opacity:0;transform:translateY(14px);
-  transition:opacity .6s ease,transform .6s ease;
-}
+#turncv{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))}
+.callout{position:absolute;max-width:230px;opacity:0;will-change:transform,opacity}
 .callout b{font-family:var(--fd);font-size:15px;display:block;color:var(--warm-100)}
 .callout span{font-family:var(--fm);font-size:11px;color:var(--text-mid);line-height:1.6;display:block;margin-top:4px}
 .callout::before{content:'';position:absolute;top:8px;width:44px;height:2px;background:var(--amber-500);box-shadow:0 0 8px rgba(245,158,11,.7)}
@@ -116,7 +113,6 @@ body.lightmode .brand em{color:#C77800}
 .c2{right:-240px;top:16%}.c2::before{left:-56px}
 .c3{left:-240px;bottom:24%}.c3::before{right:-56px}
 .c4{right:-240px;bottom:18%}.c4::before{left:-56px}
-.callout.on{opacity:1;transform:none}
 @media (max-width:1100px){.callout{position:static;max-width:none;margin-top:8px}.callout::before{display:none}.turnwrap{width:min(56vh,92vw);height:auto}}
 
 /* kapitolové captiony */
@@ -551,7 +547,7 @@ body.lightmode .dots i.on{background:#C77800}
       <span class="deg" id="turnDeg">0°</span>
       <span class="draghint">✋ potiahni obraz — otočíš si sám</span>
     </div>
-    <img id="turnimg" src="assets/seq/turn/frame-0.png" alt="Model expozície TU-BA — otočný pohľad">
+    <canvas id="turncv" aria-label="Model expozície TU-BA — otočný pohľad"></canvas>
     <div class="callout c1"><b>FYZICKÝ MODEL</b><span>projekcia stavov zhora — model JE mapa</span></div>
     <div class="callout c2"><b>TABLETY / AR</b><span>osobný ďalekohľad: minulosť · dnes · budúcnosť</span></div>
     <div class="callout c3"><b>DOTYKOVÁ OBRAZOVKA</b><span>dirigent pri hrane — ovládaš od okraja, aj z vozíka</span></div>
@@ -946,16 +942,19 @@ const chapvid=document.getElementById('chapvid');
 /* kurzorový parallax — plynulé dobiehanie */
 let MX=0,MY=0,SMX=0,SMY=0;
 addEventListener('pointermove',e=>{MX=e.clientX/innerWidth-.5;MY=e.clientY/innerHeight-.5;},{passive:true});
-/* turntable framy + ručné dotočenie ťahom */
-const TURN_N=25,TURN=[];let turnShown=-1,turnOff=0,dragX=null;
+/* turntable: canvas crossfade medzi framami (plynulé aj z 25 snímok),
+   vstup zozadu → predok, potom ambientná rotácia; ťah myšou = float framy */
+const TURN_N=25,TURN=[];let turnOff=0,dragX=null,lastDrag=-9e9,idleR=0,lastT=0;
+const turncv=document.getElementById('turncv'),tctx=turncv.getContext('2d');
 for(let i=0;i<TURN_N;i++){const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;TURN[i]=im;}
+TURN[0].onload=()=>{turncv.width=TURN[0].naturalWidth;turncv.height=TURN[0].naturalHeight;};
 {
   const twz=document.querySelector('.turnwrap');
   twz.addEventListener('pointerdown',e=>{dragX=e.clientX;twz.classList.add('grab');twz.setPointerCapture(e.pointerId);});
   twz.addEventListener('pointermove',e=>{
     if(dragX==null)return;
-    const dx=e.clientX-dragX;
-    if(Math.abs(dx)>=16){turnOff+=dx>0?-1:1;dragX=e.clientX;}
+    turnOff-=(e.clientX-dragX)/34;
+    dragX=e.clientX;lastDrag=performance.now();
   });
   addEventListener('pointerup',()=>{dragX=null;twz.classList.remove('grab');});
 }
@@ -1035,16 +1034,26 @@ function chores(t){
   const ot=document.getElementById('ovlTurn');
   ot.style.opacity=tn.toFixed(3);
   ot.style.visibility=tn>.02?'visible':'hidden';
-  const rot=clamp(aP('turn')*2);               /* plná otáčka presne do bodu dojazdu */
-  const tf=(((Math.round(rot*(TURN_N-1))+turnOff)%TURN_N)+TURN_N)%TURN_N;
-  if(tf!==turnShown&&TURN[tf]&&TURN[tf].complete){
-    turnShown=tf;document.getElementById('turnimg').src=TURN[tf].src;
+  const entry=clamp(aP('turn')*2);             /* zozadu → predok, dotočené presne pri dojazde */
+  const idleOK=!REDUCED&&entry>=1&&dragX==null&&(t-lastDrag>1600)&&tn>.5;
+  if(idleOK)idleR+=Math.min(48,t-lastT)*.00028; /* ambient ~1 otáčka / 85 s */
+  const R=entry*13+idleR+turnOff;              /* 13 = celý frame ≈ predok; pri dojazde ostrý obraz */
+  if(TURN[0].complete&&turncv.width>2&&tn>.02){
+    const i0=((Math.floor(R)%TURN_N)+TURN_N)%TURN_N, i1=(i0+1)%TURN_N, f=R-Math.floor(R);
+    tctx.clearRect(0,0,turncv.width,turncv.height);
+    tctx.globalAlpha=1;if(TURN[i0].complete)tctx.drawImage(TURN[i0],0,0,turncv.width,turncv.height);
+    if(TURN[i1].complete){tctx.globalAlpha=f;tctx.drawImage(TURN[i1],0,0,turncv.width,turncv.height);}
+    tctx.globalAlpha=1;
   }
-  document.getElementById('turnDeg').textContent=Math.round(tf/(TURN_N-1)*360)+'°';
+  document.getElementById('turnDeg').textContent=Math.round(((R/TURN_N*360)%360+360)%360)+'°';
   if(!REDUCED&&tn>.02)document.querySelector('.turnwrap').style.transform=
     `perspective(1100px) rotateY(${(SMX*7).toFixed(2)}deg) rotateX(${(-SMY*5).toFixed(2)}deg)`;
+  /* callouty — tá istá progres krivka ako decky (žiadne prahové pop-iny) */
   document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
-    c.classList.toggle('on',(rot*4-i)>.35);
+    const local=clamp((entry-.3)*2.2-i*.14);
+    const e2=1-Math.pow(1-local,3);
+    c.style.opacity=e2.toFixed(3);
+    c.style.transform=`translateY(${((1-e2)*16).toFixed(1)}px)`;
   });
 
   /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
@@ -1092,6 +1101,7 @@ function loop(t){
   document.getElementById('flash').style.opacity=(FL>.01?FL*.3:0).toFixed(3);
   window.__lit=draw(t);
   chores(t);
+  lastT=t;
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
