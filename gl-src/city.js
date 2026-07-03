@@ -169,7 +169,7 @@ function init(canvas,data){
 
     let lit=0;
     for(const it of items){
-      const s=clamp((st.wave*1.35-it.t)*2.6);    /* pomalší prechod — hodnoty zrkadlí polyState() */
+      const s=clamp((st.wave*1.5-it.t)*2.6);     /* pomalší prechod — hodnoty zrkadlí polyState() */
       if(s>.55)lit++;
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.0016+it.phase)):1;
