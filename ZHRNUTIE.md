@@ -18,8 +18,8 @@ Navrhnúť, ako zrozumiteľne, vizuálne a interaktívne komunikovať tému **br
 
 Z **Koncepcie rozvoja brownfieldov (MIB, 2026)** a registra BF (aktualizácia 2022):
 
-- **113 brownfieldov / 580 ha** (≈ 800 futbalových ihrísk); v 2019 to bolo 131 / 629 ha — mesto sa prebúdza
-- **16 významných brownfieldov** (Palma, Mlynské nivy, Istrochem, Filiálka, Matador, Nové Lido…)
+- **113 brownfieldov / 580 ha** (≈ 800 futbalových ihrísk); v 2019 to bolo 131 / 629 ha — 26 vyradených, 8 nových
+- **13 obrov ≥ 8 ha** (Dynamitka-Istrochem, Rázsochy, Filiálka, Vojenská nemocnica, kaštieľ Rusovce…)
 - Vlastníctvo: **56 súkromných, 13 mesto, 11 štát, 8 mix** — najväčšia prekážka rozvoja
 - **15 s evidovanou envirozáťažou**, až 69 území / 511 ha s možnou kontamináciou
 - Typológia: priemysel 32 % (36 území), administratíva 24, doprava 9, poľnohospodárstvo 6, šport 6…
@@ -44,7 +44,7 @@ Z **Koncepcie rozvoja brownfieldov (MIB, 2026)** a registra BF (aktualizácia 20
 | ikona | TYPOLÓGIA | 10 kategórií pôvodného využitia |
 | vzor | RIZIKO | šrafy = evidovaná záťaž · bodky = predpokladaná |
 | obrys | VLASTNÍCTVO | plný = mesto · prerušovaný = súkromné · striedaný = mix |
-| mierka | VÝZNAM | 16 významných BF väčšie + menovka |
+| mierka | VÝMERA | 13 obrov ≥ 8 ha väčšie + menovka |
 
 Poistka prístupnosti: stav nikdy nekomunikuje len farba — vždy aj animácia + oko obra + text.
 

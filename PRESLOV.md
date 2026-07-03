@@ -25,9 +25,9 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 
 ## 2 · OBJAV *(karty sa stierajú zľava, čísla nabiehajú)*
 
-> Najprv rozsah. Stotrinásť brownfieldov — a číslo klesá, v 2019 ich bolo 131;
-> mesto sa prebúdza samo, my mu dávame vypínač. Dokopy 580 hektárov — osemsto futbalových ihrísk.
-> Šestnásť z nich sú ťažké váhy: Palma, Mlynské nivy, Istrochem, Filiálka, Matador, Nové Lido.
+> Najprv rozsah. Stotrinásť brownfieldov — a číslo klesá, v 2019 ich bolo 131:
+> 26 sa odvtedy prebudilo a vyradilo, 8 nových pribudlo. Dokopy 580 hektárov — osemsto futbalových ihrísk.
+> Trinásť z nich sú obri nad osem hektárov: Dynamitka-Istrochem, Rázsochy, Filiálka, Vojenská nemocnica, kaštieľ v Rusovciach.
 
 ## 3 · POCHOP *(súkromným územiam sa rozžiaria obrysy)*
 
@@ -39,6 +39,8 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 ## 4 · PREDSTAV SI *(scrolluj plynulo — svetelná vlna ide od východu, počítadlo rastie)*
 
 > Sledujte: svetlo ide mestom od východu ako svitanie — pomaly, nech vidno celú premenu.
+> A poctivo: najprv sa NAOZAJ prebúdza len 66 území so zámerom — presne podľa registra.
+> Až potom, keďže akt sa volá PREDSTAV SI, vízia rozsvieti aj 47 spiacich.
 > Indigo spí… teal drieme — dočasné využitie… amber sa prebúdza — zámer… a teplá biela žije.
 > Jas je miera života — to je celý vizuálny jazyk expozície v jednom pohybe. Na fyzickom modeli
 > toto kreslia projektory; významné územia sa pri prebudení samy pomenujú a pri mene sa objaví
@@ -102,7 +104,7 @@ vrstvy jemne dýchajú — prejdi vrstvou alebo kartou = popis + vrstva sa vyzdv
 
 ## Rýchle odpovede na pravdepodobné otázky
 
-- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 54 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
+- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 57 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
 - **Prečo hlasovanie, nie je to gýč?** Je to 1. fáza vašej metodiky (participácia) v hravom obale; výstup je dataset preferencií.
 - **Prečo brownfieldy na obrazovke svietia, keď majú byť zhasnuté?** Stavy SÚ stupnica zhasnutia (jas = život). Na modeli svieti mesto a diery mlčia; obrazovka figúru obráti, aby sa dalo klikať.
 - **Prečo „rozsvecovanie"?** Doslova: každý dotyk rozsvieti kus modelu. Symbolicky: prvé, čo brownfield potrebuje, je pozornosť — register ukazuje, že územia so zámerom sa reálne prebúdzajú (26 vyradených od 2019). „Nerozsvecujete fabriku. Rozsvecujete jej príbeh."

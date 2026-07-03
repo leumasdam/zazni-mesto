@@ -106,7 +106,7 @@ function init(canvas,data){
         dash=new THREE.LineLoop(lg,lm);dash.computeLineDistances();scene.add(dash);
       }
     }catch(e){/* degenerovaný polygón — preskoč */}
-    items.push({mesh,dash,t:p.t,phase:p.phase,big:p.big,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
+    items.push({mesh,dash,t:p.t,phase:p.phase,big:p.big,plan:p.plan,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
   }
 
   /* ramp helper (rovnaké čísla ako 2D verzia — ramp príde z hlavného súboru) */
@@ -170,7 +170,11 @@ function init(canvas,data){
 
     let lit=0;
     for(const it of items){
-      const s=clamp((st.wave*1.5-it.t)*2.6);     /* pomalší prechod — hodnoty zrkadlí polyState() */
+      let s=clamp((st.wave*1.5-it.t)*2.6);       /* pomalší prechod — hodnoty zrkadlí polyState() */
+      if(it.plan!==1){                             /* register first; vízia lift zrkadlí polyState() */
+        const lw=clamp((st.wave-.55)*2.8);
+        s=Math.min(s,.14+(lw*lw*(3-2*lw))*.86);
+      }
       if(s>.55)lit++;
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.00157+it.phase)):1;   /* pulse.slow — 4000 ms */

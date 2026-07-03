@@ -97,6 +97,15 @@ const GLSRC=src('gl-src/city.js');
 ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
   PRE.includes('.00157')&&PRE.includes('%5500')&&PRE.includes('cubic-bezier(.34,1.56,.64,1)')&&PRE.includes('pulseSleep 4s')
   &&GLSRC.includes('.00157')&&GLSRC.includes('%5500')&&OBR.includes('performance.now()/640'));
+ok('vlna = register first (plan gate) + vízia lift zrkadlené v GL',
+  PRE.includes('pl.p.plan===1)return raw')&&PRE.includes('vízia')&&GLSRC.includes('it.plan!==1'));
+ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
+  const IDX=src('index.html');
+  return big.length===13&&!PRE.includes('16 BF')&&!PRE.includes('Šestnásť')&&PRE.includes('13 obrov ≥ 8 ha')
+    &&!IDX.includes('16 významných')&&!IDX.includes('významný BF (16)');
+})());
+ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
+  PRE.includes('26 sa prebudilo a vyradilo, 8 nových')&&PRE.includes('mimo 113'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */
