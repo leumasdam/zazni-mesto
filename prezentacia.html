@@ -878,7 +878,7 @@ const STEPS=[
   {t:.095, n:'Objav — čísla'},
   {t:.18,  n:'Pochop — kto drží kľúč'},
   {t:.364, n:'Svetelná vlna',slow:5.2},
-  {t:.43,  n:'Legenda',slow:1.5},
+  {t:.43,  n:'Legenda',slow:2.4},
   {t:.5175,n:'Spiaci obor'},
   {t:.605, n:'Expozícia z každej strany',slow:5.5},
   {t:.6875,n:'Vrstvy svetla',slow:1.3},
@@ -907,6 +907,8 @@ function goStep(i,manual=true){
 }
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
 const AUTO=+(new URL(location).searchParams.get('auto')||0);
+const JZP=new URL(location).searchParams.get('jz');   /* debug: zmraz dvojfazu legendy */
+let jzT0=0,prevApJ=0;
 function onArrive(){
   const s=STEPS[STEP];
   if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
@@ -1098,9 +1100,9 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   const en=ss(Math.min(1,ap*2.3));             /* aj posunuté ap panelových kapitol dôjde na 1 */
   const ex=ss(Math.max(0,(apRaw-.74)*2.9));
   const deck=ovl.querySelector('.deck');
+  const dy=(1-en)*12-ex*11;                    /* zdola hore — rovnaký smer ako panely */
   if(deck){
-    const dx=(1-en)*76-ex*92;
-    deck.style.transform=`translate(${dx.toFixed(1)}px,${((1-en)*9).toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
+    deck.style.transform=`translateY(${dy.toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
     const bl=Math.max(1-en,ex*.7)*6;
     deck.style.filter=bl>.06?`blur(${bl.toFixed(1)}px)`:'none';
     ovl.classList.toggle('moving',bl>.06);     /* počas pohybu vypni glass blur kariet — žiadny dvojitý blur */
@@ -1108,8 +1110,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   /* hĺbka: titul a ghost sa hýbu inou rýchlosťou než karty; titul vychádza spod orezu */
   const head=ovl.querySelector('.head');
   if(head){
-    const dx2=(1-en)*76-ex*92;
-    head.style.transform=`translateX(${(dx2*.38).toFixed(1)}px)`;
+    head.style.transform=`translateY(${(dy*.38).toFixed(2)}vh)`;
     const rl=head.querySelector('.rl');
     if(rl){
       const eT=ss(clamp(ap*2.6));
@@ -1117,7 +1118,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
     }
   }
   const gh=ovl.querySelector('.ghost');
-  if(gh)gh.style.transform=`translateX(${(((1-en)*76-ex*92)*.72).toFixed(1)}px)`;
+  if(gh)gh.style.transform=`translateY(${(dy*.72).toFixed(2)}vh)`;
   grid.style.maskImage='none';grid.style.webkitMaskImage='none';
   const cards=grid.querySelectorAll('.card');
   const stag=cards.length>1?Math.min(.1,.38/(cards.length-1)):0;   /* celý stagger ≤ .38 — aj 10 kariet dôjde pri dojazde */
@@ -1126,7 +1127,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
     c.style.opacity=e.toFixed(3);
     c.style.transform=pop
       ?`scale(${(.94+e*.06).toFixed(3)})`
-      :`translate(${((1-e)*48).toFixed(1)}px,${((1-e)*16).toFixed(1)}px)`;
+      :`translateY(${((1-e)*34).toFixed(1)}px)`;
   });
   /* count-up čísel viazaný na progres (quartic-out chvost — číslo sadne presne na cieľ) */
   grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
@@ -1191,66 +1192,87 @@ function chores(t){
     :wv<.7?'zámery svitajú · drieme → prebúdza sa'
     :'mesto ožíva · teplá biela = život';
 
-  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď je panel/foto na mieste */
-  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),(aPr('jazyk')-.14)*1.22);
-  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),(aPr('tuba')-.14)*1.22);
-  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),(aPr('skal')-.14)*1.22,true);
-  /* 7c VRSTVY — interaktívny stack: vrstvy sa poskladajú zdola, ťahaním iný uhol, hover popisy */
-  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
-  vstackUpdate(clamp((aP('vrstvy')-.14)*1.22),t);
+  /* ============ JEDNOTNÝ PUSH SYSTÉM ============
+     Každý slide VYTLÁČA predchádzajúci v kontakte hrán (Framer push).
+     Všetko ide ZDOLA; jediná bočná výnimka: otočka → vrstvy (sprava).
+     Vlna → legenda: časová dvojfáza — do polovice, SEK, dokončenie. */
+  const ssE=a=>ss(clamp(a*2));                 /* dosadne presne pri dojazde kroku */
+  const apJ=aP('jazyk'),apO=aP('obor'),apT=aP('turn'),apV=aP('vrstvy'),
+        apVid=aP('video'),apTb=aP('tuba'),apS=aP('skal'),apP2=aP('proto'),apZ=aP('zapoj');
+  const eO=ssE(apO),eT2=ss(clamp(apT*3.2)),eV=ssE(apV),eVid=ssE(apVid),
+        eTb=ssE(apTb),eS=ssE(apS),eP=ssE(apP2),eZ=ssE(apZ);
+  /* legenda: dvojfáza v ČASE — 700 ms do polovice · 450 ms sek · 620 ms dokončenie */
+  if(apJ>0&&prevApJ<=0)jzT0=t;
+  if(apJ<=0)jzT0=0;
+  prevApJ=apJ;
+  let eJ;
+  if(REDUCED)eJ=apJ>0?1:0;
+  else{
+    const tt=jzT0?t-jzT0:0;
+    eJ=tt<700?ss(tt/700)*.5 : tt<1150?.5 : .5+ss(Math.min(1,(tt-1150)/620))*.5;
+    eJ*=ss(clamp(apJ*9));                      /* reverz scrollom panel stiahne */
+  }
+  if(JZP!==null)eJ=+JZP;
+  const ride=e=>Math.min(0,4-104*e);           /* odchod HORE v kontakte s prichádzajúcim (104 % štart → bez medzier) */
 
-  /* 6 OBOR */
-  const ob=ss(wnd('obor'));
-  const ovlOb=document.getElementById('ovlObor');
-  ovlOb.style.opacity=ob.toFixed(3);
-  ovlOb.style.pointerEvents=ob>.3?'auto':'none';
-  ovlOb.style.transform=`translate(${((1-ob)*54).toFixed(1)}px,${((1-ob)*14).toFixed(1)}px)`;
-
-  /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
-  /* PUSH prechod (vlna → legenda): panel príde sprava najprv NA POLOVICU (beat),
-     mapa je jeho hranou vytláčaná doľava v kontakte — potom obe dokončia. */
-  const twoBeat=a=>.5*ss(clamp(a*3.4))+.5*ss(clamp((a-.2)*3.8));
-  const apJ2=aP('jazyk');
-  const push=twoBeat(apJ2);
-  const pushX=Math.min(0,.04-1.04*push)*VW;    /* pravý okraj mapy = ľavá hrana panelu (štart 104 %) */
-  cv.style.transform=`translateX(${pushX.toFixed(1)}px)`;
+  /* mapa: vytlačená HORE panelom legendy */
+  const mapY=ride(eJ)/100*VH;
+  cv.style.transform=`translateY(${mapY.toFixed(1)}px)`;
   if(glcv)glcv.style.transform=cv.style.transform;
-  const mapFade=(1-ss(clamp((apJ2-.18)*1.9))).toFixed(3);   /* počas vytláčania ostáva viditeľná, potom už sa nevracia */
+  const mapFade=(1-ss(clamp((eJ-.55)*2.4))).toFixed(3);     /* viditeľná až za polovicu, potom už sa nevracia */
   cv.style.opacity=mapFade;
   if(glcv)glcv.style.opacity=mapFade;
 
-  function rollPanel(el,ap,enOv){
-    if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
-    el.style.visibility='visible';
-    const enter=enOv!=null?enOv:ss(clamp(ap*2.6)),exit=ss(clamp((ap-.72)*3.6)); /* panel sadne tesne pred dojazdom */
-    const x=104-enter*104-exit*104;            /* vždy sprava — jeden smer celej story */
-    el.style.transform=`translateX(${x.toFixed(2)}%)`;
-    el.style.opacity=Math.min(1,enter*2.4).toFixed(3);          /* mäkký nábeh, žiadny výstrel hrany */
-    return enter*(1-exit);
-  }
-  function rollPanelY(el,ap){
-    if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
-    el.style.visibility='visible';
-    const enter=ss(clamp(ap*2));                 /* sheet neodchádza sám — prekryje ho panel sprava */
-    el.style.transform=`translateY(${(104-enter*104).toFixed(2)}%)`;
-    el.style.opacity=Math.min(1,enter*2.6).toFixed(3);
-    return enter;
-  }
-  const apJ=aP('jazyk'),apV=aP('vrstvy'),apS=aP('skal');
-  const tubaCover=rollPanelY(document.getElementById('panelB'),aP('tuba'));
-  const light=Math.max(tubaCover,
-    rollPanel(document.getElementById('panelR'),apS>0?apS:(apV>0?apV:apJ),
-      (apS>0||apV>0)?null:push));               /* legenda: panel = push krivka (kontakt s mapou) */
+  /* panelR: legenda (zdola, dvojfáza) → vrstvy (SPRAVA — jediná bočná) → škál (zdola) */
+  const panelR=document.getElementById('panelR');
+  let prX=0,prY=104,cover=0,prOn=false;
+  if(apS>0&&(apS<1||eP<.999)){prX=0;prY=(1-eS)*104+ride(eP);cover=eS*(1-eP);prOn=true;}
+  else if(apV>0&&(apV<1||eVid<.999)){prX=(1-eV)*104;prY=ride(eVid);cover=eV*(1-eVid);prOn=true;}
+  else if(apJ>0&&(apJ<1||eO<.999)){prX=0;prY=(1-eJ)*104+ride(eO);cover=eJ*(1-eO);prOn=true;}
+  panelR.style.visibility=prOn?'visible':'hidden';
+  panelR.style.opacity=1;
+  panelR.style.transform=`translate(${prX.toFixed(2)}%,${prY.toFixed(2)}%)`;
+  /* panelB (tuba): zdola, potom vytlačený škálou */
+  const panelB=document.getElementById('panelB');
+  const pbOn=apTb>0&&(apTb<1||eS<.999);
+  panelB.style.visibility=pbOn?'visible':'hidden';
+  panelB.style.opacity=1;
+  panelB.style.transform=`translateY(${((1-eTb)*104+ride(eS)).toFixed(2)}%)`;
+  const tubaCover=eTb*(1-eS);
+  const light=Math.max(tubaCover,cover);
+  /* obsah bielych kapitol IDE s panelom, keď ho ďalší slide vytláča */
+  document.getElementById('ovlLegenda').style.transform=`translateY(${(ride(eO)/100*VH).toFixed(1)}px)`;
+  document.getElementById('ovlVrstvy').style.transform=`translateY(${(ride(eVid)/100*VH).toFixed(1)}px)`;
+  document.getElementById('ovlTuba').style.transform=`translateY(${(ride(eS)/100*VH).toFixed(1)}px)`;
+  document.getElementById('ovlSkal').style.transform=`translateY(${(ride(eP)/100*VH).toFixed(1)}px)`;
   document.body.classList.toggle('lightmode',light>.5);
   document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
   document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
 
-  /* 6b TURNTABLE — pomalá otočka, vysvetlivky sa hromadia po štvrtinách */
+  /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď panel dosadne */
+  const legGate=ss(clamp((eJ-.5)*3.4));        /* karty legendy čakajú, kým panel prejde polovicu (sek) */
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),((aPr('jazyk')-.14)*1.22)*Math.max(legGate,aPr('jazyk')>1?1:0));
+  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),(aPr('tuba')-.14)*1.22);
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),(aPr('skal')-.14)*1.22,true);
+  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
+  vstackUpdate(clamp((aP('vrstvy')-.14)*1.22),t);
+
+
+  /* 6 OBOR — príde zdola, otočka ho vytlačí hore */
+  const ovlOb=document.getElementById('ovlObor');
+  const obOn=apO>0&&(apO<1||eT2<.999);
+  ovlOb.style.opacity=obOn?1:0;
+  ovlOb.style.visibility=obOn?'visible':'hidden';
+  ovlOb.style.pointerEvents=(apO>.2&&apO<.8)?'auto':'none';
+  ovlOb.style.transform=`translateY(${((1-eO)*VH+ride(eT2)/100*VH).toFixed(1)}px)`;
+
+  /* 6b TURNTABLE — príde zdola; vrstvy ho potom vytlačia DOĽAVA (jediná bočná) */
   const tn=ss(wnd('turn'));
   const ot=document.getElementById('ovlTurn');
-  ot.style.opacity=tn.toFixed(3);
-  ot.style.visibility=tn>.02?'visible':'hidden';
-  ot.style.transform=`translateX(${((1-tn)*46).toFixed(1)}px)`;
+  const tOn=apT>0&&(apT<1||eV<.999);
+  ot.style.opacity=tOn?1:0;
+  ot.style.visibility=tOn?'visible':'hidden';
+  ot.style.transform=`translate(${(ride(eV)/100*VW).toFixed(1)}px,${((1-eT2)*VH).toFixed(1)}px)`;
   const entry=clamp(aP('turn')*2);             /* zozadu → predok, dotočené presne pri dojazde */
   const R=entry*13+turnOff;                    /* 13 ≈ predok; vždy ostrý celý frame, žiadny blend */
   if(TURN[0].complete&&turncv.width>2&&tn>.02){
@@ -1287,14 +1309,13 @@ function chores(t){
     if(td)td.style.opacity=lop.toFixed(3);
   });
 
-  /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
-  const v0=ACT.video[0]-.014;                     /* nástup ešte počas odchodu panelu — žiadny čierny beat */
-  const vSpan=clamp((Ps-v0)/(ACT.tuba[1]-v0));
-  const vv=ss(Math.min(1,vSpan*2.8,(1-vSpan)*3.4));
+  /* video: PUSH zdola v kontakte s odchádzajúcim panelom vrstiev; do tuby sa rozostrí */
+  const vSpan=clamp((Ps-ACT.video[0])/(ACT.tuba[1]-ACT.video[0]));
+  const vv=vSpan<=0?0:ss(Math.min(1,(1-vSpan)*3.4));
   const blurK=ss(clamp(aP('tuba')*1.6));
   chapvid.style.opacity=vv.toFixed(3);
   chapvid.style.filter=blurK>.02?`blur(${(blurK*5).toFixed(1)}px) brightness(${(1-.22*blurK).toFixed(2)}) saturate(1.08)`:'none';
-  chapvid.style.transform=`scale(${(1.02+vSpan*.06).toFixed(3)})`;
+  chapvid.style.transform=`translateY(${((1-eVid)*100).toFixed(2)}%) scale(${(1.02+vSpan*.06).toFixed(3)})`;
   if(!REDUCED){
     if(vv>.04){
       if(chapvid.paused)chapvid.play().catch(()=>{});
@@ -1308,22 +1329,25 @@ function chores(t){
   prevVv=vv;
   document.getElementById('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
 
-  /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
-  const pr=ss(wnd('proto'));
+  /* 9 PROTOTYP · 10 ZAPOJ SA — push zdola, prototyp potom vytlačí finále */
   const op=document.getElementById('ovlProto');
-  op.style.opacity=pr.toFixed(3);
-  op.style.visibility=pr>.03?'visible':'hidden';
-  op.style.pointerEvents=pr>.5?'auto':'none';
-  const zp=ss(clamp(aP('zapoj')*1.6));
+  const prOn2=apP2>0&&(apP2<1||eZ<.999);
+  op.style.opacity=prOn2?1:0;
+  op.style.visibility=prOn2?'visible':'hidden';
+  op.style.pointerEvents=(apP2>.3&&apP2<.8)?'auto':'none';
+  op.style.transform=`translateY(${((1-eP)*VH+ride(eZ)/100*VH).toFixed(1)}px)`;
+  const zp=eZ;
   const oz=document.getElementById('ovlZapoj');
-  oz.style.opacity=zp.toFixed(3);
-  oz.style.visibility=zp>.03?'visible':'hidden';
+  oz.style.opacity=zp>0?1:0;
+  oz.style.visibility=zp>0?'visible':'hidden';
   oz.style.pointerEvents=zp>.5?'auto':'none';
+  oz.style.transform=`translateY(${((1-eZ)*VH).toFixed(1)}px)`;
   document.querySelectorAll('#ovlZapoj .reveal').forEach(el=>el.classList.toggle('in',zp>.4));
-  /* finále: nočná TU-BA s hradom v okne — pomalý nájazd */
+  /* finále: nočná TU-BA s hradom v okne — pomalý nájazd, prichádza spolu s obsahom */
   const fb=document.getElementById('finalebg');
-  fb.style.visibility=zp>.02?'visible':'hidden';
-  fb.style.opacity=(zp*.97).toFixed(3);
+  fb.style.visibility=zp>.01?'visible':'hidden';
+  fb.style.opacity=Math.min(1,zp*1.4).toFixed(3);
+  fb.style.transform=`translateY(${((1-eZ)*VH).toFixed(1)}px)`;
   fb.firstElementChild.style.transform=
     `scale(${(1.16-zp*.1).toFixed(3)}) translate(${(SMX*-10).toFixed(1)}px,${((1-zp)*16+SMY*-8).toFixed(1)}px)`;
 }
