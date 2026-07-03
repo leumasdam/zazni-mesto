@@ -19,7 +19,7 @@ function init(canvas,data){
   }catch(e){return null;}
   if(!renderer.getContext())return null;
 
-  const {polys,boundary,dots,W,H,ramp}=data;
+  const {polys,boundary,dots,W,H,ramp,danube=[]}=data;
   const S=4000;                              /* svetové stupne -> GL jednotky */
   const cxW=W/2,cyH=H/2;
   const X=x=>(x-cxW)*S, Z=y=>(y-cyH)*S;
@@ -47,6 +47,30 @@ function init(canvas,data){
     scene.add(line);init.boundLine=line;
   }
 
+  /* Dunaj — tmavomodrá stuha, mesto sa okamžite číta ako Bratislava */
+  {
+    const wHalf=W*S*.006;
+    for(const seg of danube){
+      if(seg.length<2)continue;
+      const pos=[];
+      for(let i=0;i<seg.length;i++){
+        const [x,y]=seg[i];
+        const [x2,y2]=seg[Math.min(i+1,seg.length-1)];
+        const [x0,y0]=seg[Math.max(i-1,0)];
+        let dx=X(x2)-X(x0),dz=Z(y2)-Z(y0);
+        const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;
+        const nx=-dz*wHalf,nz=dx*wHalf;
+        pos.push(X(x)+nx,.4,Z(y)+nz, X(x)-nx,.4,Z(y)-nz);
+      }
+      const idx=[];
+      for(let i=0;i<seg.length-1;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
+      const gg=new THREE.BufferGeometry();
+      gg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
+      gg.setIndex(idx);
+      scene.add(new THREE.Mesh(gg,new THREE.MeshBasicMaterial({color:0x2A3E78,transparent:true,opacity:.95,depthWrite:false,side:THREE.DoubleSide})));
+    }
+  }
+
   /* mestské svetlá — Points, konštantná px veľkosť */
   let dotsMat;
   {
@@ -71,6 +95,9 @@ function init(canvas,data){
       g.rotateX(-Math.PI/2);                  /* (x,y,z)->(x,z,y): extrúzia hore, -Z fix cez -y vyššie */
       const m=new THREE.MeshBasicMaterial({transparent:true,opacity:.5,depthWrite:false});
       mesh=new THREE.Mesh(g,m);scene.add(mesh);
+      const eg=new THREE.BufferGeometry().setFromPoints(p.pts.map(([x,y])=>new THREE.Vector3(X(x),H3+.6,Z(y))));
+      mesh.userData.edge=new THREE.LineLoop(eg,new THREE.LineBasicMaterial({color:0xFFF6E3,transparent:true,opacity:0,depthWrite:false}));
+      scene.add(mesh.userData.edge);
       if(p.own==='private'){
         const lp=p.pts.map(([x,y])=>new THREE.Vector3(X(x),H3+1,Z(y)));
         const lg=new THREE.BufferGeometry().setFromPoints(lp);
@@ -78,7 +105,7 @@ function init(canvas,data){
         dash=new THREE.LineLoop(lg,lm);dash.computeLineDistances();scene.add(dash);
       }
     }catch(e){/* degenerovaný polygón — preskoč */}
-    items.push({mesh,dash,t:p.t,phase:p.phase,big:p.big,cx:p.cx,cy:p.cy,col:new THREE.Color()});
+    items.push({mesh,dash,t:p.t,phase:p.phase,big:p.big,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
   }
 
   /* ramp helper (rovnaké čísla ako 2D verzia — ramp príde z hlavného súboru) */
@@ -88,10 +115,26 @@ function init(canvas,data){
     return out;
   }
 
+  /* dotykové ripples — akt rozsvietenia (ťuk → svetlo) */
+  const RIPS=[];
+  {
+    const rg=new THREE.RingGeometry(.86,1,40);rg.rotateX(-Math.PI/2);
+    for(let i=0;i<18;i++){
+      const m=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:0xFFE9B8,transparent:true,opacity:0,depthWrite:false}));
+      m.visible=false;m.position.y=H3+1;scene.add(m);
+      RIPS.push({m,t0:-1});
+    }
+  }
+  let ripI=0;
+  function ripple(x,z,now){
+    const r=RIPS[ripI++%RIPS.length];
+    r.t0=now;r.m.position.x=x;r.m.position.z=z;r.m.visible=true;
+  }
+
   /* composer + bloom */
   const composer=new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene,cam));
-  const bloom=new UnrealBloomPass(new THREE.Vector2(2,2),.5,.42,.74);
+  const bloom=new UnrealBloomPass(new THREE.Vector2(2,2),.42,.4,.74);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -129,11 +172,21 @@ function init(canvas,data){
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.0016+it.phase)):1;
       stateCol(s,it.col);
-      /* jas nad 1 → bloom žiari len na prebudených */
-      it.col.multiplyScalar(.4+s*.85);
+      it.col.multiplyScalar(.4+s*.78);           /* jas nad 1 → bloom len na prebudených */
       it.mesh.material.color.copy(it.col);
       it.mesh.material.opacity=Math.min(1,(.62+s*.38)*pulse*st.hb);
+      it.mesh.userData.edge.material.opacity=s*.8;   /* ostrý obrys — parcela, nie fľak */
       if(it.dash)it.dash.material.opacity=(s<.2?st.own:0)*.95;
+      if(s>=.5&&it.prevS<.5&&st.wave>0&&st.wave<1)ripple(X(it.cx),Z(it.cy),st.t);
+      it.prevS=s;
+    }
+    for(const r of RIPS){
+      if(r.t0<0)continue;
+      const pr=(st.t-r.t0)/950;
+      if(pr>=1){r.m.visible=false;r.t0=-1;continue;}
+      const sc=(W*S)*(.012+pr*.05);
+      r.m.scale.set(sc,1,sc);
+      r.m.material.opacity=(1-pr)*(1-pr)*.55;
     }
     composer.render();
     return lit;
