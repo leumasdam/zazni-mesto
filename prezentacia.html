@@ -201,6 +201,7 @@ body.lightmode .dots i.on{background:#C77800}
 .deck{width:100%;padding:0 48px;will-change:transform,filter,opacity}
 .deck .head{text-shadow:0 2px 18px rgba(5,7,15,.9)}
 .deck .grid{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.ovl.moving .card{backdrop-filter:none}
 .card{
   background:var(--glass);backdrop-filter:blur(18px) saturate(130%);
   border:1px solid var(--glass-b);border-radius:20px;padding:26px 26px 24px;
@@ -767,6 +768,7 @@ const ACT={
 };
 let Ps=REDUCED?1:0;
 function aP(k){const[a,b]=ACT[k];return clamp((Ps-a)/(b-a));}
+function aPr(k){const[a,b]=ACT[k];return (Ps-a)/(b-a);}      /* bez clampu — presahy pre crossfade */
 const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
 
 /* ---------- kroky: jeden swipe = jeden stupeň; medzi krokmi to ide samo ---------- */
@@ -955,30 +957,35 @@ const ovlHero=document.getElementById('ovlHero'),
 
 /* JEDNA réžia pohybu: všetko vchádza sprava a odchádza doľava (smer čítania príbehu),
    všetky krivky smootherstep — žiadne tvrdé štarty, dokončené presne pri dojazde. */
-function deckUpdate(ovl,grid,ap,pop=false){
-  const vis=ss(Math.min(1,ap*2.6,(1-ap)*2.6));
+function deckUpdate(ovl,grid,apRaw,pop=false){
+  const ap=clamp(apRaw);
+  const vis=ss(Math.max(0,Math.min(1,apRaw*2.6,(1.1-apRaw)*2.4)));  /* doznieva až 10 % do ďalšieho aktu — žiadny blackout beat */
   ovl.style.opacity=vis.toFixed(3);
   ovl.style.pointerEvents=vis>.15?'auto':'none';
   const en=ss(Math.min(1,ap*2.3));             /* aj posunuté ap panelových kapitol dôjde na 1 */
-  const ex=ss(clamp((ap-.72)*3.6));
+  const ex=ss(Math.max(0,(apRaw-.74)*2.9));
   const deck=ovl.querySelector('.deck');
   if(deck){
     const dx=(1-en)*76-ex*92;
     deck.style.transform=`translate(${dx.toFixed(1)}px,${((1-en)*9).toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
     const bl=Math.max(1-en,ex*.7)*6;
     deck.style.filter=bl>.06?`blur(${bl.toFixed(1)}px)`:'none';
+    ovl.classList.toggle('moving',bl>.06);     /* počas pohybu vypni glass blur kariet — žiadny dvojitý blur */
   }
   grid.style.maskImage='none';grid.style.webkitMaskImage='none';
-  grid.querySelectorAll('.card').forEach((c,i)=>{
-    const e=ss(clamp(ap*3.2-i*.1));
+  const cards=grid.querySelectorAll('.card');
+  const stag=cards.length>1?Math.min(.1,.38/(cards.length-1)):0;   /* celý stagger ≤ .38 — aj 10 kariet dôjde pri dojazde */
+  cards.forEach((c,i)=>{
+    const e=ss(clamp(ap*3.2-i*stag));
     c.style.opacity=e.toFixed(3);
     c.style.transform=pop
       ?`scale(${(.94+e*.06).toFixed(3)})`
       :`translate(${((1-e)*48).toFixed(1)}px,${((1-e)*16).toFixed(1)}px)`;
   });
-  /* count-up čísel viazaný na progres (scrub-friendly) */
+  /* count-up čísel viazaný na progres (quartic-out chvost — číslo sadne presne na cieľ) */
   grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
-    const e=ss(clamp(ap*2.6-i*.18));
+    const x=clamp(ap*2.6-i*.18);
+    const e=1-Math.pow(1-x,4);
     const tgt=+el.dataset.n;
     el.childNodes[0].nodeValue=Math.round(tgt*e);
     const small=el.querySelector('small');
@@ -1019,11 +1026,11 @@ function chores(t){
   const h=1-ss(clamp(aP('pritiahni')*1.15));
   ovlHero.style.opacity=h.toFixed(3);
   ovlHero.style.pointerEvents=h>.3?'auto':'none';
-  ovlHero.style.transform=`translateY(${((1-h)*-40).toFixed(1)}px)`;
+  ovlHero.style.transform=`translate(${((1-h)*-64).toFixed(1)}px,${((1-h)*-18).toFixed(1)}px)`;
 
   /* 2 OBJAV / 3 POCHOP */
-  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aP('objav'));
-  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aP('pochop'));
+  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aPr('objav'));
+  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aPr('pochop'));
 
   /* 4 PREDSTAV SI */
   const wv=aP('predstav');
@@ -1039,11 +1046,11 @@ function chores(t){
     :'mesto ožíva · teplá biela = život';
 
   /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď je panel/foto na mieste */
-  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),clamp((aP('jazyk')-.14)*1.22));
-  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aP('tuba'));
-  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),clamp((aP('skal')-.14)*1.22),true);
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),(aPr('jazyk')-.14)*1.22);
+  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aPr('tuba'));
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),(aPr('skal')-.14)*1.22,true);
   /* 7c VRSTVY — karty rise + render sa odkrýva zdola nahor (svetlo stúpa vrstvami) */
-  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),clamp((aP('vrstvy')-.14)*1.22));
+  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
   {
     const vp=clamp((aP('vrstvy')-.14)*1.22);
     const w=ss(clamp(vp*2.3))*130;
@@ -1084,6 +1091,7 @@ function chores(t){
   const ot=document.getElementById('ovlTurn');
   ot.style.opacity=tn.toFixed(3);
   ot.style.visibility=tn>.02?'visible':'hidden';
+  ot.style.transform=`translateX(${((1-tn)*46).toFixed(1)}px)`;
   const entry=clamp(aP('turn')*2);             /* zozadu → predok, dotočené presne pri dojazde */
   const R=entry*13+turnOff;                    /* 13 ≈ predok; vždy ostrý celý frame, žiadny blend */
   if(TURN[0].complete&&turncv.width>2&&tn>.02){
