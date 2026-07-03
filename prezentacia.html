@@ -198,7 +198,7 @@ body.lightmode .dots i.on{background:#C77800}
 
 /* kartové bloky — vždy v strede, vytlačené zdola */
 .ovl.mid{display:flex;align-items:center;justify-content:center}
-.deck{width:100%;padding:0 48px}
+.deck{width:100%;padding:0 48px;will-change:transform,filter,opacity}
 .deck .head{text-shadow:0 2px 18px rgba(5,7,15,.9)}
 .deck .grid{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .card{
@@ -786,7 +786,8 @@ const STEPS=[
   {t:1,    n:'Zapoj sa'},
 ];
 let STEP=0,tw=null,autoT=null,FL=0;
-const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const easeIO=x=>x<.5?16*x*x*x*x*x:1-Math.pow(-2*x+2,5)/2;   /* quint — hodvábny glide */
+const ss=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10);};       /* smootherstep — mäkký štart aj dojazd */
 function goStep(i,manual=true){
   i=Math.max(0,Math.min(STEPS.length-1,i));
   if(manual&&autoT){clearTimeout(autoT);autoT=null;}
@@ -794,7 +795,7 @@ function goStep(i,manual=true){
   STEP=i;
   const s=STEPS[i];
   const dist=Math.abs(s.t-Ps);
-  const dur=REDUCED?0:Math.min(8200,(900+dist*11000)*(s.slow||1));
+  const dur=REDUCED?0:Math.min(8200,(1150+dist*13000)*(s.slow||1));
   tw={from:Ps,to:s.t,t0:performance.now(),dur};
   FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
   document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
@@ -822,13 +823,13 @@ function draw(t){
   /* kamera: keyframy po aktoch — nájazdy a pany, kým žije mapa (kinematická kontinuita) */
   /* [Ps, zoom, panX(podiel VW), panY(podiel VH)] */
   const CAM=[
-    [0,               1.04,  0,    0   ],
-    [ACT.objav[0],    1.06,  0,    0   ],
-    [ACT.objav[1],    1.17,  .055, -.02],
-    [ACT.pochop[1],   1.26, -.05,  .03 ],
-    [ACT.predstav[0], 1.12,  0,    0   ],
-    [ACT.predstav[1], 1.32,  .02, -.06 ],
-    [ACT.jazyk[1],    1.46,  0,   -.12 ],
+    [0,               1.04,  0,     0   ],
+    [ACT.objav[0],    1.06,  .008,  0   ],
+    [ACT.objav[1],    1.16, -.022, -.015],
+    [ACT.pochop[1],   1.26, -.055,  .012],
+    [ACT.predstav[0], 1.30, -.064,  0   ],
+    [ACT.predstav[1], 1.38, -.085, -.05 ],
+    [ACT.jazyk[1],    1.50, -.10,  -.11 ],
   ];
   let zoom=CAM[CAM.length-1][1],camX=0,camY=CAM[CAM.length-1][3];
   for(let i=0;i<CAM.length-1;i++){
@@ -952,40 +953,36 @@ const ovlHero=document.getElementById('ovlHero'),
       hint=document.getElementById('hint'),
       bar=document.getElementById('bar');
 
-/* Jednotný smerový systém: obsah aj kamera sa hýbu ROVNAKÝM smerom.
-   dirIn: odkiaľ deck vchádza (-1 zľava, +1 sprava, 0 zdola) — má sedieť so smerom panu kamery;
-   dirOut: kam odchádza pri prechode na ďalší krok. Žiadne wipe masky. */
-function deckUpdate(ovl,grid,ap,dirIn=0,dirOut=0,pop=false){
-  const vis=Math.max(0,Math.min(1,ap*2.6,(1-ap)*2.6));
+/* JEDNA réžia pohybu: všetko vchádza sprava a odchádza doľava (smer čítania príbehu),
+   všetky krivky smootherstep — žiadne tvrdé štarty, dokončené presne pri dojazde. */
+function deckUpdate(ovl,grid,ap,pop=false){
+  const vis=ss(Math.min(1,ap*2.6,(1-ap)*2.6));
   ovl.style.opacity=vis.toFixed(3);
   ovl.style.pointerEvents=vis>.15?'auto':'none';
-  const en=Math.min(1,ap*2);
-  const en2=Math.min(1,en*1.18);
-  const ex=clamp((ap-.72)*3.6);
+  const en=ss(Math.min(1,ap*2.3));             /* aj posunuté ap panelových kapitol dôjde na 1 */
+  const ex=ss(clamp((ap-.72)*3.6));
   const deck=ovl.querySelector('.deck');
   if(deck){
-    const dx=dirIn*(1-en2)*64+dirOut*ex*72;
-    deck.style.transform=`translate(${dx.toFixed(1)}px,${((1-en)*12).toFixed(2)}vh) scale(${(.962+en2*.038).toFixed(4)})`;
-    deck.style.filter=(en2<1||ex>0)?`blur(${(Math.max((1-en2),ex*.7)*7).toFixed(1)}px)`:'none';
+    const dx=(1-en)*76-ex*92;
+    deck.style.transform=`translate(${dx.toFixed(1)}px,${((1-en)*9).toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
+    const bl=Math.max(1-en,ex*.7)*6;
+    deck.style.filter=bl>.06?`blur(${bl.toFixed(1)}px)`:'none';
   }
   grid.style.maskImage='none';grid.style.webkitMaskImage='none';
-  /* karty: rovnaká ease-out krivka všade, stagger, dokončené pri dojazde (ap=0.5) */
   grid.querySelectorAll('.card').forEach((c,i)=>{
-    const local=clamp(ap*3.2-i*.09);
-    const e=1-Math.pow(1-local,3);
+    const e=ss(clamp(ap*3.2-i*.1));
     c.style.opacity=e.toFixed(3);
     c.style.transform=pop
-      ?`scale(${(.92+e*.08).toFixed(3)})`
-      :`translate(${(dirIn*(1-e)*36).toFixed(1)}px,${((1-e)*26).toFixed(1)}px)`;
+      ?`scale(${(.94+e*.06).toFixed(3)})`
+      :`translate(${((1-e)*48).toFixed(1)}px,${((1-e)*16).toFixed(1)}px)`;
   });
   /* count-up čísel viazaný na progres (scrub-friendly) */
   grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
+    const e=ss(clamp(ap*2.6-i*.18));
     const tgt=+el.dataset.n;
-    const local=clamp(ap*2.6-i*.18);
-    const val=Math.round(tgt*(1-Math.pow(1-local,3)));
+    el.childNodes[0].nodeValue=Math.round(tgt*e);
     const small=el.querySelector('small');
-    el.childNodes[0].nodeValue=val;
-    if(small)small.style.opacity=local>.9?1:.35;
+    if(small)small.style.opacity=e>.92?1:.35;
   });
 }
 
@@ -1019,14 +1016,14 @@ function chores(t){
   hint.style.opacity=p<.02?1:0;
 
   /* 1 PRITIAHNI */
-  const h=1-clamp(aP('pritiahni')*1.15);
+  const h=1-ss(clamp(aP('pritiahni')*1.15));
   ovlHero.style.opacity=h.toFixed(3);
   ovlHero.style.pointerEvents=h>.3?'auto':'none';
-  ovlHero.style.transform=`translateY(${(1-h)*-40}px)`;
+  ovlHero.style.transform=`translateY(${((1-h)*-40).toFixed(1)}px)`;
 
   /* 2 OBJAV / 3 POCHOP */
-  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aP('objav'),-1,-1);
-  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aP('pochop'),1,1);
+  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aP('objav'));
+  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aP('pochop'));
 
   /* 4 PREDSTAV SI */
   const wv=aP('predstav');
@@ -1042,14 +1039,14 @@ function chores(t){
     :'mesto ožíva · teplá biela = život';
 
   /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď je panel/foto na mieste */
-  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),clamp((aP('jazyk')-.14)*1.22),0,0);
-  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aP('tuba'),0,0);
-  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),clamp((aP('skal')-.14)*1.22),0,0,true);
+  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),clamp((aP('jazyk')-.14)*1.22));
+  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),aP('tuba'));
+  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),clamp((aP('skal')-.14)*1.22),true);
   /* 7c VRSTVY — karty rise + render sa odkrýva zdola nahor (svetlo stúpa vrstvami) */
-  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),clamp((aP('vrstvy')-.14)*1.22),0,0);
+  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),clamp((aP('vrstvy')-.14)*1.22));
   {
     const vp=clamp((aP('vrstvy')-.14)*1.22);
-    const w=clamp(vp*2.3)*130;
+    const w=ss(clamp(vp*2.3))*130;
     const m=`linear-gradient(to top, black ${w.toFixed(1)}%, transparent ${Math.min(w+18,148).toFixed(1)}%)`;
     const vi=document.getElementById('vimg');
     vi.style.maskImage=m;vi.style.webkitMaskImage=m;
@@ -1057,37 +1054,33 @@ function chores(t){
   }
 
   /* 6 OBOR */
-  const ob=wnd('obor');
+  const ob=ss(wnd('obor'));
   const ovlOb=document.getElementById('ovlObor');
   ovlOb.style.opacity=ob.toFixed(3);
   ovlOb.style.pointerEvents=ob>.3?'auto':'none';
-  ovlOb.style.transform=`translateY(${(1-ob)*28}px)`;
+  ovlOb.style.transform=`translate(${((1-ob)*54).toFixed(1)}px,${((1-ob)*14).toFixed(1)}px)`;
 
   /* pozadia: mesto skončí plným rozsvietením, potom biela ← · tma · video · fotka · biela → */
-  const mapFade=(1-clamp(aP('jazyk')*2.4)).toFixed(3);      /* mapa už sa nevracia */
+  const mapFade=(1-ss(clamp(aP('jazyk')*2.4))).toFixed(3);  /* mapa už sa nevracia */
   cv.style.opacity=mapFade;
   if(glcv)glcv.style.opacity=mapFade;
 
-  function rollPanel(el,ap,fromLeft){
+  function rollPanel(el,ap){
     if(ap<=0||ap>=1){el.style.visibility='hidden';return 0;}
     el.style.visibility='visible';
-    const enter=clamp(ap*3),exit=clamp((ap-.72)*3.6);
-    const x=fromLeft?(-104+enter*104+exit*104):(104-enter*104-exit*104);
+    const enter=ss(clamp(ap*3)),exit=ss(clamp((ap-.72)*3.6));
+    const x=104-enter*104-exit*104;            /* vždy sprava — jeden smer celej story */
     el.style.transform=`translateX(${x.toFixed(2)}%)`;
     return enter*(1-exit);
   }
-  /* biele panely: L=legenda, R=vrstvy, L=škálovateľnosť (akty sa neprekrývajú) */
   const apJ=aP('jazyk'),apV=aP('vrstvy'),apS=aP('skal');
-  const light=Math.max(
-    rollPanel(document.getElementById('panelL'),apS>0?apS:apJ,true),
-    rollPanel(document.getElementById('panelR'),apV,false)
-  );
+  const light=rollPanel(document.getElementById('panelR'),apS>0?apS:(apV>0?apV:apJ));
   document.body.classList.toggle('lightmode',light>.5);
   document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
   document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
 
   /* 6b TURNTABLE — pomalá otočka, vysvetlivky sa hromadia po štvrtinách */
-  const tn=wnd('turn');
+  const tn=ss(wnd('turn'));
   const ot=document.getElementById('ovlTurn');
   ot.style.opacity=tn.toFixed(3);
   ot.style.visibility=tn>.02?'visible':'hidden';
@@ -1110,8 +1103,7 @@ function chores(t){
   }
   /* callouty + vodiace čiary k objektom — tá istá progres krivka ako decky */
   document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
-    const local=clamp((entry-.3)*2.2-i*.14);
-    const e2=1-Math.pow(1-local,3);
+    const e2=ss(clamp((entry-.3)*2.2-i*.14));
     c.style.opacity=e2.toFixed(3);
     c.style.transform=`translateY(${((1-e2)*16).toFixed(1)}px)`;
     const ln=document.getElementById('tl'+(i+1)),td=document.getElementById('td'+(i+1));
@@ -1121,7 +1113,7 @@ function chores(t){
 
   /* video beží cez interlúdium AJ kapitolu médií — tam sa rozostrí a obsah si sadne naň */
   const vSpan=clamp((Ps-ACT.video[0])/(ACT.tuba[1]-ACT.video[0]));
-  const vv=Math.max(0,Math.min(1,vSpan*3.4,(1-vSpan)*3.4));
+  const vv=ss(Math.min(1,vSpan*3.4,(1-vSpan)*3.4));
   const blurK=clamp(aP('tuba')*2.2);
   chapvid.style.opacity=vv.toFixed(3);
   chapvid.style.filter=`blur(${(blurK*10).toFixed(1)}px) brightness(${(1-.42*blurK).toFixed(2)}) saturate(1.08)`;
@@ -1130,15 +1122,15 @@ function chores(t){
     if(vv>.04){if(chapvid.paused)chapvid.play().catch(()=>{});}
     else if(!chapvid.paused)chapvid.pause();
   }
-  document.getElementById('ovlVideo').style.opacity=wnd('video').toFixed(3);
+  document.getElementById('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
 
   /* 9 PROTOTYP · 10 ZAPOJ SA (overlay kroky) — visibility, nech skryté nekradnú kliky */
-  const pr=wnd('proto');
+  const pr=ss(wnd('proto'));
   const op=document.getElementById('ovlProto');
   op.style.opacity=pr.toFixed(3);
   op.style.visibility=pr>.03?'visible':'hidden';
   op.style.pointerEvents=pr>.5?'auto':'none';
-  const zp=clamp(aP('zapoj')*1.6);
+  const zp=ss(clamp(aP('zapoj')*1.6));
   const oz=document.getElementById('ovlZapoj');
   oz.style.opacity=zp.toFixed(3);
   oz.style.visibility=zp>.03?'visible':'hidden';
@@ -1276,7 +1268,11 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
     document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
   }
   const fp=parseFloat(new URL(location).searchParams.get('ps'));  /* ladenie medzistavov */
-  if(!isNaN(fp)){Ps=clamp(fp);STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);}
+  if(!isNaN(fp)){
+    Ps=clamp(fp);
+    STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);
+    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+  }
 }
 /* ladenie/perf: ?nofx=1 vypne častice a zrno */
 if(new URL(location).searchParams.get('nofx')){
