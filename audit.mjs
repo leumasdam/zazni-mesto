@@ -109,6 +109,9 @@ ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
+ok('objav = inverzia (diery spia vo svetle, drží cez pochop) + štvorec pravdy 2,4 km + faktový riadok',
+  PRE.includes('invA')&&PRE.includes('sqA')&&PRE.includes('2,4 × 2,4 km')&&PRE.includes('Toto všetko práve spí')
+  &&PRE.includes('sqCalc')&&src('gl-src/city.js').includes('HOLECOL'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */

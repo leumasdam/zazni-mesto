@@ -239,6 +239,12 @@ body.lightmode .dots i.on{background:#C77800}
 .card h3{font-family:var(--fd);font-size:17px;margin:10px 0 6px}
 .card p{font-size:13px;color:var(--text-mid);line-height:1.55}
 .card .src{font-family:var(--fm);font-size:10px;color:var(--text-low);display:block;margin-top:12px;letter-spacing:.05em}
+/* OBJAV: jeden faktový riadok namiesto troch kariet — hrdina slidu je mapa (inverzia + štvorec) */
+.factrow{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 36px;padding:22px 28px}
+.factrow .f{display:flex;align-items:baseline;gap:10px;font-size:15px;color:var(--text-mid);white-space:nowrap}
+.factrow .num{font-size:clamp(30px,3.2vw,46px);font-style:normal}
+.factrow .trend{flex-basis:100%;margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--text-mid);max-width:76ch}
+.factrow .src{flex-basis:100%;margin-top:8px}
 .deck .head{max-width:1240px;margin:0 auto 26px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .deck .head b{font-family:var(--fd);font-weight:700;font-size:clamp(34px,4.6vw,74px);line-height:1;letter-spacing:-.025em;overflow:hidden;display:inline-block;padding-bottom:.08em;margin-bottom:-.08em}
 .deck .head .rl{display:inline-block;font-style:normal;transform:translateY(112%);will-change:transform}
@@ -441,25 +447,14 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 2 · OBJAV — čísla -->
 <div class="ovl mid" id="ovlObjav">
   <div class="deck">
-    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Koľko mesta spí</b></div>
+    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Toto všetko práve spí</b></div>
     <div class="grid" id="gridObjav">
-      <div class="card">
-        <div class="num" data-n="113">0</div>
-        <h3>brownfieldov</h3>
-        <p>Toľko zhasnutých miest eviduje register. A klesá — v 2019 ich bolo 131: 26 sa prebudilo a vyradilo, 8 nových pribudlo. My mu dávame vypínač.</p>
-        <span class="src">register BF · MIB · aktualizácia 2022</span>
-      </div>
-      <div class="card">
-        <div class="num" data-n="580">0<small> ha</small></div>
-        <h3>spiacej plochy</h3>
-        <p>Súčet výmer všetkých polygónov, ktoré práve vidíš pulzovať. V 2019: 629 ha.</p>
-        <span class="src">pole VYMERA_HA · súčet 579,4 ha</span>
-      </div>
-      <div class="card">
-        <div class="num" data-n="800">0</div>
-        <h3>futbalových ihrísk</h3>
-        <p>Aby si tú plochu vedel predstaviť. Trinásť území sú obri nad 8 ha: Dynamitka-Istrochem, Rázsochy, Filiálka, Vojenská nemocnica, kaštieľ v Rusovciach…</p>
-        <span class="src">prepočet 0,72 ha / ihrisko</span>
+      <div class="card factrow">
+        <span class="f"><i class="num" data-n="113">0</i> spiacich miest</span>
+        <span class="f"><i class="num" data-n="580">0<small> ha</small></i> plochy</span>
+        <span class="f">≈ <i class="num" data-n="800">0</i> futbalových ihrísk</span>
+        <p class="trend">A dobrá správa: to číslo klesá — v 2019 ich bolo 131: 26 sa prebudilo a vyradilo, 8 nových pribudlo. Mesto sa budí aj samo, len pomaly. My mu dávame vypínač.</p>
+        <span class="src">register BF · MIB · aktualizácia 2022 · pole VYMERA_HA · súčet 579,4 ha · prepočet 0,72 ha / ihrisko</span>
       </div>
     </div>
   </div>
@@ -664,7 +659,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 58 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 59 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -994,6 +989,20 @@ function oborHead(x,y,awake,alpha){
   cx.globalAlpha=1;
 }
 
+/* ŠTVOREC PRAVDY: strana = √(súčet plôch polygónov) vo svetových jednotkách,
+   stred = plošné ťažisko spánku → štvorec má PRESNE plochu všetkých 580 ha */
+let SQ=null;
+function sqCalc(){
+  let A=0,sx=0,sy=0;
+  for(const pl of POLY){
+    const r=pl.rings[0];let a=0;
+    for(let i=0;i<r.length;i++){const[x1,y1]=r[i],[x2,y2]=r[(i+1)%r.length];a+=x1*y2-x2*y1;}
+    a=Math.abs(a)/2;A+=a;sx+=pl.cx*a;sy+=pl.cy*a;
+  }
+  SQ={side:Math.sqrt(A),x:sx/A,y:sy/A};
+}
+const SQ_CAP='580 ha POKOPE = ŠTVOREC 2,4 × 2,4 km';
+
 /* ---------- kreslenie ---------- */
 function draw(t){
   const p=Ps;
@@ -1021,12 +1030,17 @@ function draw(t){
   const ownPulse0=Math.sin(clamp(ownA0)*Math.PI);
   const HB=1+(1-clamp(p*14))*.6;                 /* hero pulz */
   const wave=aP('predstav');
+  /* INVERZIA (objav→pochop): mesto sa rozsvieti a spiace parcely sú čierne DIERY vo svetle —
+     drží cez POCHOP (farby kľúčov čítaš na dierach), nástup VLNY mesto opäť stlmí */
+  const invA=ss(clamp(aP('objav')*1.35))*(1-ss(clamp(wave*2.2)));
+  /* ŠTVOREC PRAVDY: celá spiaca plocha pokope = 2,4 × 2,4 km — dojazd OBJAV, odchod s POCHOP */
+  const sqA=ss(clamp((aP('objav')-.5)*2.6))*(1-ss(clamp(aP('pochop')*1.9)));
 
   /* === WebGL vetva: mesto kreslí three.js s bloomom; 2D canvas ostáva len na menovky === */
   if(GL){
     cx.setTransform(DPR,0,0,DPR,0,0);
     cx.clearRect(0,0,VW,VH);
-    const lit=GL.frame({t,wave,ctxA,own:ownPulse0,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB});
+    const lit=GL.frame({t,wave,ctxA,own:ownPulse0,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB,inv:invA});
     for(const pl of POLY){
       if(!pl.big)continue;
       const s=polyState(pl);
@@ -1041,6 +1055,22 @@ function draw(t){
       cx.fillStyle='#FFE9B8';
       cx.fillText(pl.p.n.toUpperCase(),q.x+8,q.y-8);
       oborHead(q.x+8,q.y-40,pl.p.plan===1&&s>.8,la);
+    }
+    /* ŠTVOREC PRAVDY — premietnutý cez GL kameru */
+    if(sqA>.01){
+      if(!SQ)sqCalc();
+      const hf=SQ.side/2,
+            C4=[[SQ.x-hf,SQ.y-hf],[SQ.x+hf,SQ.y-hf],[SQ.x+hf,SQ.y+hf],[SQ.x-hf,SQ.y+hf]].map(([a,b])=>GL.project(a,b));
+      if(C4.every(q=>q.vis)){
+        cx.save();cx.globalAlpha=sqA;
+        cx.strokeStyle='rgba(245,158,11,.95)';cx.lineWidth=2.2;cx.setLineDash([12,8]);cx.lineDashOffset=(1-sqA)*300;
+        cx.beginPath();C4.forEach((q,i)=>i?cx.lineTo(q.x,q.y):cx.moveTo(q.x,q.y));cx.closePath();cx.stroke();cx.setLineDash([]);
+        const bx=(C4[2].x+C4[3].x)/2,by=Math.max(C4[2].y,C4[3].y);
+        cx.font='600 11px "JetBrains Mono",monospace';cx.textAlign='center';
+        cx.strokeStyle='rgba(5,7,15,.9)';cx.lineWidth=3.5;cx.lineJoin='round';cx.strokeText(SQ_CAP,bx,by+24);
+        cx.fillStyle='#F59E0B';cx.fillText(SQ_CAP,bx,by+24);
+        cx.textAlign='left';cx.restore();
+      }
     }
     return lit;
   }
@@ -1059,15 +1089,15 @@ function draw(t){
   cx.beginPath();
   boundaryW.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));
   cx.closePath();
-  cx.fillStyle=`rgba(13,17,34,${.55+ctxA*.35})`;cx.fill();
-  cx.strokeStyle=`rgba(61,69,104,${.25+ctxA*.55})`;cx.lineWidth=1.4*px;cx.stroke();
+  cx.fillStyle=`rgba(13,17,34,${Math.min(1,.55+ctxA*.35+invA*.24)})`;cx.fill();
+  cx.strokeStyle=`rgba(61,69,104,${Math.min(1,.25+ctxA*.55+invA*.25)})`;cx.lineWidth=1.4*px;cx.stroke();
 
   /* mestské svetlá — konštantná obrazovková veľkosť (bodky, nie bokeh pri zoome) */
   if(ctxA>0.02){
     for(const d of DOTS){
       const tw=.75+.25*Math.sin(t*.0012+d.tw);
       cx.beginPath();cx.arc(d.x,d.y,d.r/(2.4*zoom),0,6.283);
-      cx.fillStyle=`rgba(255,233,184,${(d.o*ctxA*tw*.85).toFixed(3)})`;cx.fill();
+      cx.fillStyle=`rgba(255,233,184,${Math.min(1,d.o*ctxA*tw*(.85+invA*.8)).toFixed(3)})`;cx.fill();
     }
   }
 
@@ -1096,16 +1126,42 @@ function draw(t){
     cx.beginPath();
     for(const r of pl.rings){r.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y));cx.closePath();}
     cx.fill();
+    /* INVERZIA: spiaca parcela = čierna diera vo svietiacom meste (absencia svetla) */
+    const hole=invA*(1-clamp(s*4));
+    if(hole>.02){
+      cx.globalAlpha=hole*.92;
+      cx.fillStyle='#04060C';
+      cx.fill();
+    }
     /* obrys: v akte POCHOP svietia súkromníci */
     if(ownPulse>.03&&pl.p.own==='private'&&s<.2){
       cx.globalAlpha=ownPulse*.95;
       cx.strokeStyle='#FFE9B8';cx.lineWidth=2*px;cx.setLineDash([8*px,5*px]);
       cx.stroke();cx.setLineDash([]);
-    }else if(pl.big||s>.3){
+    }else if(pl.big||s>.3||hole>.25){
       cx.globalAlpha=Math.max(.25,alpha*.9);
       cx.strokeStyle=s>.5?'rgba(255,246,227,.8)':'rgba(139,145,221,.7)';
       cx.lineWidth=(pl.big?1.6:1)*px;cx.stroke();
     }
+    cx.globalAlpha=1;
+  }
+
+  /* ŠTVOREC PRAVDY — 580 ha pokope, kreslený vo svetových jednotkách */
+  if(sqA>.01){
+    if(!SQ)sqCalc();
+    const hf=SQ.side/2;
+    cx.globalAlpha=sqA;
+    cx.strokeStyle='rgba(245,158,11,.95)';cx.lineWidth=2.2*px;
+    cx.setLineDash([12*px,8*px]);cx.lineDashOffset=(1-sqA)*300*px;
+    cx.strokeRect(SQ.x-hf,SQ.y-hf,SQ.side,SQ.side);
+    cx.setLineDash([]);
+    cx.save();cx.setTransform(DPR,0,0,DPR,0,0);          /* popis v obrazovkových px */
+    const sqx=(SQ.x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,
+          sqy=((SQ.y+hf)*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH;
+    cx.font='600 11px "JetBrains Mono",monospace';cx.textAlign='center';
+    cx.strokeStyle='rgba(5,7,15,.9)';cx.lineWidth=3.5;cx.lineJoin='round';cx.strokeText(SQ_CAP,sqx,sqy+24);
+    cx.fillStyle='#F59E0B';cx.fillText(SQ_CAP,sqx,sqy+24);
+    cx.textAlign='left';cx.restore();
     cx.globalAlpha=1;
   }
 
