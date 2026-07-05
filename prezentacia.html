@@ -957,8 +957,7 @@ function stepHud(){
 }
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
 const AUTO=+(QS.get('auto')||0);
-const JZP=QS.get('jz');   /* debug: zmraz dvojfazu legendy */
-let jzT0=0,prevApJ=0,jzDir=0,jzFrom=0,jzE=0;
+const JZP=QS.get('jz');   /* debug: zmraz push vlna→legenda na hodnote */
 function onArrive(){
   const s=STEPS[STEP];
   if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
@@ -1453,30 +1452,19 @@ function chores(t){
         apVid=aP('video'),apTb=aP('tuba'),apS=aP('skal'),apP2=aP('proto'),apZ=aP('zapoj');
   const eO=ssE(apO),eT2=ss(clamp(apT*3.2)),eV=ssE(apV),eVid=ssE(apVid),
         eTb=ssE(apTb),eS=ssE(apS),eP=ssE(apP2),eZ=ssE(apZ);
-  /* legenda: dvojfáza v ČASE — 700 ms do polovice · 450 ms sek · 620 ms dokončenie.
-     OBOMA SMERMI: vpred 0→½·SEK·½→1, pri cúvnutí zrkadlovo 1→½·SEK·½→0;
-     otočka uprostred letu nadviaže z aktuálnej hodnoty (jzFrom). */
-  const jzEnv=tt=>tt<700?ss(tt/700)*.5 : tt<1150?.5 : .5+ss(Math.min(1,(tt-1150)/620))*.5;
-  if(apJ>0&&prevApJ<=0){jzT0=t;jzDir=1;jzFrom=0;}
-  else if(jzDir===1&&prevApJ-apJ>1e-3){jzT0=t;jzDir=-1;jzFrom=jzE;}
-  else if(jzDir===-1&&apJ-prevApJ>1e-3){jzT0=t;jzDir=1;jzFrom=jzE;}
-  if(apJ<=0){jzT0=0;jzDir=0;jzFrom=0;}
-  prevApJ=apJ;
-  let eJ;
-  if(REDUCED)eJ=apJ>0?1:0;
-  else if(!jzDir)eJ=0;
-  else eJ=jzFrom+((jzDir>0?1:0)-jzFrom)*jzEnv(t-jzT0);
+  /* vlna → legenda: JEDNODUCHÝ push o jeden slide (žiadny medzikrok/dvojfáza) — mapa aj
+     s tmavým spodným okrajom plynulo vyjde HORE, spodok vyplní legenda zdola. */
+  let eJ=ssE(apJ);
   if(JZP!==null)eJ=+JZP;
-  jzE=eJ;
   const ride=e=>Math.min(0,4-104*e);           /* odchod HORE v kontakte s prichádzajúcim (104 % štart → bez medzier) */
 
   /* mapa: na HERO odsunutá NIŽŠIE (trčí len okraj — projektorové pódium),
-     prvý krok ju vytiahne hore = veľký parallax; potom vytlačená HORE panelom legendy */
+     prvý krok ju vytiahne hore = veľký parallax; potom sa CELÁ (aj s tmavým okrajom) posunie HORE */
   const heroDrop=ss(clamp(1-Ps/.092))*VH*.8;   /* parallax rozložený takmer po celý prechod hero→objav — jemnejší */
   const mapY=ride(eJ)/100*VH+heroDrop;
   cv.style.transform=`translateY(${mapY.toFixed(1)}px)`;
   if(glcv)glcv.style.transform=cv.style.transform;
-  const mapFade=(1-ss(clamp((eJ-.55)*2.4))).toFixed(3);     /* viditeľná až za polovicu, potom už sa nevracia */
+  const mapFade=(1-ss(clamp((eJ-.86)*7))).toFixed(3);      /* ostáva plná (tmavá mapa sa posúva hore), zmizne až keď je za hranou */
   cv.style.opacity=mapFade;
   if(glcv)glcv.style.opacity=mapFade;
 
