@@ -109,9 +109,9 @@ ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
-ok('objav = spoločný nádych + projektor nasvieti hrdinov (obri ≥ 8 ha · hľadáčik + obrys vlastníctva + menovka)',
+ok('objav = spoločný nádych + územia ako obori (budova s tvárou v stavovej farbe, jazyk manuálu) + menovky',
   PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Toto všetko práve spí')
-  &&PRE.includes('function heroMarkers')&&PRE.includes('HEROES=POLY.filter')&&PRE.includes('HĽADÁČIK')
+  &&PRE.includes('function heroMarkers')&&PRE.includes('function drawObor')&&PRE.includes('OBOR_BODY')
   &&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
