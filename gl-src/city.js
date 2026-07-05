@@ -99,14 +99,17 @@ function init(canvas,data){
       const eg=new THREE.BufferGeometry().setFromPoints(p.pts.map(([x,y])=>new THREE.Vector3(X(x),H3+.6,Z(y))));
       mesh.userData.edge=new THREE.LineLoop(eg,new THREE.LineBasicMaterial({color:0xFFF6E3,transparent:true,opacity:0,depthWrite:false}));
       scene.add(mesh.userData.edge);
-      if(p.own==='private'){
+      /* VLASTNÍCTVO = obrys (manuál): súkromník prerušovaná · mix bodkovaná (mesto = plný edge) */
+      if(p.own==='private'||p.own==='mixed'){
         const lp=p.pts.map(([x,y])=>new THREE.Vector3(X(x),H3+1,Z(y)));
         const lg=new THREE.BufferGeometry().setFromPoints(lp);
-        const lm=new THREE.LineDashedMaterial({color:0xFFE9B8,dashSize:S*.002,gapSize:S*.0012,transparent:true,opacity:0});
+        const lm=new THREE.LineDashedMaterial({color:0xFFE9B8,
+          dashSize:p.own==='private'?S*.002:S*.0007,gapSize:p.own==='private'?S*.0012:S*.001,
+          transparent:true,opacity:0});
         dash=new THREE.LineLoop(lg,lm);dash.computeLineDistances();scene.add(dash);
       }
     }catch(e){/* degenerovaný polygón — preskoč */}
-    items.push({mesh,dash,t:p.t,phase:p.phase,big:p.big,plan:p.plan,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
+    items.push({mesh,dash,own:p.own,t:p.t,phase:p.phase,big:p.big,plan:p.plan,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
   }
 
   /* ramp helper (rovnaké čísla ako 2D verzia — ramp príde z hlavného súboru) */
@@ -155,6 +158,7 @@ function init(canvas,data){
   }
 
   const HOLECOL=new THREE.Color(0x04060C);   /* inverzia: spiaca parcela = čierna diera */
+  const WARMC=new THREE.Color(0xFFE9B8);     /* vlastníctvo: teplý obrys podľa manuálu */
   function frame(st){
     const inv=st.inv||0;
     /* kamera: orbit okolo cieľa, výška z pitch, dolly zo zoomu, kurzorová 3D parallaxa.
@@ -195,7 +199,12 @@ function init(canvas,data){
         it.mesh.material.opacity=Math.max(it.mesh.material.opacity*(1-hole*.6),hole*.9);
         ed.opacity=Math.max(ed.opacity,hole*.4);
       }
-      if(it.dash)it.dash.material.opacity=(s<.2?st.own:0)*.95;
+      /* VLASTNÍCTVO = obrys: puls v POCHOP, potom tichý kanál (st.own = ownK z hlavného súboru) */
+      if(it.dash)it.dash.material.opacity=st.own*.95;
+      if(it.own==='city'&&st.own>.02){
+        ed.color.lerp(WARMC,Math.min(1,st.own));          /* mesto = plná teplá linka */
+        ed.opacity=Math.max(ed.opacity,st.own*.9);
+      }
       if(s>=.5&&it.prevS<.5&&st.wave>0&&st.wave<1)ripple(X(it.cx),Z(it.cy),st.t);
       it.prevS=s;
     }

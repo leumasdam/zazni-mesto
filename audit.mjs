@@ -112,6 +112,9 @@ ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče z
 ok('objav = inverzia (diery spia vo svetle, drží cez pochop) + štvorec pravdy 2,4 km + faktový riadok',
   PRE.includes('invA')&&PRE.includes('sqA')&&PRE.includes('2,4 × 2,4 km')&&PRE.includes('Toto všetko práve spí')
   &&PRE.includes('sqCalc')&&src('gl-src/city.js').includes('HOLECOL'));
+ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
+  PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
+  &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */
