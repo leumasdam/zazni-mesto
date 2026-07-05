@@ -449,7 +449,7 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 2 · OBJAV — čísla -->
 <div class="ovl mid" id="ovlObjav">
   <div class="deck">
-    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Toto všetko práve spí</b></div>
+    <span class="ghost">02</span><div class="head"><span>02 · Objav</span><b>Toto všetko čaká na svetlo</b></div>
     <div class="grid" id="gridObjav">
       <div class="card factrow">
         <span class="f"><i class="num" data-n="113">0</i> spiacich miest</span>
@@ -661,7 +661,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 61 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 62 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -1001,7 +1001,7 @@ function oborHead(x,y,awake,alpha){
 
 /* KROK 02 — projektor NASVIETI konkrétnych hrdinov registra (obri ≥ 8 ha):
    hľadáčikové rohy + obrys podľa vlastníctva + menovka — presne jazyk manuálu. */
-let o2T0=0,o2Prev=0,HEROES=null;
+let o2T0=0,o2Prev=0,o3T0=0,o3Prev=0,HEROES=null;
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 /* VLASTNÍCTVO = obrys (manuál): mesto plná · súkromník prerušovaná · mix bodkovaná */
 const OWN_DASH={city:null,private:[8,5],mixed:[2.5,4.5]};
@@ -1046,12 +1046,12 @@ function drawObor(g,X,Y,S,awake,a){
   g.save();g.globalAlpha=a;
   g.translate(X,Y);g.scale(k,k);g.translate(-39,-50);   /* 96-priestor SVG obora, centrovaný na (X,Y) */
   g.lineJoin='round';g.lineCap='round';
-  if(awake){                                             /* aura + lúče prebudeného */
-    const grd=g.createRadialGradient(39,54,0,39,54,42);
-    grd.addColorStop(0,'rgba(245,158,11,.26)');grd.addColorStop(1,'rgba(245,158,11,0)');
-    g.fillStyle=grd;g.beginPath();g.arc(39,54,42,0,6.283);g.fill();
-    g.strokeStyle='#FFB94A';g.lineWidth=2.6;g.beginPath();
-    [[9,40,2,36],[69,40,76,36],[39,9,39,2],[17,18,12,12],[61,18,66,12]].forEach(([x1,y1,x2,y2])=>{g.moveTo(x1,y1);g.lineTo(x2,y2);});
+  if(awake){                                             /* aura + lúče prebudeného (jemná — 66 ich nesmie zahltiť) */
+    const grd=g.createRadialGradient(39,54,0,39,54,40);
+    grd.addColorStop(0,'rgba(245,158,11,.16)');grd.addColorStop(1,'rgba(245,158,11,0)');
+    g.fillStyle=grd;g.beginPath();g.arc(39,54,40,0,6.283);g.fill();
+    g.strokeStyle='#FFB94A';g.lineWidth=2.4;g.beginPath();
+    [[9,40,3,37],[69,40,75,37],[39,9,39,3],[18,18,13,13],[60,18,65,13]].forEach(([x1,y1,x2,y2])=>{g.moveTo(x1,y1);g.lineTo(x2,y2);});
     g.stroke();
   }
   /* komín + telo — vyplnená silueta (badge, presné farby z kioskového oborArt) */
@@ -1085,8 +1085,8 @@ function heroMarkers(P,st){
     const e=final?1:ss(clamp((st.tt-650-i*85)/560));    /* projektor ich nachádza postupne */
     if(e<=0)continue;
     const q=P(pl.cx,pl.cy);if(!q.vis)continue;
-    const S=(18+Math.sqrt(pl.p.ha)*3.4)*(.72+.28*e);    /* mierka = výmera (manuál) + pop-in */
-    drawObor(cx,q.x,q.y,S,false,e);
+    const S=(11+Math.sqrt(pl.p.ha)*2.4)*(.74+.26*e);    /* mierka = výmera (manuál) + pop-in — menšie */
+    drawObor(cx,q.x,q.y,S,pl.p.plan===1,e);             /* REÁLNE dáta: bdie LEN ak má zámer v registri (plan=1) */
     /* MENOVKA — 7 najväčších, plain text ako na kiosku, bez prekryvu */
     if(i<7&&e>.5){
       const la=clamp((e-.5)/.5);
@@ -1109,6 +1109,38 @@ function heroMarkers(P,st){
   cx.textAlign='left';
 }
 
+/* KĽÚČ — „kto drží kľúč" (POCHOP). VLASTNÍCTVO číta oblúk kľúča rovnakou rečou ako obrys v manuáli
+   (tvar, nie farba — farba je vyhradená STAVU): plný = verejné (mesto/štát) · čiarkovaný = súkromník · bodkovaný = mix.
+   Farba vždy warm-white #FFE9B8 (kanál vlastníctva), nikdy amber (to je stav „prebúdza sa"). */
+const OWN_KEY={city:null,state:null,private:[3.4,2.6],other:[3.4,2.6],mixed:[1.3,2.8]};
+function drawKey(g,X,Y,S,a,dash){
+  if(a<=.01)return;
+  g.save();g.globalAlpha=a;g.translate(X,Y);g.scale(S/34,S/34);
+  g.strokeStyle='#FFE9B8';g.lineWidth=3;g.lineCap='round';g.lineJoin='round';
+  if(dash)g.setLineDash(dash);
+  g.beginPath();g.arc(0,-9,6.5,0,6.283);g.stroke();              /* oko kľúča = vlastníctvo (plný/čiarka/bodka) */
+  g.setLineDash([]);
+  g.beginPath();g.moveTo(0,-2.5);g.lineTo(0,14);                 /* driek + zuby vždy plné */
+  g.moveTo(0,14);g.lineTo(5.5,14);g.moveTo(0,9.5);g.lineTo(3.8,9.5);
+  g.stroke();g.restore();
+}
+/* POCHOP — kľúč na každom význačnom území; oblúk kľúča = vlastník (jazyk manuálu) */
+function keyMarkers(P,st){
+  if(st.own<=.02)return;
+  if(!HEROES)HEROES=POLY.filter(pl=>pl.p.ha>=4).sort((a,b)=>b.p.ha-a.p.ha);
+  const final=st.tt>=1e5;
+  cx.save();cx.setTransform(DPR,0,0,DPR,0,0);cx.globalAlpha=1;
+  for(let i=0;i<HEROES.length;i++){
+    const pl=HEROES[i];
+    const e=final?1:ss(clamp((st.tt-450-i*65)/540));
+    if(e<=0)continue;
+    const q=P(pl.cx,pl.cy);if(!q.vis)continue;
+    const S=19*(.72+.28*e);
+    drawKey(cx,q.x,q.y,S,e*.92,OWN_KEY[pl.p.own]);
+  }
+  cx.globalAlpha=1;cx.restore();
+}
+
 /* ---------- kreslenie ---------- */
 function draw(t){
   const p=Ps;
@@ -1117,9 +1149,9 @@ function draw(t){
   const CAM=[
     [0,               1.04,  0,     0   ],
     [ACT.objav[0],    1.06,  .008,  0   ],
-    [.095,            1.13, -.014,  .004],   /* KROK 02 — širší záber: vidno viac hrdinov naraz */
-    [ACT.objav[1],    1.16, -.022, -.015],
-    [.18,             1.24, -.052,  .01 ],   /* dojazd POCHOP — od hold už len jeden ťah */
+    [.095,            1.13, -.014, -.075],   /* KROK 02 — širší záber + mapa VYŠŠIE (urezaná zhora), headline sa nekryje s obormi */
+    [ACT.objav[1],    1.16, -.022, -.08 ],
+    [.18,             1.24, -.052, -.06 ],   /* POCHOP — mapa stále vyššie */
     [ACT.predstav[1], 1.0,  -.004, -.004],   /* vlna = JEDEN plynulý pull-out, žiadny medzikrok */
     [ACT.jazyk[1],    1.0,   0,    -.03 ],   /* pod panelom už žiadne re-zoomy */
   ];
@@ -1145,6 +1177,13 @@ function draw(t){
   o2Prev=apO;
   const pres02=ss(clamp(apO*2))*(1-ss(clamp(aP('pochop')*2.2)));   /* prítomnosť kroku 02 */
   const tt02=REDUCED?1e5:(o2T0?t-o2T0:0);
+  /* KROK 03 POCHOP — kľúče vlastníctva; časovanie od príchodu (o3T0) */
+  const apPo=aP('pochop');
+  if(apPo>.35&&o3Prev<=.35)o3T0=t;
+  if(apPo<=.02)o3T0=0;
+  o3Prev=apPo;
+  const pres03=ss(clamp(apPo*2))*(1-ss(clamp(aP('predstav')*2.2)));
+  const tt03=REDUCED?1e5:(o3T0?t-o3T0:0);
   const breath=(REDUCED||!o2T0||tt02>2000)?0:Math.sin(Math.PI*tt02/2000); /* jeden spoločný nádych, 2 s */
   const br2=breath*pres02;
   /* VLASTNÍCTVO = obrys: puls v POCHOP, potom ostáva tichý kanál (manuál: kanály sa kombinujú) */
@@ -1173,6 +1212,7 @@ function draw(t){
       oborHead(q.x+8,q.y-40,pl.p.plan===1&&s>.8,la);
     }
     chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,t});
+    keyMarkers((x,y)=>GL.project(x,y),{own:pres03,tt:tt03,t});
     return lit;
   }
 
@@ -1264,7 +1304,9 @@ function draw(t){
     oborHead(sx+6,sy-34,pl.p.plan===1&&s>.8,a*.95);
     cx.restore();
   }
-  chanOverlay((x,y)=>({x:(x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,y:(y*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,vis:true}),{pres:pres02,tt:tt02,risk:riskK,t});
+  const P2=(x,y)=>({x:(x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,y:(y*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,vis:true});
+  chanOverlay(P2,{pres:pres02,tt:tt02,risk:riskK,t});
+  keyMarkers(P2,{own:pres03,tt:tt03,t});
   return lit;
 }
 

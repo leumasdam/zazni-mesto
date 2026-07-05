@@ -104,7 +104,7 @@ vrstvy jemne dýchajú — prejdi vrstvou alebo kartou = popis + vrstva sa vyzdv
 
 ## Rýchle odpovede na pravdepodobné otázky
 
-- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 61 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
+- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 62 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
 - **Prečo hlasovanie, nie je to gýč?** Je to 1. fáza vašej metodiky (participácia) v hravom obale; výstup je dataset preferencií.
 - **Prečo brownfieldy na obrazovke svietia, keď majú byť zhasnuté?** Stavy SÚ stupnica zhasnutia (jas = život). Na modeli svieti mesto a diery mlčia; obrazovka figúru obráti, aby sa dalo klikať.
 - **Prečo „rozsvecovanie"?** Doslova: každý dotyk rozsvieti kus modelu. Symbolicky: prvé, čo brownfield potrebuje, je pozornosť — register ukazuje, že územia so zámerom sa reálne prebúdzajú (26 vyradených od 2019). „Nerozsvecujete fabriku. Rozsvecujete jej príbeh."

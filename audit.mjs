@@ -109,13 +109,17 @@ ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
-ok('objav = spoločný nádych + územia ako obori (budova s tvárou v stavovej farbe, jazyk manuálu) + menovky',
-  PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Toto všetko práve spí')
+ok('objav = obori s REÁLNYM stavom (bdie LEN plan===1) + menovky; jazyk manuálu (budova s tvárou)',
+  PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Toto všetko čaká na svetlo')
   &&PRE.includes('function heroMarkers')&&PRE.includes('function drawObor')&&PRE.includes('OBOR_BODY')
-  &&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));
+  &&PRE.includes('S,pl.p.plan===1,e)')&&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
   &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
+ok('pochop = kľúče na územiach (oblúk = vlastník: plný mesto/štát · čiarka súkromník · bodka mix) + definované v manuáli',
+  PRE.includes('function drawKey')&&PRE.includes('function keyMarkers')&&PRE.includes('OWN_KEY')
+  &&PRE.includes('pres03')&&PRE.includes('Kto drží kľúč')&&!PRE.includes("rgba(245,158,11,${(e*.16")  /* žiadny amber kľúč — kolízia so stavom */
+  &&src('index.html').includes('Vlastníctvo = obrys &amp; kľúč')&&src('index.html').includes('Kľúč = kto ho drží'));
 ok('výkon+a11y: DOM cache, particle gate (reduced-motion + light), väčšie dot targety, bez mŕtveho panelL',
   PRE.includes('const byId')&&PRE.includes('window.__light')&&PRE.includes('animation-duration:.001s')
   &&PRE.includes('background-clip:content-box')&&!PRE.includes('id="panelL"'));
