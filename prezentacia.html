@@ -688,6 +688,9 @@ body.lightmode .dots i.on{background:#C77800}
    spí (indigo·pulz) → drieme (teal) → prebúdza sa (amber) → žije (teplá biela)
    ============================================================ */
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const QS=new URL(location).searchParams;
+const LITE=QS.has('lite');                         /* fail-safe prezentácia: ?lite=1 vypne GL, zrno, častice */
+const SILENT=QS.has('silent');                     /* tichý režim do miestnosti: ?silent=1 */
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 
@@ -847,7 +850,7 @@ function vstackUpdate(vp,t){
 
 /* ---------- WebGL mesto (three.js + bloom) — fallback na 2D canvas, ?nogl=1 vypne ---------- */
 let GL=null,glcv=null;
-if(!new URL(location).searchParams.get('nogl')&&window.ZazniGL){
+if(!LITE&&!QS.get('nogl')&&window.ZazniGL){
   try{
     glcv=document.createElement('canvas');glcv.id='glcity';
     document.body.insertBefore(glcv,cv);
@@ -867,7 +870,7 @@ const ACT={
   jazyk:[.38,.48], obor:[.48,.555], turn:[.555,.655], vrstvy:[.655,.72], video:[.72,.775],
   tuba:[.775,.855], skal:[.816,.915], proto:[.915,.965], zapoj:[.965,1]
 };
-let Ps=REDUCED?1:0;
+let Ps=0;
 function aP(k){const[a,b]=ACT[k];return clamp((Ps-a)/(b-a));}
 function aPr(k){const[a,b]=ACT[k];return (Ps-a)/(b-a);}      /* bez clampu — presahy pre crossfade */
 const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
@@ -877,21 +880,21 @@ const STEPS=[
   {t:0,    n:'Zažni mesto'},
   {t:.095, n:'Objav — čísla'},
   {t:.18,  n:'Pochop — kto drží kľúč'},
-  {t:.364, n:'Svetelná vlna',slow:5.2},
-  {t:.43,  n:'Legenda',slow:2.4},
+  {t:.364, n:'Svetelná vlna',slow:3.4},
+  {t:.43,  n:'Legenda',slow:1.8},
   {t:.5175,n:'Spiaci obor'},
-  {t:.605, n:'Expozícia z každej strany',slow:5.5},
-  {t:.6875,n:'Vrstvy svetla',slow:1.3},
-  {t:.7475,n:'Expozícia — film',auto:2000},
+  {t:.605, n:'Expozícia z každej strany',slow:3.6},
+  {t:.6875,n:'Vrstvy svetla',slow:1.15},
+  {t:.7475,n:'Expozícia — film',auto:2200},
   {t:.815, n:'TU-BA + médiá'},
-  {t:.885, n:'Škálovateľnosť',slow:1.3},
+  {t:.885, n:'Škálovateľnosť',slow:1.1},
   {t:.94,  n:'Živý prototyp'},
   {t:1,    n:'Zapoj sa'},
 ];
 let STEP=0,autoT=null,FL=0;
 /* INERTNÝ CHASE: Ps naháňa cieľ exponenciálne — okamžitá odozva, hodvábny dojazd,
    ďalší vstup možno poslať kedykoľvek (žiadne čakanie na animáciu). */
-let target=REDUCED?1:0,chase=.075,arrivedFor=-1;
+let target=0,chase=.082,arrivedFor=-1;
 const ss=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10);};       /* smootherstep — mäkký štart aj dojazd */
 function goStep(i,manual=true){
   i=Math.max(0,Math.min(STEPS.length-1,i));
@@ -906,8 +909,8 @@ function goStep(i,manual=true){
   document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
 }
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
-const AUTO=+(new URL(location).searchParams.get('auto')||0);
-const JZP=new URL(location).searchParams.get('jz');   /* debug: zmraz dvojfazu legendy */
+const AUTO=+(QS.get('auto')||0);
+const JZP=QS.get('jz');   /* debug: zmraz dvojfazu legendy */
 let jzT0=0,prevApJ=0;
 function onArrive(){
   const s=STEPS[STEP];
@@ -1381,7 +1384,7 @@ requestAnimationFrame(loop);
 /* snd.tick z manuálu — 40 ms potvrdenie kroku, tesne nad prahom vnímania */
 let ACTX=null;
 function tick(){
-  if(REDUCED)return;
+  if(REDUCED||SILENT)return;
   try{
     ACTX=ACTX||new (window.AudioContext||window.webkitAudioContext)();
     const o=ACTX.createOscillator(),g=ACTX.createGain();
@@ -1445,7 +1448,7 @@ document.getElementById('oborBig').addEventListener('click',()=>{
   document.getElementById('oborHint').innerHTML=oborUp
     ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
     :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú';
-  if(oborUp){try{
+  if(oborUp&&!SILENT){try{
     const a=new (window.AudioContext||window.webkitAudioContext)();
     [523.25,659.25,783.99].forEach((fq,i)=>{
       const o=a.createOscillator(),g=a.createGain();
@@ -1487,21 +1490,21 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
 
 /* deep-link ?step=N — skok rovno na stupeň (zdieľanie, ladenie) */
 {
-  const q=parseInt(new URL(location).searchParams.get('step'),10);
+  const q=parseInt(QS.get('step'),10);
   if(!isNaN(q)){
     STEP=Math.max(0,Math.min(STEPS.length-1,q));
     Ps=target=STEPS[STEP].t;
     document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
   }
-  const fp=parseFloat(new URL(location).searchParams.get('ps'));  /* ladenie medzistavov */
+  const fp=parseFloat(QS.get('ps'));  /* ladenie medzistavov */
   if(!isNaN(fp)){
     Ps=target=clamp(fp);
     STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);
     document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
   }
 }
-/* ladenie/perf: ?nofx=1 vypne častice a zrno */
-if(new URL(location).searchParams.get('nofx')){
+/* ladenie/perf: ?nofx=1 alebo ?lite=1 vypne častice a zrno */
+if(QS.has('nofx')||LITE){
   document.getElementById('pfx').style.display='none';
   document.getElementById('grain').style.display='none';
 }
@@ -1515,7 +1518,7 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 
 /* ---------- teplé častice (striedmo) ---------- */
 (function(){
-  if(REDUCED)return;
+  if(REDUCED||LITE)return;
   const pc=document.getElementById('pfx'),g=pc.getContext('2d');
   let PP=[];
   function rs(){

@@ -87,11 +87,11 @@ ok('5 aktov zážitkovej slučky',['PRITIAHNI','Objav','Pochop','Predstav','Zapo
 ok('reálne čísla v kartách (113/580/800/56/66)',['data-n="113"','data-n="580"','data-n="800"','data-n="56"','data-n="66"'].every(s=>PRE.includes(s))&&own.private===56);
 ok('rampa stavov spí→drieme→prebúdza→žije',PRE.includes('[[59,66,133],[23,179,163],[245,158,11],[255,233,184]]'));
 ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-a.cx'));
-ok('reduced-motion = statický rozsvietený stav',PRE.includes('prefers-reduced-motion')&&PRE.includes('REDUCED?1:'));
+ok('reduced-motion = okamžitý krok bez animovaného dojazdu',PRE.includes('prefers-reduced-motion')&&PRE.includes('if(REDUCED)Ps=target')&&PRE.includes('let Ps=0;'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
 ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti'));
 ok('rendre zapracované (vrstvy·TU-BA·finále hrad) + obor = 3 SVG pózy',['vrstvy-l0.png','tuba-priestor.png','hrad-okno.png'].every(s=>PRE.includes(s))&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
-ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("searchParams.get('step')")&&PRE.includes('pointerleave'));
+ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("QS.get('step')")&&PRE.includes('pointerleave'));
 ok('VRSTVY = render rozrezaný na 4 animované vrstvy (fokus + hit-test + popisy)',['vrstvy-l0.png','vrstvy-l1.png','vrstvy-l2.png','vrstvy-l3.png'].every(s=>PRE.includes(s))&&PRE.includes('vstackUpdate')&&PRE.includes('valpha')&&PRE.includes('VST.foc')&&!PRE.includes('vrstvy-projekcie.png'));
 const GLSRC=src('gl-src/city.js');
 ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
