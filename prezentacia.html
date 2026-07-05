@@ -62,7 +62,7 @@ a{color:inherit}
 .deckimg{max-width:1240px;margin:0 auto 10px}
 .deckimg img{display:block;max-width:100%;max-height:46vh;width:auto;margin:0 auto;mix-blend-mode:multiply}
 body.lightmode .brand,body.lightmode .tubamark,body.lightmode .hint{color:#101426}
-body.lightmode .brand em{color:#C77800}
+body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 
 /* legenda: 4 stavy naživo + kanály */
 .grid4{grid-template-columns:repeat(4,1fr)!important}
@@ -149,26 +149,29 @@ body.lightmode .brand em{color:#C77800}
 /* ============ chrome ============ */
 .bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(139,145,221,.12)}
 .bar i{display:block;height:100%;width:0;background:var(--amber-500);box-shadow:0 0 10px rgba(245,158,11,.8)}
-.brand{position:fixed;top:22px;left:28px;z-index:60;font-family:var(--fd);font-weight:700;font-size:15px;letter-spacing:.05em}
-.brand em{font-style:normal;color:var(--amber-300)}
-.tubamark{position:fixed;top:22px;right:28px;z-index:60;display:flex;align-items:center;gap:12px;
-  font-family:var(--fd);font-weight:700;font-size:15px;color:var(--warm-100)}
-.tubamark i{display:block;height:2px;width:clamp(40px,6vw,96px);background:currentColor;border-radius:99px}
-.hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
+/* TU—BA roztiahnuté cez celú šírku, ZAŽNI MESTO sedí v strede linky */
+.tubamark{position:fixed;top:14px;left:28px;right:28px;z-index:60;display:flex;align-items:center;gap:20px;
+  font-family:var(--fd);font-weight:700;font-size:clamp(26px,3.8vw,54px);letter-spacing:.02em;color:var(--warm-100)}
+.tubamark i{display:block;flex:1;height:2px;background:currentColor;border-radius:99px;opacity:.85}
+.tubamark .mid{font-size:13px;letter-spacing:.16em;font-weight:700;white-space:nowrap;transform:translateY(1px)}
+.tubamark .mid em{font-style:normal;color:var(--amber-300)}
+.hint{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:60;
   font-family:var(--fm);font-size:10.5px;letter-spacing:.26em;color:var(--text-low);transition:opacity .6s}
 /* kroková navigácia */
-/* footer: vľavo počítadlo krokov, vpravo šípky vedľa seba (horizontálne) */
-.steps-ui{position:fixed;right:26px;bottom:24px;z-index:70;display:flex;flex-direction:row;gap:10px}
-#stepCtr{position:fixed;left:28px;bottom:27px;z-index:70;font-family:var(--fm);letter-spacing:.14em;
-  color:var(--text-lo,#8a8fae);font-size:12px;display:flex;align-items:baseline;gap:7px}
-#stepCtr b{font-family:var(--fd);font-size:19px;letter-spacing:.04em;color:var(--warm-100)}
-#stepCtr i{font-style:normal;color:var(--amber-300);max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  border-left:1px solid rgba(255,255,255,.18);padding-left:10px}
+/* footer: svetlý bar cez celú šírku — vľavo počítadlo krokov, vpravo šípky vedľa seba */
+.footbar{position:fixed;left:0;right:0;bottom:0;height:58px;z-index:68;background:#FBFAF7;
+  border-top:1px solid rgba(11,14,26,.1);box-shadow:0 -14px 34px rgba(5,7,15,.35)}
+.steps-ui{position:fixed;right:24px;bottom:9px;z-index:70;display:flex;flex-direction:row;gap:10px}
+#stepCtr{position:fixed;left:28px;bottom:17px;z-index:70;font-family:var(--fm);letter-spacing:.14em;
+  color:#61667F;font-size:12px;display:flex;align-items:baseline;gap:8px}
+#stepCtr b{font-family:var(--fd);font-size:20px;letter-spacing:.04em;color:#0B0E1A}
+#stepCtr i{font-style:normal;color:#B45309;max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border-left:1px solid rgba(11,14,26,.16);padding-left:10px}
 .steps-ui button{
-  width:46px;height:46px;border-radius:50%;background:var(--glass);backdrop-filter:blur(12px);
-  border:1px solid var(--glass-b);color:var(--text-mid);font-size:17px;transition:all .25s;
+  width:40px;height:40px;border-radius:50%;background:#fff;
+  border:1px solid rgba(11,14,26,.2);color:#0B0E1A;font-size:16px;transition:all .25s;
 }
-.steps-ui button:hover{color:var(--warm-100);border-color:var(--amber-500)}
+.steps-ui button:hover{background:#0B0E1A;color:#FFE9B8;border-color:#0B0E1A}
 .dots{position:fixed;right:34px;top:50%;transform:translateY(-50%);z-index:70;display:flex;flex-direction:column;gap:9px}
 .dots i{width:7px;height:7px;border-radius:50%;background:rgba(139,145,221,.32);transition:all .3s;cursor:pointer}
 .dots i.on{background:var(--amber-500);box-shadow:0 0 9px rgba(245,158,11,.8);transform:scale(1.45)}
@@ -190,7 +193,7 @@ body.lightmode .dots i.on{background:#C77800}
   clip-path:polygon(47% 0,53% 0,100% 100%,0 100%);filter:blur(7px);mix-blend-mode:screen}
 .hbeam i{position:absolute;left:50%;top:.6vh;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);
   background:#FFE9B8;box-shadow:0 0 30px 10px rgba(255,224,150,.75)}
-.hchip{position:absolute;bottom:6.6vh;transform:translate(-50%,12px);opacity:0;text-align:center;
+.hchip{position:absolute;bottom:calc(58px + 3.4vh);transform:translate(-50%,12px);opacity:0;text-align:center;
   font-family:var(--fm);letter-spacing:.07em;white-space:nowrap}
 .hchip b{display:block;font-size:12px;color:var(--warm-100);text-shadow:0 0 18px rgba(255,233,184,.55)}
 .hchip span{font-size:10.5px;color:var(--amber-300)}
@@ -411,8 +414,8 @@ body.lightmode .dots i.on{background:#C77800}
 <canvas id="pfx"></canvas>
 
 <div class="bar"><i id="bar"></i></div>
-<span class="brand">ZAŽNI <em>MESTO</em></span>
-<span class="tubamark">TU<i></i>BA</span>
+<!-- TU—BA cez celú šírku (ako tuba.mib.sk) · ZAŽNI MESTO v strede linky -->
+<span class="tubamark">TU<i></i><b class="mid">ZAŽNI <em>MESTO</em></b><i></i>BA</span>
 <span class="hint" id="hint"><span>SCROLLUJ — ROZSVECUJEŠ ↓</span></span>
 
 <!-- 1 · PRITIAHNI -->
@@ -678,7 +681,8 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- ovládanie krokov -->
-<!-- footer: page counter vľavo · šípky vpravo vedľa seba -->
+<!-- footer: svetlý bar · page counter vľavo · šípky vpravo vedľa seba -->
+<div class="footbar" aria-hidden="true"></div>
 <div id="stepCtr"><b>01</b><span>/ 13</span><i>Zažni mesto</i></div>
 <div class="steps-ui">
   <button id="stepUp" aria-label="Predošlý krok">↑</button>
