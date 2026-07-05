@@ -1330,7 +1330,7 @@ function deckParts(ovl,grid){
   let c=DECKC.get(ovl);
   if(!c){
     c={deck:ovl.querySelector('.deck'),head:ovl.querySelector('.head'),
-       rl:ovl.querySelector('.head .rl'),gh:ovl.querySelector('.ghost'),
+       rls:[...ovl.querySelectorAll('.head .rl')],gh:ovl.querySelector('.ghost'),
        cards:[...grid.querySelectorAll('.card')],nums:[...grid.querySelectorAll('.num[data-n]')]};
     DECKC.set(ovl,c);
   }
@@ -1356,10 +1356,13 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   const head=P.head;
   if(head){
     head.style.transform=`translateY(${(dy*.38).toFixed(2)}vh)`;
-    const rl=P.rl;
-    if(rl){
-      const eT=ss(clamp(ap*2.6));
-      rl.style.transform=`translateY(${((1-eT)*112).toFixed(1)}%)`;
+    const rls=P.rls;                            /* titul sa odkrýva PO SLOVÁCH, skôr a so staggerom */
+    if(rls&&rls.length){
+      const stag=Math.min(.12,.5/Math.max(1,rls.length-1));
+      for(let i=0;i<rls.length;i++){
+        const eT=ss(clamp(ap*3.4-i*stag));       /* skôr (×3.4) + kaskáda slov */
+        rls[i].style.transform=`translateY(${((1-eT)*112).toFixed(1)}%)`;
+      }
     }
   }
   const gh=P.gh;
@@ -1740,7 +1743,11 @@ document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
 });
 
 /* maskované reveal-y titulov — riadok vychádza spod orezu */
-document.querySelectorAll('.deck .head b').forEach(b=>{b.innerHTML='<i class="rl">'+b.innerHTML+'</i>';});
+document.querySelectorAll('.deck .head b').forEach(b=>{
+  const html=b.innerHTML;
+  if(html.includes('<')){b.innerHTML='<i class="rl">'+html+'</i>';return;}   /* titul s HTML — jeden mask */
+  b.innerHTML=html.trim().split(/\s+/).map(w=>'<i class="rl">'+w+'</i>').join(' ');   /* inak maska po slovách */
+});
 
 /* CTA → prvý krok */
 byId('ctaStart').addEventListener('click',()=>goStep(1));
