@@ -115,6 +115,9 @@ ok('objav = spoločný nádych + zhluk parciel do štvorca pravdy (odmerka 580 h
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
   &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
+ok('výkon+a11y: DOM cache, particle gate (reduced-motion + light), väčšie dot targety, bez mŕtveho panelL',
+  PRE.includes('const byId')&&PRE.includes('window.__light')&&PRE.includes('animation-duration:.001s')
+  &&PRE.includes('background-clip:content-box')&&!PRE.includes('id="panelL"'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */

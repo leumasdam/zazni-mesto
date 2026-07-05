@@ -173,7 +173,8 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 }
 .steps-ui button:hover{background:#0B0E1A;color:#FFE9B8;border-color:#0B0E1A}
 .dots{position:fixed;right:34px;top:50%;transform:translateY(-50%);z-index:70;display:flex;flex-direction:column;gap:9px}
-.dots i{width:7px;height:7px;border-radius:50%;background:rgba(139,145,221,.32);transition:all .3s;cursor:pointer}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(139,145,221,.32);transition:all .3s;cursor:pointer;
+  box-sizing:content-box;padding:5px;background-clip:content-box}
 .dots i.on{background:var(--amber-500);box-shadow:0 0 9px rgba(245,158,11,.8);transform:scale(1.45)}
 body.lightmode .dots i{background:rgba(16,20,38,.25)}
 body.lightmode .dots i.on{background:#C77800}
@@ -388,6 +389,7 @@ body.lightmode .dots i.on{background:#C77800}
 
 /* reduced motion fallback */
 @media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
   .hint span{animation:none}
   #grain{animation:none}
   #ovlHero .kicker,#ovlHero h1,#ovlHero .herorow p,#ovlHero .cta{animation:none;opacity:1}
@@ -411,14 +413,13 @@ body.lightmode .dots i.on{background:#C77800}
 
 <canvas id="city"></canvas>
 <video id="chapvid" muted loop playsinline preload="metadata" src="assets/hero.mp4"></video>
-<div id="panelL" class="wpanel"></div>
 <div id="panelR" class="wpanel"></div>
 <div id="panelB" class="wpanel wpanelB"></div>
 <div id="finalebg"><img src="assets/hrad-okno.png" alt=""></div>
-<div id="grain"></div>
+<div id="grain" aria-hidden="true"></div>
 <div id="flash"></div>
 <div id="vignette"></div>
-<canvas id="pfx"></canvas>
+<canvas id="pfx" aria-hidden="true"></canvas>
 
 <div class="bar"><i id="bar"></i></div>
 <!-- TU—BA cez celú šírku (ako tuba.mib.sk) · ZAŽNI MESTO v strede linky -->
@@ -660,7 +661,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 60 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 61 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -718,6 +719,7 @@ body.lightmode .dots i.on{background:#C77800}
    spí (indigo·pulz) → drieme (teal) → prebúdza sa (amber) → žije (teplá biela)
    ============================================================ */
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const _idc={};const byId=s=>_idc[s]||(_idc[s]=document['getElementById'](s));   /* DOM cache — chores beží 60×/s */
 const QS=new URL(location).searchParams;
 const LITE=QS.has('lite');                         /* fail-safe prezentácia: ?lite=1 vypne GL, zrno, častice */
 const SILENT=QS.has('silent');                     /* tichý režim do miestnosti: ?silent=1 */
@@ -772,7 +774,7 @@ const DOTS=[];{
 }
 
 /* ---------- canvas ---------- */
-const cv=document.getElementById('city'),cx=cv.getContext('2d');
+const cv=byId('city'),cx=cv.getContext('2d');
 let DPR=1,VW=0,VH=0,BASE=0,OX=0,OY=0;
 function fit(){
   DPR=Math.min(devicePixelRatio||1,2);
@@ -809,8 +811,8 @@ function stateColor(s){
 }
 
 /* ---------- VRSTVY SVETLA — render rozrezaný na 4 vrstvy, každá žije samostatne ---------- */
-const vstage=document.getElementById('vstage'),vwrap=document.getElementById('vwrap'),
-      vtip=document.getElementById('vtip');
+const vstage=byId('vstage'),vwrap=byId('vwrap'),
+      vtip=byId('vtip');
 const vlays=[...document.querySelectorAll('.vlay')];
 const VST={foc:-1,fk:[0,0,0,0],tipO:0,tipT:0};
 const VCNT={awake:POLY.filter(pl=>pl.p.plan===1).length,
@@ -948,7 +950,7 @@ function goStep(i,manual=true){
 /* footer HUD: bodky + počítadlo krokov (vľavo dole) */
 function stepHud(){
   document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
-  const c=document.getElementById('stepCtr');
+  const c=byId('stepCtr');
   c.querySelector('b').textContent=String(STEP+1).padStart(2,'0');
   c.querySelector('span').textContent='/ '+STEPS.length;
   c.querySelector('i').textContent=STEPS[STEP].n;
@@ -1281,19 +1283,30 @@ function draw(t){
 
 /* ---------- overlay choreografia ---------- */
 /* hero FX: projektory + dátové čipy na okraji mapy */
-const heroFx=document.getElementById('heroFx'),
+const heroFx=byId('heroFx'),
       HBM=[...heroFx.querySelectorAll('.hbeam')],
       HCH=[...heroFx.querySelectorAll('.hchip')],
       HCHX=[.24,.5,.76],HLAND=[0,0],HCT=[0,0,0];
-const ovlHero=document.getElementById('ovlHero'),
-      ovlObjav=document.getElementById('ovlObjav'),
-      ovlPochop=document.getElementById('ovlPochop'),
-      ovlWave=document.getElementById('ovlWave'),
-      hint=document.getElementById('hint'),
-      bar=document.getElementById('bar');
+const ovlHero=byId('ovlHero'),
+      ovlObjav=byId('ovlObjav'),
+      ovlPochop=byId('ovlPochop'),
+      ovlWave=byId('ovlWave'),
+      hint=byId('hint'),
+      bar=byId('bar');
 
 /* JEDNA réžia pohybu: všetko vchádza sprava a odchádza doľava (smer čítania príbehu),
    všetky krivky smootherstep — žiadne tvrdé štarty, dokončené presne pri dojazde. */
+const DECKC=new WeakMap();               /* cache queryselectorov — štruktúra deckov sa nemení */
+function deckParts(ovl,grid){
+  let c=DECKC.get(ovl);
+  if(!c){
+    c={deck:ovl.querySelector('.deck'),head:ovl.querySelector('.head'),
+       rl:ovl.querySelector('.head .rl'),gh:ovl.querySelector('.ghost'),
+       cards:[...grid.querySelectorAll('.card')],nums:[...grid.querySelectorAll('.num[data-n]')]};
+    DECKC.set(ovl,c);
+  }
+  return c;
+}
 function deckUpdate(ovl,grid,apRaw,pop=false){
   const ap=clamp(apRaw);
   const vis=ss(Math.max(0,Math.min(1,apRaw*2.6,(1.1-apRaw)*2.4)));  /* doznieva až 10 % do ďalšieho aktu — žiadny blackout beat */
@@ -1301,7 +1314,8 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   ovl.style.pointerEvents=vis>.15?'auto':'none';
   const en=ss(Math.min(1,ap*2.3));             /* aj posunuté ap panelových kapitol dôjde na 1 */
   const ex=ss(Math.max(0,(apRaw-.74)*2.9));
-  const deck=ovl.querySelector('.deck');
+  const P=deckParts(ovl,grid);
+  const deck=P.deck;
   const dy=(1-en)*12-ex*11;                    /* zdola hore — rovnaký smer ako panely */
   if(deck){
     deck.style.transform=`translateY(${dy.toFixed(2)}vh) scale(${(.966+en*.034).toFixed(4)})`;
@@ -1310,19 +1324,19 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
     ovl.classList.toggle('moving',bl>.06);     /* počas pohybu vypni glass blur kariet — žiadny dvojitý blur */
   }
   /* hĺbka: titul a ghost sa hýbu inou rýchlosťou než karty; titul vychádza spod orezu */
-  const head=ovl.querySelector('.head');
+  const head=P.head;
   if(head){
     head.style.transform=`translateY(${(dy*.38).toFixed(2)}vh)`;
-    const rl=head.querySelector('.rl');
+    const rl=P.rl;
     if(rl){
       const eT=ss(clamp(ap*2.6));
       rl.style.transform=`translateY(${((1-eT)*112).toFixed(1)}%)`;
     }
   }
-  const gh=ovl.querySelector('.ghost');
+  const gh=P.gh;
   if(gh)gh.style.transform=`translateY(${(dy*.72).toFixed(2)}vh)`;
   grid.style.maskImage='none';grid.style.webkitMaskImage='none';
-  const cards=grid.querySelectorAll('.card');
+  const cards=P.cards;
   const stag=cards.length>1?Math.min(.1,.38/(cards.length-1)):0;   /* celý stagger ≤ .38 — aj 10 kariet dôjde pri dojazde */
   cards.forEach((c,i)=>{
     const e=ss(clamp(ap*3.2-i*stag));
@@ -1332,7 +1346,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
       :`translateY(${((1-e)*34).toFixed(1)}px)`;
   });
   /* count-up čísel viazaný na progres (quartic-out chvost — číslo sadne presne na cieľ) */
-  grid.querySelectorAll('.num[data-n]').forEach((el,i)=>{
+  P.nums.forEach((el,i)=>{
     const x=clamp(ap*2.6-i*.18);
     const e=1-Math.pow(1-x,4);
     const tgt=+el.dataset.n;
@@ -1342,14 +1356,14 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   });
 }
 
-const chapvid=document.getElementById('chapvid');let prevVv=0;
+const chapvid=byId('chapvid');let prevVv=0;
 /* kurzorový parallax — plynulé dobiehanie */
 let MX=0,MY=0,SMX=0,SMY=0;
 addEventListener('pointermove',e=>{MX=e.clientX/innerWidth-.5;MY=e.clientY/innerHeight-.5;},{passive:true});
 /* turntable: canvas crossfade medzi framami (plynulé aj z 25 snímok),
    vstup zozadu → predok, potom ambientná rotácia; ťah myšou = float framy */
 const TURN_N=25,TURN=[];let turnOff=0,dragX=null,turnShown=-1,lastT=0;
-const turncv=document.getElementById('turncv'),tctx=turncv.getContext('2d');
+const turncv=byId('turncv'),tctx=turncv.getContext('2d');
 for(let i=0;i<TURN_N;i++){
   const im=new Image();im.src=`assets/seq/turn/frame-${i}.png`;
   im.onload=()=>{turnShown=-1;};              /* donačítaný frame vynúti prekreslenie */
@@ -1401,18 +1415,18 @@ function chores(t){
   }
 
   /* 2 OBJAV / 3 POCHOP */
-  deckUpdate(ovlObjav,document.getElementById('gridObjav'),aPr('objav'));
-  deckUpdate(ovlPochop,document.getElementById('gridPochop'),aPr('pochop'));
+  deckUpdate(ovlObjav,byId('gridObjav'),aPr('objav'));
+  deckUpdate(ovlPochop,byId('gridPochop'),aPr('pochop'));
 
   /* 4 PREDSTAV SI */
   const wv=aP('predstav');
   ovlWave.style.opacity=Math.sin(clamp(wv)*Math.PI).toFixed(3);
-  document.getElementById('litN').textContent=window.__lit||0;
+  byId('litN').textContent=window.__lit||0;
   const stg=wv*4;
   [['hs1',0],['hs2',1],['hs3',2],['hs4',3]].forEach(([id,i])=>{
-    document.getElementById(id).classList.toggle('on',stg>i*.9);
+    byId(id).classList.toggle('on',stg>i*.9);
   });
-  document.getElementById('waveNote').textContent=
+  byId('waveNote').textContent=
     wv<.33?'04 · Predstav si — svetlo ide mestom od východu'
     :wv<.62?'register first: 66 so zámerom sa prebúdza prvých'
     :'PREDSTAV SI — vízia rozsvieti aj 47 spiacich · biela = život';
@@ -1454,7 +1468,7 @@ function chores(t){
   if(glcv)glcv.style.opacity=mapFade;
 
   /* panelR: legenda (zdola, dvojfáza) → vrstvy (SPRAVA — jediná bočná) → škál (zdola) */
-  const panelR=document.getElementById('panelR');
+  const panelR=byId('panelR');
   let prX=0,prY=104,cover=0,prOn=false;
   if(apS>0&&(apS<1||eP<.999)){prX=0;prY=(1-eS)*104+ride(eP);cover=eS*(1-eP);prOn=true;}
   else if(apV>0&&(apV<1||eVid<.999)){prX=(1-eV)*104;prY=ride(eVid);cover=eV*(1-eVid);prOn=true;}
@@ -1463,7 +1477,7 @@ function chores(t){
   panelR.style.opacity=1;
   panelR.style.transform=`translate(${prX.toFixed(2)}%,${prY.toFixed(2)}%)`;
   /* panelB (tuba): zdola, potom vytlačený škálou */
-  const panelB=document.getElementById('panelB');
+  const panelB=byId('panelB');
   const pbOn=apTb>0&&(apTb<1||eS<.999);
   panelB.style.visibility=pbOn?'visible':'hidden';
   panelB.style.opacity=1;
@@ -1471,25 +1485,26 @@ function chores(t){
   const tubaCover=eTb*(1-eS);
   const light=Math.max(tubaCover,cover);
   /* obsah bielych kapitol IDE s panelom, keď ho ďalší slide vytláča */
-  document.getElementById('ovlLegenda').style.transform=`translateY(${(ride(eO)/100*VH).toFixed(1)}px)`;
-  document.getElementById('ovlVrstvy').style.transform=`translateY(${(ride(eVid)/100*VH).toFixed(1)}px)`;
-  document.getElementById('ovlTuba').style.transform=`translateY(${(ride(eS)/100*VH).toFixed(1)}px)`;
-  document.getElementById('ovlSkal').style.transform=`translateY(${(ride(eP)/100*VH).toFixed(1)}px)`;
+  byId('ovlLegenda').style.transform=`translateY(${(ride(eO)/100*VH).toFixed(1)}px)`;
+  byId('ovlVrstvy').style.transform=`translateY(${(ride(eVid)/100*VH).toFixed(1)}px)`;
+  byId('ovlTuba').style.transform=`translateY(${(ride(eS)/100*VH).toFixed(1)}px)`;
+  byId('ovlSkal').style.transform=`translateY(${(ride(eP)/100*VH).toFixed(1)}px)`;
+  window.__light=light;
   document.body.classList.toggle('lightmode',light>.5);
-  document.getElementById('pfx').style.opacity=(1-light).toFixed(2);
-  document.getElementById('vignette').style.opacity=(1-light*.9).toFixed(2);
+  byId('pfx').style.opacity=(1-light).toFixed(2);
+  byId('vignette').style.opacity=(1-light*.9).toFixed(2);
 
   /* 5 LEGENDA · 7 MÉDIÁ · 8 ŠKÁLOVATEĽNOSŤ — obsah nabieha až keď panel dosadne */
   const legGate=ss(clamp((eJ-.5)*3.4));        /* karty legendy čakajú, kým panel prejde polovicu (sek) */
-  deckUpdate(document.getElementById('ovlLegenda'),document.getElementById('gridLegenda'),((aPr('jazyk')-.14)*1.22)*Math.max(legGate,aPr('jazyk')>1?1:0));
-  deckUpdate(document.getElementById('ovlTuba'),document.getElementById('gridTuba'),(aPr('tuba')-.14)*1.22);
-  deckUpdate(document.getElementById('ovlSkal'),document.getElementById('gridSkal'),(aPr('skal')-.14)*1.22,true);
-  deckUpdate(document.getElementById('ovlVrstvy'),document.getElementById('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
+  deckUpdate(byId('ovlLegenda'),byId('gridLegenda'),((aPr('jazyk')-.14)*1.22)*Math.max(legGate,aPr('jazyk')>1?1:0));
+  deckUpdate(byId('ovlTuba'),byId('gridTuba'),(aPr('tuba')-.14)*1.22);
+  deckUpdate(byId('ovlSkal'),byId('gridSkal'),(aPr('skal')-.14)*1.22,true);
+  deckUpdate(byId('ovlVrstvy'),byId('gridVrstvy'),(aPr('vrstvy')-.14)*1.22);
   vstackUpdate(clamp((aP('vrstvy')-.14)*1.22),t);
 
 
   /* 6 OBOR — príde zdola, otočka ho vytlačí hore */
-  const ovlOb=document.getElementById('ovlObor');
+  const ovlOb=byId('ovlObor');
   const obOn=apO>0&&(apO<1||eT2<.999);
   ovlOb.style.opacity=obOn?1:0;
   ovlOb.style.visibility=obOn?'visible':'hidden';
@@ -1498,7 +1513,7 @@ function chores(t){
 
   /* 6b TURNTABLE — príde zdola; vrstvy ho potom vytlačia DOĽAVA (jediná bočná) */
   const tn=ss(wnd('turn'));
-  const ot=document.getElementById('ovlTurn');
+  const ot=byId('ovlTurn');
   const tOn=apT>0&&(apT<1||eV<.999);
   ot.style.opacity=tOn?1:0;
   ot.style.visibility=tOn?'visible':'hidden';
@@ -1513,7 +1528,7 @@ function chores(t){
       tctx.drawImage(TURN[i0],0,0,turncv.width,turncv.height);
     }
   }
-  document.getElementById('turnDeg').textContent=Math.round(((R/TURN_N*360)%360+360)%360)+'°';
+  byId('turnDeg').textContent=Math.round(((R/TURN_N*360)%360+360)%360)+'°';
   const swayDeg=(!REDUCED&&entry>=1)?Math.sin(t*.00026)*1.7:0;
   /* čiary platia pre predný pohľad (frame 13): pri odtočení sa plynulo skryjú,
      po návrate dopredu sa vrátia — nikdy neukazujú na zlé miesto */
@@ -1529,11 +1544,11 @@ function chores(t){
       `perspective(1100px) rotateY(${(SMX*7+swayDeg).toFixed(2)}deg) rotateX(${(-SMY*5).toFixed(2)}deg)`;
   }
   /* callouty + vodiace čiary k objektom — tá istá progres krivka ako decky */
-  document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
+  TCALL.forEach((c,i)=>{
     const e2=ss(clamp((entry-.3)*2.2-i*.14));
     c.style.opacity=e2.toFixed(3);
     c.style.transform=`translateY(${((1-e2)*16).toFixed(1)}px)`;
-    const ln=document.getElementById('tl'+(i+1)),td=document.getElementById('td'+(i+1));
+    const ln=byId('tl'+(i+1)),td=byId('td'+(i+1));
     const lop=e2*.92*frontK;
     if(ln)ln.style.opacity=lop.toFixed(3);
     if(td)td.style.opacity=lop.toFixed(3);
@@ -1557,30 +1572,33 @@ function chores(t){
     }catch(e){}
   }
   prevVv=vv;
-  document.getElementById('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
+  byId('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
 
   /* 9 PROTOTYP · 10 ZAPOJ SA — push zdola, prototyp potom vytlačí finále */
-  const op=document.getElementById('ovlProto');
+  const op=byId('ovlProto');
   const prOn2=apP2>0&&(apP2<1||eZ<.999);
   op.style.opacity=prOn2?1:0;
   op.style.visibility=prOn2?'visible':'hidden';
   op.style.pointerEvents=(apP2>.3&&apP2<.8)?'auto':'none';
   op.style.transform=`translateY(${((1-eP)*VH+ride(eZ)/100*VH).toFixed(1)}px)`;
   const zp=eZ;
-  const oz=document.getElementById('ovlZapoj');
+  const oz=byId('ovlZapoj');
   oz.style.opacity=zp>0?1:0;
   oz.style.visibility=zp>0?'visible':'hidden';
   oz.style.pointerEvents=zp>.5?'auto':'none';
   oz.style.transform=`translateY(${((1-eZ)*VH).toFixed(1)}px)`;
-  document.querySelectorAll('#ovlZapoj .reveal').forEach(el=>el.classList.toggle('in',zp>.4));
+  ZREV.forEach(el=>el.classList.toggle('in',zp>.4));
   /* finále: nočná TU-BA s hradom v okne — pomalý nájazd, prichádza spolu s obsahom */
-  const fb=document.getElementById('finalebg');
+  const fb=byId('finalebg');
   fb.style.visibility=zp>.01?'visible':'hidden';
   fb.style.opacity=Math.min(1,zp*1.4).toFixed(3);
   fb.style.transform=`translateY(${((1-eZ)*VH).toFixed(1)}px)`;
   fb.firstElementChild.style.transform=
     `scale(${(1.16-zp*.1).toFixed(3)}) translate(${(SMX*-10).toFixed(1)}px,${((1-zp)*16+SMY*-8).toFixed(1)}px)`;
 }
+
+const TCALL=[...document.querySelectorAll('#ovlTurn .callout')];
+const ZREV=[...document.querySelectorAll('#ovlZapoj .reveal')];
 
 /* ---------- hlavná slučka ---------- */
 function loop(t){
@@ -1596,7 +1614,7 @@ function loop(t){
   }
   SMX+=(MX-SMX)*.07;SMY+=(MY-SMY)*.07;
   FL*=.93;
-  document.getElementById('flash').style.opacity=(FL>.01?FL*.3:0).toFixed(3);
+  byId('flash').style.opacity=(FL>.01?FL*.3:0).toFixed(3);
   window.__lit=draw(t);
   chores(t);
   lastT=t;
@@ -1642,11 +1660,11 @@ addEventListener('keydown',e=>{
   if(e.key==='Home')goStep(0);
   if(e.key==='End')goStep(STEPS.length-1);
 });
-document.getElementById('stepDn').addEventListener('click',()=>inputStep(1));
-document.getElementById('stepUp').addEventListener('click',()=>inputStep(-1));
+byId('stepDn').addEventListener('click',()=>inputStep(1));
+byId('stepUp').addEventListener('click',()=>inputStep(-1));
 /* bodky */
 {
-  const dw=document.getElementById('dots');
+  const dw=byId('dots');
   STEPS.forEach((s,i)=>{
     const d=document.createElement('i');
     d.title=s.n;
@@ -1658,18 +1676,18 @@ document.getElementById('stepUp').addEventListener('click',()=>inputStep(-1));
 
 /* obor — ťukni a zobuď */
 let oborUp=false;
-document.getElementById('oborBig').addEventListener('click',()=>{
+byId('oborBig').addEventListener('click',()=>{
   oborUp=!oborUp;
-  document.getElementById('oborBig').classList.toggle('awake',oborUp);
-  document.getElementById('obAura').style.opacity=oborUp?1:0;
-  document.getElementById('obBody').setAttribute('stroke',oborUp?'#FFB94A':'#8B91DD');
-  document.getElementById('obSleep').style.opacity=oborUp?0:1;
-  document.getElementById('obAwake').style.opacity=oborUp?1:0;
-  const l1=document.getElementById('oborLbl1');
+  byId('oborBig').classList.toggle('awake',oborUp);
+  byId('obAura').style.opacity=oborUp?1:0;
+  byId('obBody').setAttribute('stroke',oborUp?'#FFB94A':'#8B91DD');
+  byId('obSleep').style.opacity=oborUp?0:1;
+  byId('obAwake').style.opacity=oborUp?1:0;
+  const l1=byId('oborLbl1');
   l1.textContent=oborUp?'BDIE ✓':'SPÍ';
   l1.style.color=oborUp?'#FFB94A':'#B9BEF0';
   l1.nextElementSibling.textContent=oborUp?'zobudený hlasom · ťukni a uspi':'bez zámeru · ťukni a zobuď';
-  document.getElementById('oborHint').innerHTML=oborUp
+  byId('oborHint').innerHTML=oborUp
     ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
     :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú';
   if(oborUp&&!SILENT){try{
@@ -1687,7 +1705,7 @@ document.getElementById('oborBig').addEventListener('click',()=>{
 
 /* hover na callout zvýrazní jeho čiaru */
 document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
-  const ln=()=>document.getElementById('tl'+(i+1));
+  const ln=()=>byId('tl'+(i+1));
   c.addEventListener('pointerenter',()=>{const l=ln();if(l){l.style.strokeWidth='2.6';l.style.filter='drop-shadow(0 0 9px rgba(245,158,11,.9))';}});
   c.addEventListener('pointerleave',()=>{const l=ln();if(l){l.style.strokeWidth='';l.style.filter='';}});
 });
@@ -1696,7 +1714,7 @@ document.querySelectorAll('#ovlTurn .callout').forEach((c,i)=>{
 document.querySelectorAll('.deck .head b').forEach(b=>{b.innerHTML='<i class="rl">'+b.innerHTML+'</i>';});
 
 /* CTA → prvý krok */
-document.getElementById('ctaStart').addEventListener('click',()=>goStep(1));
+byId('ctaStart').addEventListener('click',()=>goStep(1));
 
 /* po dobehnutí hero entrance uvoľni animáciu (inak by blokovala magnetický transform CTA) */
 document.querySelectorAll('#ovlHero .kicker,#ovlHero h1,#ovlHero p,#ovlHero .cta').forEach(el=>{
@@ -1729,8 +1747,8 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
 }
 /* ladenie/perf: ?nofx=1 alebo ?lite=1 vypne častice a zrno */
 if(QS.has('nofx')||LITE){
-  document.getElementById('pfx').style.display='none';
-  document.getElementById('grain').style.display='none';
+  byId('pfx').style.display='none';
+  byId('grain').style.display='none';
 }
 /* štart kioskovej slučky z úvodu */
 if(AUTO&&!REDUCED)autoT=setTimeout(()=>goStep(STEP+1<STEPS.length?STEP+1:0,false),3000);
@@ -1743,7 +1761,7 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
 /* ---------- teplé častice (striedmo) ---------- */
 (function(){
   if(REDUCED||LITE)return;
-  const pc=document.getElementById('pfx'),g=pc.getContext('2d');
+  const pc=byId('pfx'),g=pc.getContext('2d');
   let PP=[];
   function rs(){
     pc.width=innerWidth;pc.height=innerHeight;
@@ -1755,7 +1773,11 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
       r:Math.random()*1.3+.4,o:Math.random()*.26+.05
     });
   }
+  let pfxHidden=false;
   function tick(){
+    const hid=(window.__light||0)>.95;           /* pod bielym panelom nekresli */
+    if(hid){if(!pfxHidden){g.clearRect(0,0,pc.width,pc.height);pfxHidden=true;}requestAnimationFrame(tick);return;}
+    pfxHidden=false;
     g.clearRect(0,0,pc.width,pc.height);
     for(const q of PP){
       q.x+=q.vx;q.y+=q.vy;
@@ -1766,7 +1788,7 @@ document.querySelectorAll('.reveal').forEach((el,i)=>{
     }
     requestAnimationFrame(tick);
   }
-  rs();addEventListener('resize',rs);tick();
+  rs();addEventListener('resize',rs);if(!REDUCED)tick();
 })();
 </script>
 </body>
