@@ -157,10 +157,9 @@ function init(canvas,data){
     return {x:(V.x*.5+.5)*CW,y:(-V.y*.5+.5)*CH,vis:V.z<1};
   }
 
-  const HOLECOL=new THREE.Color(0x04060C);   /* inverzia: spiaca parcela = čierna diera */
   const WARMC=new THREE.Color(0xFFE9B8);     /* vlastníctvo: teplý obrys podľa manuálu */
   function frame(st){
-    const inv=st.inv||0;
+    const br=st.br||0;                       /* krok 02: spoločný nádych */
     /* kamera: orbit okolo cieľa, výška z pitch, dolly zo zoomu, kurzorová 3D parallaxa.
        Počas vlny klesá AŽ NA LEŽATO (17°) + orbitálny sweep — flyover nad rozsvecujúcim sa mestom. */
     const wk=st.wave<=0?0:(st.wave>=1?1:st.wave*st.wave*(3-2*st.wave));
@@ -171,8 +170,8 @@ function init(canvas,data){
     cam.position.set(tx+Math.sin(yaw)*dist*Math.cos(pitch),Math.sin(pitch)*dist,tz+Math.cos(yaw)*dist*Math.cos(pitch));
     cam.lookAt(tx,0,tz);
 
-    dotsMat.opacity=Math.min(1,st.ctxA*.55*(1+inv*.85));   /* inverzia: mesto sa rozsvieti */
-    init.boundLine.material.opacity=Math.min(1,.25+st.ctxA*.5+inv*.22);
+    dotsMat.opacity=st.ctxA*.55;
+    init.boundLine.material.opacity=.25+st.ctxA*.5;
 
     let lit=0;
     for(const it of items){
@@ -192,12 +191,10 @@ function init(canvas,data){
       it.col.multiplyScalar(.52+s*.5+Math.max(0,s-.82)*2.4);  /* bloom až na konci — biela = žije */
       it.mesh.material.color.copy(it.col);
       it.mesh.material.opacity=Math.min(1,(.62+s*.38)*pulse*flick*st.hb);
-      /* INVERZIA: spiace parcely stmavnú na diery, obrys ostane čitateľný */
-      const hole=inv*(1-clamp(s*4));
-      if(hole>0){
-        it.mesh.material.color.lerp(HOLECOL,hole);
-        it.mesh.material.opacity=Math.max(it.mesh.material.opacity*(1-hole*.6),hole*.9);
-        ed.opacity=Math.max(ed.opacity,hole*.4);
+      /* KROK 02: spoločný nádych — všetky parcely sa nadýchnu naraz (st.br z hlavného súboru) */
+      if(br>0){
+        it.mesh.material.opacity=Math.min(1,it.mesh.material.opacity*(1+br*.7));
+        ed.opacity=Math.max(ed.opacity,br*.45);
       }
       /* VLASTNÍCTVO = obrys: puls v POCHOP, potom tichý kanál (st.own = ownK z hlavného súboru) */
       if(it.dash)it.dash.material.opacity=st.own*.95;
