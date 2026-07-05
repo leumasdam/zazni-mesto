@@ -1160,8 +1160,8 @@ function draw(t){
   const br2=breath*pres02;
   /* VLASTNÍCTVO = obrys: puls v POCHOP, potom ostáva tichý kanál (manuál: kanály sa kombinujú) */
   const ownK=Math.max(ownPulse0*.95,ss(clamp(ownA0*2))*.34);
-  /* RIZIKO = vzor: jazyk mapy sa vysvetlí v LEGENDE — od nej šrafy záťaží ostávajú */
-  const riskK=ss(clamp(aP('jazyk')*2));
+  /* RIZIKO = vzor (manuál: „vzor leží VŽDY nad stavovou farbou") — šrafy žijú, odkedy sa mapa vynorí */
+  const riskK=ss(clamp(aP('objav')*1.6));
 
   /* === WebGL vetva: mesto kreslí three.js s bloomom; 2D canvas ostáva len na menovky === */
   if(GL){
