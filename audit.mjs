@@ -97,8 +97,9 @@ const GLSRC=src('gl-src/city.js');
 ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
   PRE.includes('.00157')&&PRE.includes('%5500')&&PRE.includes('cubic-bezier(.34,1.56,.64,1)')&&PRE.includes('pulseSleep 4s')
   &&GLSRC.includes('.00157')&&GLSRC.includes('%5500')&&OBR.includes('performance.now()/640'));
-ok('vlna = register first (plan gate) + vízia lift zrkadlené v GL',
-  PRE.includes('pl.p.plan===1)return raw')&&PRE.includes('vízia')&&GLSRC.includes('it.plan!==1'));
+ok('vlna sadne na REÁLNY stav registra (amber prebúdza / indigo spí), NIE všetko biele — zrkadlené v GL',
+  PRE.includes('ST_TARGET')&&PRE.includes('pl.plan===1?.72:.08')&&!PRE.includes('vízia rozsvieti aj 47')
+  &&GLSRC.includes('it.plan===1?.72:.08'));
 ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
   const IDX=src('index.html');
   return big.length===13&&!PRE.includes('16 BF')&&!PRE.includes('Šestnásť')&&PRE.includes('13 obrov ≥ 8 ha')

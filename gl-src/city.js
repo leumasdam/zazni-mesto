@@ -175,20 +175,19 @@ function init(canvas,data){
 
     let lit=0;
     for(const it of items){
-      let s=clamp((st.wave*1.5-it.t)*2.6);       /* pomalší prechod — hodnoty zrkadlí polyState() */
-      if(it.plan!==1){                             /* register first; vízia lift zrkadlí polyState() */
-        const lw=clamp((st.wave-.55)*2.8);
-        s=Math.min(s,.14+(lw*lw*(3-2*lw))*.86);
-      }
-      if(s>.55)lit++;
+      /* svetlo dorazí (front) → parcela sadne na SVOJ REÁLNY STAV (amber prebúdza / indigo spí),
+         NIE všetko na bielu — zrkadlí polyState() v hlavnom súbore */
+      const fr0=clamp((st.wave*1.55-it.t)*2.4),front=fr0*fr0*fr0*(fr0*(fr0*6-15)+10);
+      const s=(it.plan===1?.72:.08)*front;
+      if(front>.5)lit++;                           /* „svieti" = svetlo dorazilo (odhalené) */
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.00157+it.phase)):1;   /* pulse.slow — 4000 ms */
       const flick=(s>.2&&s<.55)?FLK[Math.floor((((st.t+it.phase*875)%5500)/5500)*8)]:1;
       stateCol(s,it.col);
       const ed=it.mesh.userData.edge.material;
-      ed.color.copy(it.col).multiplyScalar(1.35);    /* obrys vo farbe stavu — teal a amber zaznejú */
-      ed.opacity=s*.9;
-      it.col.multiplyScalar(.52+s*.5+Math.max(0,s-.82)*2.4);  /* bloom až na konci — biela = žije */
+      ed.color.copy(it.col).multiplyScalar(1.35);    /* obrys vo farbe stavu — amber zaznie */
+      ed.opacity=s*1.1;
+      it.col.multiplyScalar(.5+s*1.05);              /* jas = stav; amber žiari, indigo tlmené */
       it.mesh.material.color.copy(it.col);
       it.mesh.material.opacity=Math.min(1,(.62+s*.38)*pulse*flick*st.hb);
       /* KROK 02: spoločný nádych — všetky parcely sa nadýchnu naraz (st.br z hlavného súboru) */

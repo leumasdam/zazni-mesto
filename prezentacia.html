@@ -968,13 +968,12 @@ function onArrive(){
   }
 }
 
-/* stav polygónu: vlna prebúdzania v akte PREDSTAV SI, potom ostáva rozsvietené */
+/* stav polygónu: svetlo sa prevalí od východu (front) a parcela SADNE NA SVOJ REÁLNY STAV
+   z registra — NIE všetko na bielu. Zámer (plan=1) = amber „prebúdza sa", bez = indigo „spí". */
+const ST_TARGET=pl=>pl.plan===1?.72:.08;   /* amber prebúdza / indigo spí */
 function polyState(pl){
-  const wave=aP('predstav');
-  const raw=clamp((wave*1.5-pl.t)*2.6); /* pomalší prechod, dokončené presne pri dojazde kroku */
-  if(pl.p.plan===1)return raw;          /* REGISTER FIRST: naozaj sa prebúdza len zámer (66) */
-  const lift=ss(clamp((wave-.55)*2.8)); /* akt PREDSTAV SI: vízia potom dvihne aj 47 spiacich */
-  return Math.min(raw,.14+lift*.86);
+  const front=ss(clamp((aP('predstav')*1.55-pl.t)*2.4));   /* svetlo dorazí východ→západ */
+  return ST_TARGET(pl.p)*front;
 }
 
 /* KROK 02 — projektor NASVIETI konkrétnych hrdinov registra (obri ≥ 8 ha):
@@ -1176,18 +1175,18 @@ function draw(t){
     const lit=GL.frame({t,wave,ctxA,own:ownK,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB,br:br2});
     for(const pl of POLY){
       if(!pl.big)continue;
-      const s=polyState(pl);
-      if(s<.5)continue;
+      const s=polyState(pl),front=s/ST_TARGET(pl.p);
+      if(front<.05)continue;
       const q=GL.project(pl.cx,pl.cy);
       if(!q.vis)continue;
-      const la=clamp((s-.5)/.4)*.95;
-      const S=16+Math.sqrt(pl.p.ha)*2;
-      drawObor(cx,q.x,q.y-S*.3,S,s>.62,la);        /* plný obor sa PREBÚDZA, ako ho zasiahne svetlo */
+      const la=Math.min(1,front*1.1)*.98;
+      const S=12+Math.sqrt(pl.p.ha)*1.6;           /* menšie obri */
+      drawObor(cx,q.x,q.y-S*.3,S,pl.p.plan===1&&s>.32,la);   /* zámer sa prebúdza (amber), bez zámeru spí (indigo) */
       cx.globalAlpha=la;cx.textAlign='center';cx.textBaseline='alphabetic';cx.lineJoin='round';
-      cx.font=`700 11px "JetBrains Mono",monospace`;
+      cx.font=`700 10.5px "JetBrains Mono",monospace`;
       cx.strokeStyle='rgba(5,7,15,.92)';cx.lineWidth=3.5;
-      cx.strokeText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+7);
-      cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+7);
+      cx.strokeText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+6);
+      cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+6);
       cx.textAlign='left';cx.globalAlpha=1;
     }
     chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,t});
@@ -1225,7 +1224,7 @@ function draw(t){
   let lit=0;
   for(const pl of POLY){
     const s=polyState(pl);
-    if(s>.55)lit++;
+    if(s>.05)lit++;   /* „svieti" = svetlo dorazilo (odhalené v stave), nie nutne biele */
     /* glow pod prebudenými */
     if(s>.4){
       const g=clamp((s-.4)/.6);
@@ -1268,19 +1267,19 @@ function draw(t){
   /* menovky + OBORI významných — plná budova s tvárou, prebúdza sa ako ju zasiahne svetlo (jazyk manuálu) */
   for(const pl of POLY){
     if(!pl.big)continue;
-    const s=polyState(pl);
-    if(s<.5)continue;
-    const la=clamp((s-.5)/.4)*.95;
+    const s=polyState(pl),front=s/ST_TARGET(pl.p);
+    if(front<.05)continue;
+    const la=Math.min(1,front*1.1)*.95;
     cx.save();cx.setTransform(DPR,0,0,DPR,0,0);       /* obor v obrazovkových px */
     const sx=(pl.cx*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,
           sy=(pl.cy*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,
-          S=16+Math.sqrt(pl.p.ha)*2;
-    drawObor(cx,sx,sy-S*.3,S,s>.62,la);
+          S=12+Math.sqrt(pl.p.ha)*1.6;
+    drawObor(cx,sx,sy-S*.3,S,pl.p.plan===1&&s>.32,la);
     cx.globalAlpha=la;cx.textAlign='center';cx.textBaseline='alphabetic';cx.lineJoin='round';
-    cx.font=`700 11px "JetBrains Mono",monospace`;
+    cx.font=`700 10.5px "JetBrains Mono",monospace`;
     cx.strokeStyle='rgba(5,7,15,.92)';cx.lineWidth=3.5;
-    cx.strokeText(pl.p.n.toUpperCase(),sx,sy+S*.55+7);
-    cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),sx,sy+S*.55+7);
+    cx.strokeText(pl.p.n.toUpperCase(),sx,sy+S*.55+6);
+    cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),sx,sy+S*.55+6);
     cx.textAlign='left';cx.globalAlpha=1;cx.restore();
   }
   const P2=(x,y)=>({x:(x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,y:(y*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,vis:true});
@@ -1439,8 +1438,8 @@ function chores(t){
   });
   byId('waveNote').textContent=
     wv<.33?'04 · Predstav si — svetlo ide mestom od východu'
-    :wv<.62?'register first: 66 so zámerom sa prebúdza prvých'
-    :'PREDSTAV SI — vízia rozsvieti aj 47 spiacich · biela = život';
+    :wv<.66?'register first: 66 so zámerom sa prebúdza (amber)'
+    :'taký je dnes register: 66 sa prebúdza (amber) · 47 ešte spí (indigo)';
 
   /* ============ JEDNOTNÝ PUSH SYSTÉM ============
      Každý slide VYTLÁČA predchádzajúci v kontakte hrán (Framer push).
