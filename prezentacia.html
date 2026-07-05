@@ -1001,11 +1001,14 @@ function chanOverlay(P,st){
         cx.closePath();
       }
       if(!vis||x1-x0<3)continue;
+      cx.lineJoin='round';
+      cx.globalAlpha=st.risk*.9;cx.strokeStyle='#E84B8A';cx.lineWidth=2;cx.stroke();   /* pinkový obrys — zóna rizika */
       cx.save();cx.clip();
-      cx.globalAlpha=st.risk*.5;cx.strokeStyle='#E84B8A';cx.lineWidth=1.5;
+      cx.globalAlpha=st.risk*.18;cx.fillStyle='#E84B8A';cx.fillRect(x0,y0,x1-x0,y1-y0);  /* jemný podtón */
+      cx.globalAlpha=st.risk*.95;cx.strokeStyle='#FF5C9E';cx.lineWidth=2.4;              /* hustejšie a jasnejšie šrafy 45° */
       cx.beginPath();
       const hgt=y1-y0;
-      for(let d=x0-hgt;d<x1;d+=9){cx.moveTo(d,y1);cx.lineTo(d+hgt,y0);}
+      for(let d=x0-hgt;d<x1;d+=6.5){cx.moveTo(d,y1);cx.lineTo(d+hgt,y0);}
       cx.stroke();cx.restore();
     }
   }
