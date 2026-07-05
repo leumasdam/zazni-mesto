@@ -106,6 +106,9 @@ ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
 })());
 ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
   PRE.includes('26 sa prebudilo a vyradilo, 8 nových')&&PRE.includes('mimo 113'));
+ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
+  PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
+  &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */

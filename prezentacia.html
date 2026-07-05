@@ -20,6 +20,7 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
+html{background:#05070F}   /* mapa na hero odsunutá nižšie — nad ňou nesmie presvitať biele */
 html{background:var(--night-950)}
 body{font-family:var(--ft);color:var(--text-hi);background:transparent}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -156,7 +157,13 @@ body.lightmode .brand em{color:#C77800}
 .hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
   font-family:var(--fm);font-size:10.5px;letter-spacing:.26em;color:var(--text-low);transition:opacity .6s}
 /* kroková navigácia */
-.steps-ui{position:fixed;right:26px;bottom:26px;z-index:70;display:flex;flex-direction:column;gap:8px}
+/* footer: vľavo počítadlo krokov, vpravo šípky vedľa seba (horizontálne) */
+.steps-ui{position:fixed;right:26px;bottom:24px;z-index:70;display:flex;flex-direction:row;gap:10px}
+#stepCtr{position:fixed;left:28px;bottom:27px;z-index:70;font-family:var(--fm);letter-spacing:.14em;
+  color:var(--text-lo,#8a8fae);font-size:12px;display:flex;align-items:baseline;gap:7px}
+#stepCtr b{font-family:var(--fd);font-size:19px;letter-spacing:.04em;color:var(--warm-100)}
+#stepCtr i{font-style:normal;color:var(--amber-300);max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border-left:1px solid rgba(255,255,255,.18);padding-left:10px}
 .steps-ui button{
   width:46px;height:46px;border-radius:50%;background:var(--glass);backdrop-filter:blur(12px);
   border:1px solid var(--glass-b);color:var(--text-mid);font-size:17px;transition:all .25s;
@@ -175,6 +182,18 @@ body.lightmode .dots i.on{background:#C77800}
 .ovl>*{pointer-events:auto}
 
 /* 1 · PRITIAHNI — hero: obria typografia cez celý viewport */
+/* hero FX: dva projektory ZHORA — pohyblivé kužele krúžia po scéne;
+   mapa je odsunutá nižšie (trčí len okraj) a keď naň lúč dopadne, nabehnú dáta */
+#heroFx{position:fixed;inset:0;z-index:18;pointer-events:none;overflow:hidden;visibility:hidden}
+.hbeam{position:absolute;top:-6vh;width:min(44vw,720px);height:122vh;transform-origin:50% 0;
+  background:linear-gradient(to bottom,rgba(255,224,150,.34),rgba(255,224,150,.11) 54%,rgba(255,224,150,0) 84%);
+  clip-path:polygon(47% 0,53% 0,100% 100%,0 100%);filter:blur(7px);mix-blend-mode:screen}
+.hbeam i{position:absolute;left:50%;top:.6vh;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);
+  background:#FFE9B8;box-shadow:0 0 30px 10px rgba(255,224,150,.75)}
+.hchip{position:absolute;bottom:6.6vh;transform:translate(-50%,12px);opacity:0;text-align:center;
+  font-family:var(--fm);letter-spacing:.07em;white-space:nowrap}
+.hchip b{display:block;font-size:12px;color:var(--warm-100);text-shadow:0 0 18px rgba(255,233,184,.55)}
+.hchip span{font-size:10.5px;color:var(--amber-300)}
 #ovlHero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
 #ovlHero::before{content:'';position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
   width:120vmin;height:80vmin;pointer-events:none;
@@ -397,6 +416,15 @@ body.lightmode .dots i.on{background:#C77800}
 <span class="hint" id="hint"><span>SCROLLUJ — ROZSVECUJEŠ ↓</span></span>
 
 <!-- 1 · PRITIAHNI -->
+<!-- hero FX: projektory zhora + dáta tam, kam lúč dopadne na okraj mapy -->
+<div id="heroFx" aria-hidden="true">
+  <div class="hbeam"><i></i></div>
+  <div class="hbeam"><i></i></div>
+  <div class="hchip"><b>ISTROCHEM</b><span>138 ha · najväčší spiaci</span></div>
+  <div class="hchip"><b>113 ÚZEMÍ</b><span>580 ha čaká na svetlo</span></div>
+  <div class="hchip"><b>FILIÁLKA</b><span>10 ha · zámer ŽSR</span></div>
+</div>
+
 <div class="ovl" id="ovlHero">
   <span class="kicker">MIB · TU-BA · interaktívna expozícia brownfieldov · web = pokračovanie</span>
   <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
@@ -633,7 +661,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 57 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 58 kontrol</span></div>
     </div>
   </div>
 </div>
@@ -650,6 +678,8 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <!-- ovládanie krokov -->
+<!-- footer: page counter vľavo · šípky vpravo vedľa seba -->
+<div id="stepCtr"><b>01</b><span>/ 13</span><i>Zažni mesto</i></div>
 <div class="steps-ui">
   <button id="stepUp" aria-label="Predošlý krok">↑</button>
   <button id="stepDn" aria-label="Ďalší krok">↓</button>
@@ -906,7 +936,15 @@ function goStep(i,manual=true){
   chase=.075/(s.slow||1);
   arrivedFor=-1;
   FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
-  document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===i));
+  stepHud();
+}
+/* footer HUD: bodky + počítadlo krokov (vľavo dole) */
+function stepHud(){
+  document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+  const c=document.getElementById('stepCtr');
+  c.querySelector('b').textContent=String(STEP+1).padStart(2,'0');
+  c.querySelector('span').textContent='/ '+STEPS.length;
+  c.querySelector('i').textContent=STEPS[STEP].n;
 }
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
 const AUTO=+(QS.get('auto')||0);
@@ -1089,6 +1127,11 @@ function draw(t){
 }
 
 /* ---------- overlay choreografia ---------- */
+/* hero FX: projektory + dátové čipy na okraji mapy */
+const heroFx=document.getElementById('heroFx'),
+      HBM=[...heroFx.querySelectorAll('.hbeam')],
+      HCH=[...heroFx.querySelectorAll('.hchip')],
+      HCHX=[.24,.5,.76],HLAND=[0,0],HCT=[0,0,0];
 const ovlHero=document.getElementById('ovlHero'),
       ovlObjav=document.getElementById('ovlObjav'),
       ovlPochop=document.getElementById('ovlPochop'),
@@ -1181,6 +1224,29 @@ function chores(t){
   ovlHero.style.pointerEvents=h>.3?'auto':'none';
   ovlHero.style.transform=`translate(${((1-h)*-64).toFixed(1)}px,${((1-h)*-18).toFixed(1)}px)`;
 
+  /* PROJEKTORY ZHORA: dva kužele krúžia po hero; kde lúč dopadne na okraj mapy, nabehnú dáta */
+  heroFx.style.opacity=h.toFixed(3);
+  heroFx.style.visibility=h>.02?'visible':'hidden';
+  if(h>.02){
+    const yl=VH*.93;                                        /* linka dopadu = okraj mapy pri spodku */
+    for(let b=0;b<2;b++){
+      const ang=REDUCED?(b?-6:6):Math.sin(t/(b?3400:2700)+b*2.1)*(b?11:14)+(b?-7:7);
+      const bx=VW*(b?.62:.38);
+      HBM[b].style.left=bx+'px';
+      HBM[b].style.transform=`translateX(-50%) rotate(${ang.toFixed(2)}deg)`;
+      HLAND[b]=bx+Math.tan(ang*Math.PI/180)*yl;
+    }
+    for(let c=0;c<3;c++){
+      const cxp=VW*HCHX[c];
+      const near=Math.min(Math.abs(HLAND[0]-cxp),Math.abs(HLAND[1]-cxp));
+      const lit=REDUCED?1:clamp(1-near/(VW*.075));
+      HCT[c]+=(lit-HCT[c])*.14;                             /* mäkký nábeh/dobeh */
+      HCH[c].style.left=cxp+'px';
+      HCH[c].style.opacity=(HCT[c]*h).toFixed(3);
+      HCH[c].style.transform=`translate(-50%,${(12-12*HCT[c]).toFixed(1)}px)`;
+    }
+  }
+
   /* 2 OBJAV / 3 POCHOP */
   deckUpdate(ovlObjav,document.getElementById('gridObjav'),aPr('objav'));
   deckUpdate(ovlPochop,document.getElementById('gridPochop'),aPr('pochop'));
@@ -1224,8 +1290,10 @@ function chores(t){
   jzE=eJ;
   const ride=e=>Math.min(0,4-104*e);           /* odchod HORE v kontakte s prichádzajúcim (104 % štart → bez medzier) */
 
-  /* mapa: vytlačená HORE panelom legendy */
-  const mapY=ride(eJ)/100*VH;
+  /* mapa: na HERO odsunutá NIŽŠIE (trčí len okraj — projektorové pódium),
+     prvý krok ju vytiahne hore = veľký parallax; potom vytlačená HORE panelom legendy */
+  const heroDrop=ss(clamp(1-Ps/.07))*VH*.8;
+  const mapY=ride(eJ)/100*VH+heroDrop;
   cv.style.transform=`translateY(${mapY.toFixed(1)}px)`;
   if(glcv)glcv.style.transform=cv.style.transform;
   const mapFade=(1-ss(clamp((eJ-.55)*2.4))).toFixed(3);     /* viditeľná až za polovicu, potom už sa nevracia */
@@ -1497,13 +1565,13 @@ if(!REDUCED)document.querySelectorAll('#ctaStart,#zapoj .links a').forEach(b=>{
   if(!isNaN(q)){
     STEP=Math.max(0,Math.min(STEPS.length-1,q));
     Ps=target=STEPS[STEP].t;
-    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+    stepHud();
   }
   const fp=parseFloat(QS.get('ps'));  /* ladenie medzistavov */
   if(!isNaN(fp)){
     Ps=target=clamp(fp);
     STEP=STEPS.reduce((b,s,i)=>Math.abs(s.t-Ps)<Math.abs(STEPS[b].t-Ps)?i:b,0);
-    document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===STEP));
+    stepHud();
   }
 }
 /* ladenie/perf: ?nofx=1 alebo ?lite=1 vypne častice a zrno */
