@@ -917,7 +917,7 @@ const wnd=k=>{const x=aP(k);return Math.max(0,Math.min(1,x*3,(1-x)*3));};
 /* ---------- kroky: jeden swipe = jeden stupeň; medzi krokmi to ide samo ---------- */
 const STEPS=[
   {t:0,    n:'Zažni mesto'},
-  {t:.095, n:'Objav — čísla'},
+  {t:.095, n:'Objav — čísla',slow:1.6},   /* jemne spomalený parallax hero→objav (mapa vystúpi zdola) */
   {t:.18,  n:'Pochop — kto drží kľúč'},
   {t:.364, n:'Svetelná vlna',slow:3.4},
   {t:.43,  n:'Legenda',slow:1.8},
@@ -1488,7 +1488,7 @@ function chores(t){
 
   /* mapa: na HERO odsunutá NIŽŠIE (trčí len okraj — projektorové pódium),
      prvý krok ju vytiahne hore = veľký parallax; potom vytlačená HORE panelom legendy */
-  const heroDrop=ss(clamp(1-Ps/.07))*VH*.8;
+  const heroDrop=ss(clamp(1-Ps/.092))*VH*.8;   /* parallax rozložený takmer po celý prechod hero→objav — jemnejší */
   const mapY=ride(eJ)/100*VH+heroDrop;
   cv.style.transform=`translateY(${mapY.toFixed(1)}px)`;
   if(glcv)glcv.style.transform=cv.style.transform;
