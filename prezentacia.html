@@ -999,20 +999,10 @@ function oborHead(x,y,awake,alpha){
   cx.globalAlpha=1;
 }
 
-/* ŠTVOREC PRAVDY: strana = √(súčet plôch polygónov) vo svetových jednotkách,
-   stred = plošné ťažisko spánku → štvorec má PRESNE plochu všetkých 580 ha */
-let SQ=null,o2T0=0,o2Prev=0;
-function sqCalc(){
-  let A=0,sx=0,sy=0;
-  for(const pl of POLY){
-    const r=pl.rings[0];let a=0;
-    for(let i=0;i<r.length;i++){const[x1,y1]=r[i],[x2,y2]=r[(i+1)%r.length];a+=x1*y2-x2*y1;}
-    a=Math.abs(a)/2;pl._aw=a;A+=a;sx+=pl.cx*a;sy+=pl.cy*a;
-  }
-  SQ={side:Math.sqrt(A),x:sx/A,y:sy/A};
-}
-const SQ_CAP='SPOLU 580 ha = ŠTVOREC 2,4 × 2,4 km';
-const SQ_SUB='≈ 800 futbalových ihrísk · presná plocha registra';
+/* KROK 02 — projektor NASVIETI konkrétnych hrdinov registra (obri ≥ 8 ha):
+   hľadáčikové rohy + obrys podľa vlastníctva + menovka — presne jazyk manuálu. */
+let o2T0=0,o2Prev=0,HEROES=null;
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 /* VLASTNÍCTVO = obrys (manuál): mesto plná · súkromník prerušovaná · mix bodkovaná */
 const OWN_DASH={city:null,private:[8,5],mixed:[2.5,4.5]};
 
@@ -1042,84 +1032,69 @@ function chanOverlay(P,st){
       cx.stroke();cx.restore();
     }
   }
-  /* KROK 02: ZHLUK — duchovia parciel sa zlietnu do štvorca pravdy a naplnia ho ako odmerku */
-  if(st.pres>.02){
-    if(!SQ)sqCalc();
-    const hf=SQ.side/2,N=POLY.length,final=st.tt>=1e5;
-    const C4=[[SQ.x-hf,SQ.y-hf],[SQ.x+hf,SQ.y-hf],[SQ.x+hf,SQ.y+hf],[SQ.x-hf,SQ.y+hf]].map(([a,b])=>P(a,b));
-    if(C4.every(q=>q.vis)){
-      const L=(A,B,f)=>({x:A.x+(B.x-A.x)*f,y:A.y+(B.y-A.y)*f});
-      /* let duchov: kaskáda východ→západ (poradie POLY), oblúk + zmenšenie, roztopia sa v odmerke */
-      let acc=0;
-      cx.lineWidth=1;cx.strokeStyle='#8B91DD';
-      for(let i=0;i<N;i++){
-        const pl=POLY[i];
-        const e=final?1:ss(clamp((st.tt-1100-(i/N)*1400)/900));
-        acc+=(pl._aw||0)*ss(clamp((e-.65)/.35));
-        if(e<=0||e>=1)continue;
-        const tx=SQ.x-hf+(((i*7)%10)+.5)/10*SQ.side,
-              ty=SQ.y-hf+(((i*13)%10)+.5)/10*SQ.side,
-              mx=pl.cx+(tx-pl.cx)*e,
-              my=pl.cy+(ty-pl.cy)*e-Math.sin(Math.PI*e)*SQ.side*.18,
-              sc=1-.72*e;
-        cx.globalAlpha=st.pres*Math.sin(Math.PI*e)*.55;
-        cx.beginPath();
-        const r=pl.rings[0];
-        for(let k=0;k<r.length;k++){
-          const q=P(mx+(r[k][0]-pl.cx)*sc,my+(r[k][1]-pl.cy)*sc);
-          k?cx.lineTo(q.x,q.y):cx.moveTo(q.x,q.y);
-        }
-        cx.closePath();cx.stroke();
-      }
-      const lvl=Math.min(1,acc/(SQ.side*SQ.side));
-      const sqA=st.pres*(final?1:ss(clamp((st.tt-1000)/900)));
-      const capA=st.pres*(final?1:ss(clamp((st.tt-2500)/700)));
-      if(sqA>.02){
-        /* ODMERKA: amber hladina rastie s každou dosadnutou parcelou */
-        if(lvl>.001){
-          const f0=L(C4[3],C4[0],lvl),f1=L(C4[2],C4[1],lvl);
-          cx.globalAlpha=sqA;
-          cx.beginPath();cx.moveTo(C4[3].x,C4[3].y);cx.lineTo(C4[2].x,C4[2].y);cx.lineTo(f1.x,f1.y);cx.lineTo(f0.x,f0.y);cx.closePath();
-          cx.fillStyle='rgba(245,158,11,.14)';cx.fill();
-          cx.strokeStyle='rgba(255,185,74,.8)';cx.lineWidth=1.4;
-          cx.beginPath();cx.moveTo(f0.x,f0.y);cx.lineTo(f1.x,f1.y);cx.stroke();
-        }
-        cx.globalAlpha=sqA;
-        cx.beginPath();C4.forEach((q,i)=>i?cx.lineTo(q.x,q.y):cx.moveTo(q.x,q.y));cx.closePath();
-        cx.strokeStyle='rgba(245,158,11,.85)';cx.lineWidth=1.5;
-        cx.setLineDash([9,10]);cx.lineDashOffset=-(st.t*.018)%19;cx.stroke();cx.setLineDash([]);
-        cx.strokeStyle='#FFB94A';cx.lineWidth=3;cx.lineCap='round';
-        for(let i=0;i<4;i++){
-          const q=C4[i];
-          for(const o of[C4[(i+1)%4],C4[(i+3)%4]]){
-            const dx=o.x-q.x,dy=o.y-q.y,Ln=Math.hypot(dx,dy)||1,k=Math.min(16,Ln*.18);
-            cx.beginPath();cx.moveTo(q.x,q.y);cx.lineTo(q.x+dx/Ln*k,q.y+dy/Ln*k);cx.stroke();
-          }
-        }
-        /* RASTER IHRÍSK: ~800 políčok (28 × 29) — „800 ihrísk" ako viditeľná plocha */
-        if(capA>.02&&Math.hypot(C4[1].x-C4[0].x,C4[1].y-C4[0].y)>150){
-          cx.globalAlpha=capA*.28;cx.strokeStyle='#FFB94A';cx.lineWidth=.6;
-          cx.beginPath();
-          for(let k=1;k<28;k++){const f=k/28,a=L(C4[0],C4[1],f),b=L(C4[3],C4[2],f);cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);}
-          for(let k=1;k<29;k++){const f=k/29,a=L(C4[0],C4[3],f),b=L(C4[1],C4[2],f);cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);}
-          cx.stroke();
-        }
-        /* popis — data/label podľa manuálu (JBM · amber-300), nabehne až po naplnení */
-        if(capA>.02){
-          const bx=(C4[2].x+C4[3].x)/2,by=Math.max(C4[2].y,C4[3].y);
-          cx.globalAlpha=capA;
-          cx.textAlign='center';cx.lineJoin='round';
-          cx.font='600 12px "JetBrains Mono",monospace';
-          cx.strokeStyle='rgba(7,9,18,.92)';cx.lineWidth=4;cx.strokeText(SQ_CAP,bx,by+26);
-          cx.fillStyle='#FFB94A';cx.fillText(SQ_CAP,bx,by+26);
-          cx.font='500 10.5px "JetBrains Mono",monospace';
-          cx.strokeText(SQ_SUB,bx,by+44);cx.fillStyle='rgba(255,246,227,.78)';cx.fillText(SQ_SUB,bx,by+44);
-          cx.textAlign='left';
-        }
-      }
+  heroMarkers(P,st);
+  cx.restore();
+}
+
+/* KROK 02 — projektorové značky konkrétnych hrdinov (obri ≥ 8 ha), obrazovkové px.
+   Nemení stav (parcela stále SPÍ = indigo) — projektor ich len NASVIETI a pomenuje. */
+function heroMarkers(P,st){
+  if(st.pres<=.02)return;
+  if(!HEROES)HEROES=POLY.filter(pl=>pl.big).sort((a,b)=>b.p.ha-a.p.ha);   /* hrdinovia: najväčší prvý */
+  const final=st.tt>=1e5,placed=[];
+  for(let i=0;i<HEROES.length;i++){
+    const pl=HEROES[i];
+    const e=final?1:ss(clamp((st.tt-800-i*200)/650));   /* projektor ich nachádza postupne */
+    if(e<=0)continue;
+    let vis=true,x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    cx.beginPath();
+    for(const r of pl.rings){
+      r.forEach((c,k)=>{const q=P(c[0],c[1]);if(!q.vis)vis=false;
+        if(q.x<x0)x0=q.x;if(q.x>x1)x1=q.x;if(q.y<y0)y0=q.y;if(q.y>y1)y1=q.y;
+        k?cx.lineTo(q.x,q.y):cx.moveTo(q.x,q.y);});
+      cx.closePath();
+    }
+    if(!vis)continue;
+    const w=x1-x0,h=y1-y0,cxp=(x0+x1)/2,cyp=(y0+y1)/2;
+    if(w<4||h<4)continue;
+    /* projektorové svetlo — tesný teplý halo; územie je NASVIETENÉ, nie prefarbené */
+    const R=Math.max(w,h)*.6+7;
+    const gr=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,R);
+    gr.addColorStop(0,`rgba(255,233,184,${(e*.12).toFixed(3)})`);gr.addColorStop(.65,`rgba(255,233,184,${(e*.04).toFixed(3)})`);gr.addColorStop(1,'rgba(255,233,184,0)');
+    cx.fillStyle=gr;cx.beginPath();cx.arc(cxp,cyp,R,0,6.283);cx.fill();
+    /* obrys polygónu podľa VLASTNÍCTVA (manuál: mesto plná · súkromník čiarkovaná · mix bodkovaná) */
+    cx.globalAlpha=e;cx.strokeStyle='#FFE9B8';cx.lineWidth=1.6;cx.lineJoin='round';
+    const dash=pl.p.own==='private'?[7,5]:pl.p.own==='mixed'?[2,4]:null;
+    if(dash){cx.setLineDash(dash);cx.lineDashOffset=-(st.t*.02)%12;}
+    cx.stroke();cx.setLineDash([]);
+    /* HĽADÁČIK — rohové značky okolo bboxu (rozbaľujú sa s príchodom) */
+    const pad=7,ax=x0-pad,bx2=x1+pad,ay=y0-pad,by2=y1+pad,L=Math.min(20,Math.min(w,h)*.5)*e;
+    cx.strokeStyle='#FFF6E3';cx.lineWidth=2.4;cx.lineCap='round';cx.beginPath();
+    [[ax,ay,1,1],[bx2,ay,-1,1],[bx2,by2,-1,-1],[ax,by2,1,-1]].forEach(([X,Y,sx,sy])=>{
+      cx.moveTo(X,Y);cx.lineTo(X+sx*L,Y);cx.moveTo(X,Y);cx.lineTo(X,Y+sy*L);
+    });
+    cx.stroke();cx.globalAlpha=1;
+    /* MENOVKA — chip ako v manuáli (JBM názov + výmera), len 6 najväčších, bez prekryvu */
+    if(i<6&&e>.55){
+      const la=clamp((e-.55)/.45);
+      cx.font='700 11px "JetBrains Mono",monospace';cx.textAlign='left';cx.textBaseline='alphabetic';
+      const nm=pl.p.n.toUpperCase(),haS=pl.p.ha.toFixed(1).replace('.',',')+' HA';
+      const tw=Math.max(cx.measureText(nm).width,(cx.font='600 10px "JetBrains Mono",monospace',cx.measureText(haS).width));
+      const pw=tw+22,ph=34;
+      const hit=(X,Y)=>placed.some(b=>X<b.x+b.w+7&&X+pw+7>b.x&&Y<b.y+b.h+7&&Y+ph+7>b.y);
+      let lx=Math.max(10,Math.min(VW-pw-10,cxp-pw/2)),ly=ay-ph-12;
+      while(ly>8&&hit(lx,ly))ly-=ph+9;               /* stohuj nahor */
+      if(ly<=8){ly=by2+12;while(hit(lx,ly))ly+=ph+9;} /* nevošlo hore → pod územie */
+      placed.push({x:lx,y:ly,w:pw,h:ph});
+      cx.globalAlpha=la;
+      cx.strokeStyle='rgba(255,246,227,.45)';cx.lineWidth=1;
+      cx.beginPath();cx.moveTo(lx+pw/2,ly<ay?ly+ph:ly);cx.lineTo(cxp,ly<ay?ay-pad:by2+pad);cx.stroke();
+      cx.fillStyle='rgba(7,9,18,.86)';rr(cx,lx,ly,pw,ph,7);cx.fill();
+      cx.fillStyle='#FFF6E3';cx.font='700 11px "JetBrains Mono",monospace';cx.fillText(nm,lx+11,ly+15);
+      cx.fillStyle='#FFB94A';cx.font='600 10px "JetBrains Mono",monospace';cx.fillText(haS,lx+11,ly+28);
+      cx.globalAlpha=1;
     }
   }
-  cx.restore();
 }
 
 /* ---------- kreslenie ---------- */
@@ -1130,7 +1105,7 @@ function draw(t){
   const CAM=[
     [0,               1.04,  0,     0   ],
     [ACT.objav[0],    1.06,  .008,  0   ],
-    [.095,            1.34, -.030,  .006],   /* KROK 02 — bližšie k jadru: štvorec pravdy má vážiť */
+    [.095,            1.13, -.014,  .004],   /* KROK 02 — širší záber: vidno viac hrdinov naraz */
     [ACT.objav[1],    1.16, -.022, -.015],
     [.18,             1.24, -.052,  .01 ],   /* dojazd POCHOP — od hold už len jeden ťah */
     [ACT.predstav[1], 1.0,  -.004, -.004],   /* vlna = JEDEN plynulý pull-out, žiadny medzikrok */
@@ -1150,7 +1125,7 @@ function draw(t){
   const ownPulse0=Math.sin(clamp(ownA0)*Math.PI);
   const HB=1+(1-clamp(p*14))*.6;                 /* hero pulz */
   const wave=aP('predstav');
-  /* KROK 02 — príbeh: spoločný NÁDYCH → ZHLUK parciel → ŠTVOREC PRAVDY (odmerka 580 ha).
+  /* KROK 02 — príbeh: spoločný NÁDYCH (113 sa nadýchne) → projektor NASVIETI hrdinov (obri ≥ 8 ha).
      Časovanie beží od príchodu na krok (o2T0); návrat na krok prehrá sekvenciu znova. */
   const apO=aP('objav');
   if(apO>.35&&o2Prev<=.35)o2T0=t;
