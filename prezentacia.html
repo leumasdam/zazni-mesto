@@ -911,7 +911,7 @@ function goStep(i,manual=true){
 /* kiosková slučka: ?auto=1 (4,2 s na krok) alebo ?auto=8 (sekundy); na konci sa vráti na začiatok */
 const AUTO=+(QS.get('auto')||0);
 const JZP=QS.get('jz');   /* debug: zmraz dvojfazu legendy */
-let jzT0=0,prevApJ=0;
+let jzT0=0,prevApJ=0,jzDir=0,jzFrom=0,jzE=0;
 function onArrive(){
   const s=STEPS[STEP];
   if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
@@ -1207,18 +1207,21 @@ function chores(t){
         apVid=aP('video'),apTb=aP('tuba'),apS=aP('skal'),apP2=aP('proto'),apZ=aP('zapoj');
   const eO=ssE(apO),eT2=ss(clamp(apT*3.2)),eV=ssE(apV),eVid=ssE(apVid),
         eTb=ssE(apTb),eS=ssE(apS),eP=ssE(apP2),eZ=ssE(apZ);
-  /* legenda: dvojfáza v ČASE — 700 ms do polovice · 450 ms sek · 620 ms dokončenie */
-  if(apJ>0&&prevApJ<=0)jzT0=t;
-  if(apJ<=0)jzT0=0;
+  /* legenda: dvojfáza v ČASE — 700 ms do polovice · 450 ms sek · 620 ms dokončenie.
+     OBOMA SMERMI: vpred 0→½·SEK·½→1, pri cúvnutí zrkadlovo 1→½·SEK·½→0;
+     otočka uprostred letu nadviaže z aktuálnej hodnoty (jzFrom). */
+  const jzEnv=tt=>tt<700?ss(tt/700)*.5 : tt<1150?.5 : .5+ss(Math.min(1,(tt-1150)/620))*.5;
+  if(apJ>0&&prevApJ<=0){jzT0=t;jzDir=1;jzFrom=0;}
+  else if(jzDir===1&&prevApJ-apJ>1e-3){jzT0=t;jzDir=-1;jzFrom=jzE;}
+  else if(jzDir===-1&&apJ-prevApJ>1e-3){jzT0=t;jzDir=1;jzFrom=jzE;}
+  if(apJ<=0){jzT0=0;jzDir=0;jzFrom=0;}
   prevApJ=apJ;
   let eJ;
   if(REDUCED)eJ=apJ>0?1:0;
-  else{
-    const tt=jzT0?t-jzT0:0;
-    eJ=tt<700?ss(tt/700)*.5 : tt<1150?.5 : .5+ss(Math.min(1,(tt-1150)/620))*.5;
-    eJ*=ss(clamp(apJ*9));                      /* reverz scrollom panel stiahne */
-  }
+  else if(!jzDir)eJ=0;
+  else eJ=jzFrom+((jzDir>0?1:0)-jzFrom)*jzEnv(t-jzT0);
   if(JZP!==null)eJ=+JZP;
+  jzE=eJ;
   const ride=e=>Math.min(0,4-104*e);           /* odchod HORE v kontakte s prichádzajúcim (104 % štart → bez medzier) */
 
   /* mapa: vytlačená HORE panelom legendy */
