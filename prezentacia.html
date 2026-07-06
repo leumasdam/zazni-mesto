@@ -40,9 +40,9 @@ a{color:inherit}
   transform:translateX(-104%);will-change:transform,opacity;
   box-shadow:0 0 90px rgba(0,0,0,.4);
 }
-.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.72)}   /* priesvitný podmaz — BEZ backdrop-filter!
+.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.4)}   /* priesvitný podmaz — BEZ backdrop-filter!
    Pohybujúci sa fullscreen backdrop-blur nad hrajúcim videom = re-blur každý frame = sekanie prelivu aj videa.
-   Blur nesie samotné video (chapvid filter), panel je len mliečne sklo. */
+   Blur nesie samotné video (chapvid filter); alfa je DYNAMICKÁ v chores: preliv číry, po dosadnutí stuhne. */
 #panelR{z-index:6}  /* prichádza PONAD spodný sheet — biela nadväzuje bez tmavého bliku */
 /* light mode obsahu na bielych paneloch */
 .ovl.light .head b{color:#101426}
@@ -1556,6 +1556,8 @@ function chores(t){
   panelB.style.visibility=pbOn?'visible':'hidden';
   panelB.style.opacity=1;
   panelB.style.transform=`translateY(${((1-eTb)*104+ride(eS)).toFixed(2)}%)`;
+  /* preliv = takmer číre sklo (film vidno), po dosadnutí panel STUHNE do čitateľnej svetlej */
+  panelB.style.background=`rgba(244,242,238,${(.32+.43*eTb*eTb*eTb).toFixed(3)})`;
   const tubaCover=eTb*(1-eS);
   const light=Math.max(tubaCover,cover);
   /* obsah bielych kapitol IDE s panelom, keď ho ďalší slide vytláča */
