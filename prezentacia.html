@@ -1712,7 +1712,19 @@ function inputStep(d){
   lastIn=now;
   goStep(STEP+(d>0?1:-1));
 }
-addEventListener('wheel',e=>{e.preventDefault();if(Math.abs(e.deltaY)>=6)inputStep(e.deltaY);},{passive:false});
+/* JEDEN fyzický swipe = JEDEN krok, nech je akokoľvek silný: touchpad po švihu chrlí
+   momentum eventy aj 1-2 s → gesto = súvislý prúd (medzery <280 ms), krok smie LEN prvý
+   event gesta; zvyšok chvosta sa ignoruje. Nové gesto až po tichu. */
+let wLast=0,wUsed=false;
+function wheelStep(dy){
+  const now=performance.now();
+  if(now-wLast>280)wUsed=false;
+  wLast=now;
+  if(wUsed||Math.abs(dy)<6)return;
+  wUsed=true;
+  inputStep(dy);
+}
+addEventListener('wheel',e=>{e.preventDefault();wheelStep(e.deltaY);},{passive:false});
 let ty=null;
 addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});
 addEventListener('touchend',e=>{
@@ -1733,7 +1745,7 @@ byId('stepUp').addEventListener('click',()=>inputStep(-1));
    postMessage-om (funguje aj cez file://, kde je contentWindow prístup blokovaný). */
 addEventListener('message',e=>{
   const d=e.data||{};
-  if(d.zazni==='wheel'&&Math.abs(d.dy)>=6)inputStep(d.dy);
+  if(d.zazni==='wheel')wheelStep(d.dy);              /* rovnaká brána — 1 swipe = 1 krok aj v prototype */
   else if(d.zazni==='key')inputStep(/Down$/.test(d.k)?1:-1);
 });
 /* bodky */
