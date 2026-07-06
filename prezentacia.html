@@ -1642,10 +1642,8 @@ function chores(t){
       if(chapvid.paused)chapvid.play().catch(()=>{});
       if(prevVv<=.04){try{chapvid.currentTime=0;}catch(e){}}   /* každý príchod = film od začiatku */
     }else if(!chapvid.paused)chapvid.pause();
-    try{
-      const tgtRate=.75-.42*tubaCover;
-      chapvid.playbackRate+= (tgtRate-chapvid.playbackRate)*.06; /* plynulé spomalenie, žiadne skoky */
-    }catch(e){}
+    /* ŽIADNE spomaľovanie playbackRate — pod ~0.5× video seká (24/30 fps zdroj nemá medziframy)
+       a per-frame prepis rate štucal dekóder. Pokoj podmazu robí blur + priesvitný panel. */
   }
   prevVv=vv;
   byId('ovlVideo').style.opacity=ss(wnd('video')).toFixed(3);
