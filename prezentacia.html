@@ -979,7 +979,7 @@ const STEPS=[
   {t:.5175,n:'Spiaci obor'},
   {t:.605, n:'Expozícia z každej strany',slow:3.6},
   {t:.6875,n:'Vrstvy svetla',slow:1.15},
-  {t:.7475,n:'Expozícia — film',auto:1600,autoHalf:.795},   /* krátky náhľad: 1,6 s → príliv do polovice → vytlačenie */
+  {t:.7475,n:'Expozícia — film',auto:900,autoHalf:.795},   /* krátky náhľad: 0,9 s → príliv do polovice → vytlačenie */
   {t:.815, n:'TU-BA + médiá'},
   {t:.885, n:'Škálovateľnosť',slow:1.1},
   {t:.94,  n:'Živý prototyp'},
@@ -1020,8 +1020,8 @@ function onArrive(){
        Akýkoľvek manuálny vstup sekvenciu zruší (goStep manual čistí autoT). */
     autoT=setTimeout(()=>{
       target=s.autoHalf;chase=.075/1.35;
-      autoT=setTimeout(()=>goStep(STEP+1,false),780);
-    },s.auto||1600);
+      autoT=setTimeout(()=>goStep(STEP+1,false),620);
+    },s.auto||900);
   }
   else if(s.auto&&!REDUCED){autoT=setTimeout(()=>goStep(STEP+1,false),s.auto);}
   else if(AUTO&&!REDUCED){
