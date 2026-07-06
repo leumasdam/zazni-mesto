@@ -263,7 +263,7 @@ body.lightmode .dots i.on{background:#C77800}
 #gridSkal .num{font-family:var(--fd);font-weight:700;font-size:clamp(46px,4.6vw,76px);line-height:1;letter-spacing:-.03em}
 
 /* 4 · PREDSTAV SI — HUD vlny */
-#ovlWave{display:flex;align-items:flex-end;justify-content:center;padding-bottom:92px}
+#ovlWave{display:flex;align-items:flex-start;justify-content:center;padding-top:70px}   /* pill hore, pod logom */
 .wavehud{
   display:flex;align-items:center;gap:22px;padding:16px 28px;border-radius:99px;
   background:rgba(9,12,24,.9);backdrop-filter:blur(22px) saturate(130%);border:1px solid rgba(139,145,221,.4);
@@ -278,7 +278,7 @@ body.lightmode .dots i.on{background:#C77800}
 .wavehud .st.on i{box-shadow:0 0 10px currentColor}
 .wavehud .st1.on i{background:#3B4285}.wavehud .st2.on i{background:#17B3A3}
 .wavehud .st3.on i{background:#F59E0B}.wavehud .st4.on i{background:#FFE9B8}
-#ovlWave .note{position:absolute;left:50%;top:110px;transform:translateX(-50%);
+#ovlWave .note{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);white-space:nowrap;   /* poznámka DOLE, nad footerom */
   font-family:var(--fm);font-size:11.5px;letter-spacing:.22em;color:var(--warm-300);text-transform:uppercase;
   text-shadow:0 2px 12px rgba(5,7,15,.9)}
 
