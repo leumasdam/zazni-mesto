@@ -612,7 +612,7 @@ body.lightmode .dots i.on{background:#C77800}
           <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8" fill="none"/>
         </g>
       </svg>
-      <b id="oborLbl1">SPÍ</b><span>bez zámeru · ťukni a zobuď</span>
+      <b id="oborLbl1">SPÍ</b><span>bez zámeru · čaká</span>
     </div>
     <div class="oborpose">
       <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -639,7 +639,7 @@ body.lightmode .dots i.on{background:#C77800}
       <b style="color:#FFB94A">BDIE</b><span>zámer v registri</span>
     </div>
   </div>
-  <p class="sub" id="oborHint">V každom brownfielde spí obor s podobou jeho minulosti — fabrika, stanica, kasáreň.<br>Prebúdza ho len register: oči, ústa a žiara hovoria o reálnom stave, zatiaľ čo želania návštevníkov svietia až vo Vízii.</p>
+  <p class="sub" id="oborHint">V každom brownfielde spí obor s podobou jeho minulosti — fabrika, stanica, kasáreň.<br>Prebúdza ho len register; želania návštevníkov sa rozsvietia až vo Vízii.</p>
 </div>
 
 <!-- 7b · TURNTABLE — expozícia z každej strany -->
@@ -1761,7 +1761,8 @@ addEventListener('message',e=>{
   });
 }
 
-/* obor — ťukni a zobuď */
+/* obor — skryté demo Vízie: klik prezentujúceho ho zobudí (bez lákajúceho labelu —
+   v realite obra budí LEN register; klik reprezentuje hlas návštevníka VO VÍZII) */
 let oborUp=false;
 byId('oborBig').addEventListener('click',()=>{
   oborUp=!oborUp;
@@ -1773,10 +1774,10 @@ byId('oborBig').addEventListener('click',()=>{
   const l1=byId('oborLbl1');
   l1.textContent=oborUp?'BDIE ✓':'SPÍ';
   l1.style.color=oborUp?'#FFB94A':'#B9BEF0';
-  l1.nextElementSibling.textContent=oborUp?'zobudený hlasom · ťukni a uspi':'bez zámeru · ťukni a zobuď';
+  l1.nextElementSibling.textContent=oborUp?'vo Vízii ho zobudil hlas · ťukni a uspi':'bez zámeru · čaká';
   byId('oborHint').innerHTML=oborUp
-    ?'obor bdie ✓ — na expozícii toto urobí hlas návštevníka a územie zažiari na modeli<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
-    :'obor = pôvodné využitie — Fabrika spí v Palme, Stanica na Filiálke, Kasáreň v raketovej základni<br>oči = stav · ústa = energia · aura = jas — realita a želanie sa nemiešajú';
+    ?'presne toto urobí hlas návštevníka vo VÍZII — územie zažiari na modeli a hlas sa stane dátami pre MIB<br>všetkých 113 má tvár: v zozname, v detaile a zblízka aj na mape'
+    :'V každom brownfielde spí obor s podobou jeho minulosti — fabrika, stanica, kasáreň.<br>Prebúdza ho len register; želania návštevníkov sa rozsvietia až vo Vízii.';
   if(oborUp&&!SILENT){try{
     const a=new (window.AudioContext||window.webkitAudioContext)();
     [523.25,659.25,783.99].forEach((fq,i)=>{
