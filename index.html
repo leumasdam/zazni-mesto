@@ -566,6 +566,7 @@ nav::-webkit-scrollbar{display:none}
       </table>
       <p style="font-size:14px;color:var(--text-mid);margin-top:var(--sp-2);max-width:74ch">Jedna dimenzia dát = jeden kanál. <b style="color:var(--text-hi)">Farba patrí stavu</b> — je to jediný animovaný kanál.
       Všetko ostatné hovorí tvarom: silueta, vzor, obrys, mierka. Preto sa kanály dajú ľubovoľne vrstviť a nikdy sa nebijú.</p>
+      <p class="mono" style="margin-top:var(--sp-2);font-size:11.5px">Pozn.: „obor ≥ 8 ha" je čisto veľkostné pravidlo pozornosti tejto expozície — nezamieňať s oficiálnou kategóriou „významný brownfield" (16 území vybraných pre pamiatkovú a industriálnu hodnotu, Koncepcia rozvoja brownfieldov 2026).</p>
     </div>
   </div>
 </section>
@@ -954,7 +955,7 @@ nav::-webkit-scrollbar{display:none}
     <h2>Toto už bežia vaše dáta</h2>
     <p class="lead">Žiadna ilustrácia: <strong style="color:var(--warm-100)">113 skutočných polygónov</strong> načítaných
     priamo z ArcGIS registra brownfieldov MIB (vrstva BF_aktualizácia_2022), hranica mesta a Dunaj z OpenStreetMap.
-    Envirozáťaže (15) nesú šrafy, spiace územia pulzujú, významné zóny majú menovky.
+    Envirozáťaže (15) nesú šrafy, spiace územia pulzujú, veľké zóny (obri ≥ 8 ha) majú menovky.
     Presne takto sa dáta premietnu na fyzický model.</p>
     <div class="stage">
       <svg id="liveMap" width="100%" style="max-height:78vh" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa 113 brownfieldov Bratislavy z registra MIB">
@@ -967,7 +968,7 @@ nav::-webkit-scrollbar{display:none}
         <g id="lmBase"></g><g id="lmBf"></g><g id="lmLabels"></g>
       </svg>
     </div>
-    <p class="mono" style="margin-top:var(--sp-2)">Zdroj: services8.arcgis.com → BF_aktualizácia_2022_WFL1 (polia NAZOV, VYMERA_HA, DRUH_VLA, P_VYUZITIE, SEZ_POPIS, KLASIFIKAC) + OSM hranica a Dunaj. Pravidlo scény: naraz max 1 tematická vrstva + stavy; menovky len významné zóny; kontext mesta max 30 % jasu akcentov. Interaktívnu verziu s vrstvami má <a href="obrazovka.html" style="color:var(--amber-300)">mockup dotykovej obrazovky →</a></p>
+    <p class="mono" style="margin-top:var(--sp-2)">Zdroj: services8.arcgis.com → BF_aktualizácia_2022_WFL1 (polia NAZOV, VYMERA_HA, DRUH_VLA, P_VYUZITIE, SEZ_POPIS, KLASIFIKAC) + OSM hranica a Dunaj. Pravidlo scény: naraz max 1 tematická vrstva + stavy; menovky len veľké zóny (≥ 8 ha); kontext mesta max 30 % jasu akcentov. Interaktívnu verziu s vrstvami má <a href="obrazovka.html" style="color:var(--amber-300)">mockup dotykovej obrazovky →</a></p>
   </div>
 </section>
 

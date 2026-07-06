@@ -39,11 +39,11 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 ## 4 · PREDSTAV SI *(scrolluj plynulo — svetelná vlna ide od východu, počítadlo rastie)*
 
 > Sledujte: svetlo ide mestom od východu ako svitanie — pomaly, nech vidno celú premenu.
-> A poctivo: najprv sa NAOZAJ prebúdza len 66 území so zámerom — presne podľa registra.
-> Až potom, keďže akt sa volá PREDSTAV SI, vízia rozsvieti aj 47 spiacich.
+> A poctivo: prebúdza sa NAOZAJ len 66 území so zámerom — presne podľa registra.
+> Zvyšných 47 ostáva indigovo spať. Vlna odhaľuje realitu, nie želanie.
 > Indigo spí… teal drieme — dočasné využitie… amber sa prebúdza — zámer… a teplá biela žije.
 > Jas je miera života — to je celý vizuálny jazyk expozície v jednom pohybe. Na fyzickom modeli
-> toto kreslia projektory; významné územia sa pri prebudení samy pomenujú a pri mene sa objaví
+> toto kreslia projektory; veľké územia (obri nad 8 hektárov) sa pri prebudení samy pomenujú a pri mene sa objaví
 > ich obor — no oči otvorí len ten, čo má zámer v registri. Realita a želanie sa nemiešajú.
 
 *(nechaj dobehnúť na „113 / 113 svieti")*

@@ -105,8 +105,9 @@ ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
   return big.length===13&&!PRE.includes('16 BF')&&!PRE.includes('Šestnásť')&&PRE.includes('13 obrov ≥ 8 ha')
     &&!IDX.includes('16 významných')&&!IDX.includes('významný BF (16)');
 })());
-ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
-  PRE.includes('26 sa prebudilo a vyradilo, 8 nových')&&PRE.includes('mimo 113'));
+ok('131→113 aritmetika PODĽA KONCEPCIE 2026: 39 vyradených (26 z nich = kat. A, vrátili sa na trh = ŽIJE) + 22 nových + ŽIJE mimo 113',
+  PRE.includes('39 vyradilo (26 z nich sa naozaj prebudilo a vrátilo na trh) a 22 nových')&&PRE.includes('mimo 113')
+  &&!PRE.includes('8 nových pribudlo'));
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));

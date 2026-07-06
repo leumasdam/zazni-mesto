@@ -478,7 +478,7 @@ body.lightmode .dots i.on{background:#C77800}
         <span class="f"><i class="num" data-n="113">0</i> spiacich miest</span>
         <span class="f"><i class="num" data-n="580">0<small> ha</small></i> plochy</span>
         <span class="f">≈ <i class="num" data-n="800">0</i> futbalových ihrísk</span>
-        <p class="trend">A dobrá správa: to číslo klesá — v 2019 ich bolo 131: 26 sa prebudilo a vyradilo, 8 nových pribudlo. Mesto sa budí aj samo, len pomaly. My mu dávame vypínač.</p>
+        <p class="trend">A dobrá správa: to číslo klesá — od 2019 sa 39 vyradilo (26 z nich sa naozaj prebudilo a vrátilo na trh) a 22 nových pribudlo. Mesto sa budí aj samo, len pomaly. My mu dávame vypínač.</p>
         <span class="src">register BF · MIB · aktualizácia 2022 · pole VYMERA_HA · súčet 579,4 ha · prepočet 0,72 ha / ihrisko</span>
       </div>
     </div>
@@ -1309,7 +1309,7 @@ function draw(t){
     cx.globalAlpha=1;
   }
 
-  /* menovky + OBORI významných — plná budova s tvárou, prebúdza sa ako ju zasiahne svetlo (jazyk manuálu) */
+  /* menovky + OBORI veľkých (≥ 8 ha) — plná budova s tvárou, prebúdza sa ako ju zasiahne svetlo (jazyk manuálu) */
   const oc=[];
   for(const pl of POLY){
     if(!pl.big)continue;
