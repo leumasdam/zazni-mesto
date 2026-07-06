@@ -263,11 +263,11 @@ body.lightmode .dots i.on{background:#C77800}
 #gridSkal .num{font-family:var(--fd);font-weight:700;font-size:clamp(46px,4.6vw,76px);line-height:1;letter-spacing:-.03em}
 
 /* 4 · PREDSTAV SI — HUD vlny */
-#ovlWave{display:flex;align-items:flex-end;justify-content:center;padding-bottom:52px}
+#ovlWave{display:flex;align-items:flex-end;justify-content:center;padding-bottom:92px}
 .wavehud{
   display:flex;align-items:center;gap:22px;padding:16px 28px;border-radius:99px;
-  background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--glass-b);
-  box-shadow:0 16px 50px rgba(0,0,0,.45);
+  background:rgba(9,12,24,.9);backdrop-filter:blur(22px) saturate(130%);border:1px solid rgba(139,145,221,.4);
+  box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(201,205,244,.12);
 }
 .wavehud .cnt{font-family:var(--fd);font-weight:700;font-size:30px;min-width:150px}
 .wavehud .cnt small{font-size:13px;color:var(--text-mid);font-weight:400;font-family:var(--fm)}
@@ -1075,6 +1075,26 @@ function drawObor(g,X,Y,S,awake,a){
   g.restore();
 }
 
+/* MENOVKY obrov s anti-overlap — vo vlne sa obri hromadia (Dynamitka na východe) a menovky splynú
+   na kašu; kreslíme ich AŽ po obroch, najväčšie prvé, kolíznu radšej skryjeme (obor ostáva). */
+function oborLabels(cands){
+  cands.sort((a,b)=>b.ha-a.ha);
+  cx.textAlign='center';cx.textBaseline='alphabetic';cx.lineJoin='round';
+  cx.font='700 10.5px "JetBrains Mono",monospace';
+  const placed=[];
+  for(const L of cands){
+    const w=cx.measureText(L.txt).width,
+          x=Math.max(w/2+8,Math.min(VW-w/2-8,L.x)),y=L.y;
+    const b={x0:x-w/2-6,x1:x+w/2+6,y0:y-11,y1:y+4};
+    if(placed.some(p=>b.x0<p.x1&&b.x1>p.x0&&b.y0<p.y1&&b.y1>p.y0))continue;   /* kolízia → skry */
+    placed.push(b);
+    cx.globalAlpha=L.la;
+    cx.strokeStyle='rgba(5,7,15,.92)';cx.lineWidth=3.5;cx.strokeText(L.txt,x,y);
+    cx.fillStyle='#FFF6E3';cx.fillText(L.txt,x,y);
+  }
+  cx.globalAlpha=1;cx.textAlign='left';
+}
+
 /* KROK 02 — projektor NASVIETI konkrétne územia: každé = obor (budova s tvárou) v stavovej farbe.
    Objav = všetko SPÍ → indigo obori so zavretými očami; menovka na najväčších. */
 function heroMarkers(P,st){
@@ -1162,6 +1182,7 @@ function draw(t){
     cx.setTransform(DPR,0,0,DPR,0,0);
     cx.clearRect(0,0,VW,VH);
     const lit=GL.frame({t,wave,ctxA,own:ownK,camZ:zoom,camX,camY,smx:SMX,smy:SMY,hb:HB,br:br2});
+    const glLbl=[];
     for(const pl of POLY){
       if(!pl.big)continue;
       const s=polyState(pl),front=s/ST_TARGET(pl.p);
@@ -1171,13 +1192,9 @@ function draw(t){
       const la=Math.min(1,front*1.1)*.98;
       const S=12+Math.sqrt(pl.p.ha)*1.6;           /* menšie obri */
       drawObor(cx,q.x,q.y-S*.3,S,pl.p.plan===1&&s>.32,la);   /* zámer sa prebúdza (amber), bez zámeru spí (indigo) */
-      cx.globalAlpha=la;cx.textAlign='center';cx.textBaseline='alphabetic';cx.lineJoin='round';
-      cx.font=`700 10.5px "JetBrains Mono",monospace`;
-      cx.strokeStyle='rgba(5,7,15,.92)';cx.lineWidth=3.5;
-      cx.strokeText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+6);
-      cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+6);
-      cx.textAlign='left';cx.globalAlpha=1;
+      glLbl.push({txt:pl.p.n.toUpperCase(),x:q.x,y:q.y+S*.55+6,la,ha:pl.p.ha});
     }
+    oborLabels(glLbl);
     chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,own:ownK,t});
     return lit;
   }
@@ -1253,6 +1270,7 @@ function draw(t){
   }
 
   /* menovky + OBORI významných — plná budova s tvárou, prebúdza sa ako ju zasiahne svetlo (jazyk manuálu) */
+  const oc=[];
   for(const pl of POLY){
     if(!pl.big)continue;
     const s=polyState(pl),front=s/ST_TARGET(pl.p);
@@ -1263,13 +1281,10 @@ function draw(t){
           sy=(pl.cy*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,
           S=12+Math.sqrt(pl.p.ha)*1.6;
     drawObor(cx,sx,sy-S*.3,S,pl.p.plan===1&&s>.32,la);
-    cx.globalAlpha=la;cx.textAlign='center';cx.textBaseline='alphabetic';cx.lineJoin='round';
-    cx.font=`700 10.5px "JetBrains Mono",monospace`;
-    cx.strokeStyle='rgba(5,7,15,.92)';cx.lineWidth=3.5;
-    cx.strokeText(pl.p.n.toUpperCase(),sx,sy+S*.55+6);
-    cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),sx,sy+S*.55+6);
-    cx.textAlign='left';cx.globalAlpha=1;cx.restore();
+    cx.restore();
+    oc.push({txt:pl.p.n.toUpperCase(),x:sx,y:sy+S*.55+6,la,ha:pl.p.ha});
   }
+  cx.save();cx.setTransform(DPR,0,0,DPR,0,0);oborLabels(oc);cx.restore();
   const P2=(x,y)=>({x:(x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,y:(y*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,vis:true});
   chanOverlay(P2,{pres:pres02,tt:tt02,risk:riskK,own:ownK,t});
   return lit;
