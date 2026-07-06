@@ -1261,6 +1261,20 @@ function sndTick(){
 
 /* init */
 renderStack();renderDocks();
+
+/* ?embed=nav — vložený v scroll-story prezentácii: koliesko a šípky patria NAVIGÁCII rodiča
+   (postMessage funguje aj cez file://, kde je contentWindow prístup blokovaný).
+   Zoom mapy ostáva cez +/− tlačidlá; samostatná obrazovka ani iframe v manuáli sa nemenia. */
+if(new URLSearchParams(location.search).get('embed')==='nav'&&window.parent!==window){
+  addEventListener('wheel',e=>{e.preventDefault();e.stopImmediatePropagation();
+    parent.postMessage({zazni:'wheel',dy:e.deltaY},'*');},{passive:false,capture:true});
+  addEventListener('keydown',e=>{
+    if(['ArrowDown','PageDown','ArrowUp','PageUp'].includes(e.key)){
+      e.preventDefault();e.stopImmediatePropagation();
+      parent.postMessage({zazni:'key',k:e.key},'*');
+    }
+  },true);
+}
 </script>
 </body>
 </html>

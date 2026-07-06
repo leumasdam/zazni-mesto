@@ -724,7 +724,7 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 11 · ŽIVÝ PROTOTYP (overlay krok) -->
 <div class="ovl" id="ovlProto" style="z-index:22">
   <div id="proto" style="position:absolute;inset:0">
-    <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
+    <iframe src="obrazovka.html?embed=nav" title="Živý prototyp expozície" loading="lazy"></iframe>
     <div class="badge">
       <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — klikaj priamo do prototypu · ďalej šípkami vľavo dole</span>
       <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
@@ -1729,26 +1729,13 @@ addEventListener('keydown',e=>{
 });
 byId('stepDn').addEventListener('click',()=>inputStep(1));
 byId('stepUp').addEventListener('click',()=>inputStep(-1));
-/* PROTOTYP: iframe (same-origin) žerie koliesko aj klávesy — v protoMode ich prepošli navigácii.
-   Capture na window iframu beží PRED MapLibre handlermi; zoom mapy ostáva cez +/− tlačidlá. */
-{
-  const pfr=document.querySelector('#proto iframe');
-  const hook=()=>{try{
-    const w=pfr.contentWindow;
-    w.addEventListener('wheel',e=>{
-      if(!document.body.classList.contains('protoMode'))return;
-      e.preventDefault();e.stopImmediatePropagation();
-      if(Math.abs(e.deltaY)>=6)inputStep(e.deltaY);
-    },{passive:false,capture:true});
-    w.addEventListener('keydown',e=>{
-      if(!document.body.classList.contains('protoMode'))return;
-      if(['ArrowDown','PageDown'].includes(e.key)){e.preventDefault();inputStep(1);}
-      if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();inputStep(-1);}
-    },true);
-  }catch(e){}};
-  pfr.addEventListener('load',hook);
-  if(pfr.contentDocument&&pfr.contentDocument.readyState==='complete')hook();
-}
+/* PROTOTYP: iframe žerie koliesko aj klávesy — obrazovka.html?embed=nav ich preposiela
+   postMessage-om (funguje aj cez file://, kde je contentWindow prístup blokovaný). */
+addEventListener('message',e=>{
+  const d=e.data||{};
+  if(d.zazni==='wheel'&&Math.abs(d.dy)>=6)inputStep(d.dy);
+  else if(d.zazni==='key')inputStep(/Down$/.test(d.k)?1:-1);
+});
 /* bodky */
 {
   const dw=byId('dots');
