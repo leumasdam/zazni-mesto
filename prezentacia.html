@@ -182,8 +182,8 @@ body.protoMode .steps-ui:hover{opacity:1}
 .tubamark i{display:block;flex:1;height:2px;background:currentColor;border-radius:99px;opacity:.85}
 /* ŽIVÝ PROTOTYP na plnej ploche: chrome prezentácie (TU—BA, footbar, počítadlo, bodky) uhne
    kioskovému topbaru — ostávajú len šípky ďalej (koliesko chytá mapa iframe) */
-.tubamark,.footbar,#stepCtr,.dots{transition:opacity .35s}
-body.protoMode .tubamark,body.protoMode .footbar,body.protoMode #stepCtr,body.protoMode .dots{opacity:0;pointer-events:none}
+.tubamark,.footbar,#stepCtr,.dots,.footmark{transition:opacity .35s}
+body.protoMode .tubamark,body.protoMode .footbar,body.protoMode #stepCtr,body.protoMode .dots,body.protoMode .footmark{opacity:0;pointer-events:none}
 .tubamark .mid{font-size:13px;letter-spacing:.16em;font-weight:700;white-space:nowrap;transform:translateY(1px)}
 .tubamark .mid em{font-style:normal;color:var(--amber-300)}
 .hint{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:60;
@@ -192,6 +192,7 @@ body.protoMode .tubamark,body.protoMode .footbar,body.protoMode #stepCtr,body.pr
 /* footer: svetlý bar cez celú šírku — vľavo počítadlo krokov, vpravo šípky vedľa seba */
 .footbar{position:fixed;left:0;right:0;bottom:0;height:58px;z-index:68;background:#FBFAF7;
   border-top:1px solid rgba(11,14,26,.1);box-shadow:0 -14px 34px rgba(5,7,15,.35)}
+.footmark{position:fixed;left:50%;bottom:15px;transform:translateX(-50%);z-index:70;pointer-events:none}   /* značka mesta z kiosku — stred footeru, každý slide */
 .steps-ui{position:fixed;right:24px;bottom:9px;z-index:70;display:flex;flex-direction:row;gap:10px}
 #stepCtr{position:fixed;left:28px;bottom:17px;z-index:70;font-family:var(--fm);letter-spacing:.14em;
   color:#61667F;font-size:12px;display:flex;align-items:baseline;gap:8px}
@@ -731,6 +732,9 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- ovládanie krokov -->
 <!-- footer: svetlý bar · page counter vľavo · šípky vpravo vedľa seba -->
 <div class="footbar" aria-hidden="true"></div>
+<svg class="footmark" width="28" height="28" viewBox="0 0 32 32" stroke="#0B0E1A" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M6 26V12l3-3v3h3v-3l4-4 4 4v3h3V9l3 3v14z"/><path d="M13 26v-6h6v6"/>
+</svg>
 <div id="stepCtr"><b>01</b><span>/ 13</span><i>Zažni mesto</i></div>
 <div class="steps-ui">
   <button id="stepUp" aria-label="Predošlý krok">↑</button>
