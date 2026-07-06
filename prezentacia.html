@@ -56,36 +56,55 @@ a{color:inherit}
 .ovl.light .num small{color:#C77800}
 .ovl.light .chanbar .ch{color:#5C5F78}
 .ovl.light .chanbar .ch b{color:#101426}
-.ovl.light .kcard b{color:#101426}
-.ovl.light .kcard span{color:#5C5F78}
+.ovl.light .lexdesc .src,.ovl.light .protoline .src{color:#75788C}
+.ovl.light .protoline .src{display:inline;margin-left:10px}
 /* ilustrácia v decku — splynie s bielym panelom */
 .deckimg{max-width:1240px;margin:0 auto 10px}
 .deckimg img{display:block;max-width:100%;max-height:46vh;width:auto;margin:0 auto;mix-blend-mode:multiply}
 body.lightmode .brand,body.lightmode .tubamark,body.lightmode .hint{color:#101426}
 body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 
-/* legenda: 4 stavy naživo + kanály */
+/* legenda: SLOVNÍK SVETLA — bold specimen tabuľka: 4 stavy = 4 veľké riadky (žiadne karty),
+   tmavý kanálový pás, pravidlo očí obra priamo z prototypu (žiadne vymyslené chipy) */
 .grid4{grid-template-columns:repeat(4,1fr)!important}
-.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:16px}
-.stdemo{height:96px;border-radius:14px;background:#0B0E1A;border:1px solid #1C2138;
-  display:flex;align-items:center;justify-content:center;margin-bottom:14px}
-/* kanálové mini-demá (z manuálu) */
-.kcard{padding:16px 16px 14px}
-.kdemo{height:62px;border-radius:12px;background:#0B0E1A;border:1px solid #1C2138;
-  display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.kcard b{font-family:var(--fd);font-size:14px;display:block}
-.kcard span{font-family:var(--fm);font-size:10px;color:#9a9dae;letter-spacing:.06em}
-/* prvky z prototypu */
-.uistrip{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.uistrip .lbl{font-family:var(--fm);font-size:10.5px;letter-spacing:.16em;color:#9a9dae;text-transform:uppercase;margin-right:6px}
-.uip{font-family:var(--fm);font-size:11px;padding:7px 14px;border-radius:99px;background:#0B0E1A;
-  color:#B4B7D4;border:1px solid #2A3150;display:inline-flex;align-items:center;gap:7px}
-.uip.amber{color:#FFB94A;border-color:rgba(245,158,11,.5)}
-.uip.indigo{color:#8B91DD;border-color:#3B4285}
-.uip.risk{color:#FF7EB0;border-color:#E84B8A}
-.uiseg{display:inline-flex;background:#0B0E1A;border:1px solid #2A3150;border-radius:99px;padding:3px;gap:2px}
-.uiseg span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;padding:5px 12px;border-radius:99px;color:#767A9C}
-.uiseg span.on{background:var(--amber-500);color:#0B0E1A;font-weight:700}
+.lex{max-width:1240px;margin:0 auto}
+.ovl.light .lexrow{background:transparent;box-shadow:none;border:0;border-radius:0;backdrop-filter:none}
+.lexrow{display:grid;grid-template-columns:88px minmax(280px,.92fr) 1.1fr 168px;gap:28px;align-items:center;
+  padding:5px 4px;border-bottom:2px solid #101426}
+.lex .lexrow:first-child{border-top:3px solid #101426}
+.lexdemo{height:46px;border-radius:11px;background:#0B0E1A;display:flex;align-items:center;justify-content:center}
+.lexdemo .parcel{width:28px;height:28px;border-radius:7px}
+.lexname{font-family:var(--fd);font-weight:800;font-size:clamp(26px,3vw,46px);letter-spacing:-.02em;color:#101426;line-height:.95}
+.lexdesc p{font-size:14px;line-height:1.5;margin:0 0 5px;color:#5C5F78}
+.lexnum{text-align:right}
+.lexnum i{font-style:normal;font-family:var(--fd);font-weight:700;font-size:clamp(30px,2.8vw,44px);color:#101426;display:block;line-height:1}
+.lexnum small{font-family:var(--fm);font-size:10px;letter-spacing:.14em;color:#C77800;text-transform:uppercase}
+/* kanálový pás — 5 kanálov manuálu v jednom tmavom páse */
+.ovl.light .chanband{background:#0B0E1A;box-shadow:0 18px 50px rgba(16,20,38,.22);border:0}
+.chanband{margin:12px auto 0;max-width:1240px;display:grid;grid-template-columns:repeat(5,1fr);border-radius:18px;padding:11px 8px}
+.chanband .ch{display:flex;align-items:center;justify-content:center;gap:13px;border-right:1px solid #1C2138}
+.chanband .ch:last-child{border-right:0}
+.cd{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
+.cdm{display:flex;align-items:flex-end;gap:4px}
+.cdm em{display:block;width:10px;height:10px;border-radius:3px;background:#3B4285}
+.cdm em.big{width:22px;height:22px;border-radius:6px;border:1.5px solid #8B91DD}
+.chanband b{font-family:var(--fd);font-size:13.5px;color:#F4F2EE;display:block}
+.chanband span{font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;color:#9a9dae;text-transform:uppercase;display:block;margin-top:2px}
+#ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
+#ovlLegenda .head{margin-bottom:8px}
+#ovlLegenda .head b{font-size:clamp(30px,3.6vw,54px)}   /* hutnejší titul — specimen tabuľka potrebuje výšku */
+/* pravidlo z prototypu — oči obra (reálna legenda obrazovky) */
+.ovl.light .protoline{background:transparent;box-shadow:none;border:0;backdrop-filter:none}
+.protoline{margin:10px auto 0;max-width:1240px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:0}
+.protoline svg{flex:none;width:34px;height:29px}
+.protoline p{font-size:13px;color:#5C5F78;margin:0}
+.protoline p b{color:#101426}
+.protoline .src{display:inline;margin-left:10px}
+@media(max-width:1080px){
+  .lexrow{grid-template-columns:72px 1fr 120px;gap:16px}
+  .lexrow .lexdesc{grid-column:1/-1;padding-bottom:4px}
+  .chanband{grid-template-columns:repeat(5,auto);overflow-x:auto}
+}
 .parcel{width:64px;height:64px;border-radius:13px}
 @keyframes pulseSleep{0%,100%{opacity:.45}50%{opacity:.95}}
 .p-sleep{background:#3B4285;animation:pulseSleep 4s ease-in-out infinite}
@@ -508,28 +527,43 @@ body.lightmode .dots i.on{background:#C77800}
   <div class="deck">
     <span class="ghost">05</span><div class="head"><span>05 · Jazyk svetla</span><b>Ako čítať mesto</b></div>
     <div id="gridLegenda">
-      <div class="grid grid4">
-        <div class="card"><div class="stdemo"><div class="parcel p-sleep"></div></div><h3>SPÍ</h3><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">47 území · pole ZAMER prázdne · pulz 4 s</span></div>
-        <div class="card"><div class="stdemo"><div class="parcel p-temp"></div></div><h3>DRIEME</h3><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">medzistupeň jasu · P_VYUZITIE · flicker 5,5 s</span></div>
-        <div class="card"><div class="stdemo"><div class="parcel p-awake"></div></div><h3>PREBÚDZA SA</h3><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">66 so zámerom · amber · glow-rise 3 s</span></div>
-        <div class="card"><div class="stdemo"><div class="parcel p-alive"></div></div><h3>ŽIJE</h3><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">26 vyradených od 2019 · už mimo 113 · warm</span></div>
+      <div class="lex">
+        <div class="card lexrow">
+          <div class="lexdemo"><div class="parcel p-sleep"></div></div>
+          <div class="lexname">SPÍ</div>
+          <div class="lexdesc"><p>nevyužívané, bez zámeru — indigo, pomalý pulz. Dýcha, nie je mŕtve.</p><span class="src">pole ZAMER prázdne · pulz 4 s</span></div>
+          <div class="lexnum"><i class="num" data-n="47">0</i><small>území spí</small></div>
+        </div>
+        <div class="card lexrow">
+          <div class="lexdemo"><div class="parcel p-temp"></div></div>
+          <div class="lexname">DRIEME</div>
+          <div class="lexdesc"><p>dočasné využitie — kultúra, sklady. Svetlo mihoce.</p><span class="src">P_VYUZITIE · flicker 5,5 s</span></div>
+          <div class="lexnum"><i>~</i><small>medzistupeň jasu</small></div>
+        </div>
+        <div class="card lexrow">
+          <div class="lexdemo"><div class="parcel p-awake"></div></div>
+          <div class="lexname">PREBÚDZA SA</div>
+          <div class="lexdesc"><p>známy zámer alebo revitalizácia — žiara rastie.</p><span class="src">pole ZAMER · amber · glow-rise 3 s</span></div>
+          <div class="lexnum"><i class="num" data-n="66">0</i><small>so zámerom</small></div>
+        </div>
+        <div class="card lexrow">
+          <div class="lexdemo"><div class="parcel p-alive"></div></div>
+          <div class="lexname">ŽIJE</div>
+          <div class="lexdesc"><p>vyradené z registra — stabilné teplé svetlo, splynie s mestom.</p><span class="src">vyradené od 2019 · warm</span></div>
+          <div class="lexnum"><i class="num" data-n="26">0</i><small>už mimo 113</small></div>
+        </div>
       </div>
-      <div class="grid5">
-        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3B4285,#F59E0B 65%,#FFE9B8)"></div></div><b>FARBA</b><span>stav · jas = život</span></div>
-        <div class="card kcard"><div class="kdemo"><svg width="34" height="34" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg></div><b>IKONA</b><span>typológia · 10 typov obrov</span></div>
-        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;background:#3B4285;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 4px,#E84B8A 4px,#E84B8A 6px);opacity:.85"></div></div></div><b>VZOR</b><span>riziko · 15 záťaží</span></div>
-        <div class="card kcard"><div class="kdemo"><div style="width:38px;height:38px;border-radius:10px;border:2.5px dashed #FFE9B8"></div></div><b>OBRYS</b><span>vlastníctvo · kto drží kľúč</span></div>
-        <div class="card kcard"><div class="kdemo"><div style="display:flex;align-items:flex-end;gap:6px"><div style="width:14px;height:14px;border-radius:5px;background:#3B4285"></div><div style="width:30px;height:30px;border-radius:8px;background:#3B4285;border:1.5px solid #8B91DD"></div></div></div><b>MIERKA</b><span>výmera · 13 obrov ≥ 8 ha s menovkou</span></div>
+      <div class="card chanband">
+        <div class="ch"><i class="cd" style="background:linear-gradient(135deg,#3B4285,#F59E0B 65%,#FFE9B8)"></i><div><b>FARBA</b><span>stav</span></div></div>
+        <div class="ch"><i class="cd"><svg width="24" height="24" viewBox="0 0 48 48" stroke="#FFE9B8" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg></i><div><b>IKONA</b><span>typológia</span></div></div>
+        <div class="ch"><i class="cd" style="background:#3B4285 repeating-linear-gradient(45deg,transparent 0 4px,#E84B8A 4px 6px)"></i><div><b>VZOR</b><span>riziko</span></div></div>
+        <div class="ch"><i class="cd" style="border:2.5px dashed #FFE9B8"></i><div><b>OBRYS</b><span>vlastníctvo</span></div></div>
+        <div class="ch"><i class="cd cdm"><em></em><em class="big"></em></i><div><b>MIERKA</b><span>výmera</span></div></div>
       </div>
-      <div class="card uistrip">
-        <span class="lbl">Prvky priamo z prototypu →</span>
-        <span class="uip indigo">😴 SPÍ · potenciál C</span>
-        <span class="uip amber">🌅 PREBÚDZA SA</span>
-        <span class="uip amber">★ 12 hlasov</span>
-        <span class="uip risk">⚠ Kontaminované (15)</span>
-        <span class="uip">obri 8+ ha</span>
-        <span class="uiseg"><span>MINULOSŤ</span><span class="on">DNES</span><span>BUDÚCNOSŤ</span></span>
-        <span class="uip" style="border-style:dashed">Kto drží kľúč · Súkromní vlastníci</span>
+      <div class="card protoline">
+        <svg width="42" height="36" viewBox="12 22 72 58"><rect x="24" y="24" width="8" height="16" fill="#454CA0"/><path d="M18 78V46l14-10v10l14-10v10l14-10v42z" fill="#454CA0" stroke="#8B91DD" stroke-width="2" stroke-linejoin="round"/><g stroke="#C9CDF4" stroke-width="3" stroke-linecap="round" fill="none"><path d="M34 60h7M50 60h7"/><path d="M42 70q4 3 8 0"/></g></svg>
+        <svg width="42" height="36" viewBox="12 22 72 58"><rect x="24" y="24" width="8" height="16" fill="#F59E0B"/><path d="M18 78V46l14-10v10l14-10v10l14-10v42z" fill="#F59E0B" stroke="#C77800" stroke-width="2" stroke-linejoin="round"/><circle cx="37.5" cy="60" r="3.2" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.2" fill="#FFF6E3"/><path d="M40 69q6 5 12 0" stroke="#FFF6E3" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
+        <p><b>Pravidlo z prototypu:</b> oči obra — zavreté = bez zámeru · otvorené = známy zámer. Vo Vízii ich otvárajú aj hlasy návštevníkov. <span class="src">legenda obrazovky</span></p>
       </div>
     </div>
   </div>
