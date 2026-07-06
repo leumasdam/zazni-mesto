@@ -240,7 +240,9 @@ body.lightmode .dots i.on{background:#C77800}
   font-size:clamp(72px,15.5vw,236px);line-height:.88;letter-spacing:-.035em;margin:26px 0 8px;text-transform:uppercase}
 #ovlHero h1 .lit{color:var(--warm-100);text-shadow:0 0 90px rgba(255,233,184,.55),0 0 24px rgba(255,233,184,.25)}
 #ovlHero h1 .dim{color:transparent;-webkit-text-stroke:clamp(1.6px,.24vw,3.5px) var(--indigo-300);opacity:.9}
-.herorow{display:flex;align-items:center;gap:clamp(24px,4vw,64px);margin-top:36px;flex-wrap:wrap;justify-content:center}
+.herobox{display:block;width:min-content;max-width:100%}   /* šírku boxu určuje titul (najširšie slovo MESTO) */
+.herorow{display:flex;align-items:center;gap:clamp(24px,4vw,64px);margin-top:36px;justify-content:space-between;width:100%}
+.herorow p{flex:1 1 auto;min-width:0}
 .herorow p{color:var(--text-mid);font-size:clamp(15px,1.5vw,19px);max-width:42ch;line-height:1.6;text-align:left;margin:0}
 #ovlHero .cta{
   display:inline-flex;align-items:center;gap:12px;flex:0 0 auto;
@@ -469,11 +471,13 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <div class="ovl" id="ovlHero">
-  <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
-  <div class="herorow">
-    <p>Od nevyužitých území k živým štvrtiam.
-    Pod týmto textom spí <b style="color:var(--warm-100)" id="heroN">113</b> skutočných miest z registra MIB — a tvoj scroll ich rozsvieti.</p>
-    <button class="cta" id="ctaStart">☀ Rozsvietiť mesto <span>↓</span></button>
+  <div class="herobox">
+    <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
+    <div class="herorow">
+      <p>Od nevyužitých území k živým štvrtiam.
+      Pod týmto textom spí <b style="color:var(--warm-100)" id="heroN">113</b> skutočných miest z registra MIB — a tvoj scroll ich rozsvieti.</p>
+      <button class="cta" id="ctaStart">☀ Rozsvietiť mesto <span>↓</span></button>
+    </div>
   </div>
 </div>
 
