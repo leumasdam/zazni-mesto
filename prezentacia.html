@@ -231,7 +231,7 @@ body.lightmode .dots i.on{background:#C77800}
   font-family:var(--fm);letter-spacing:.07em;white-space:nowrap}
 .hchip b{display:block;font-size:12px;color:var(--warm-100);text-shadow:0 0 18px rgba(255,233,184,.55)}
 .hchip span{font-size:10.5px;color:var(--amber-300)}
-#ovlHero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+#ovlHero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px 88px}   /* headline vyššie */
 #ovlHero::before{content:'';position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
   width:120vmin;height:80vmin;pointer-events:none;
   background:radial-gradient(ellipse at center,rgba(245,158,11,.13),rgba(59,66,133,.08) 45%,transparent 70%)}
@@ -457,7 +457,6 @@ body.lightmode .dots i.on{background:#C77800}
 <div class="bar"><i id="bar"></i></div>
 <!-- TU—BA cez celú šírku (ako tuba.mib.sk) · ZAŽNI MESTO v strede linky -->
 <span class="tubamark">TU<i></i><b class="mid">ZAŽNI <em>MESTO</em></b><i></i>BA</span>
-<span class="hint" id="hint"><span>SCROLLUJ — ROZSVECUJEŠ ↓</span></span>
 
 <!-- 1 · PRITIAHNI -->
 <!-- hero FX: projektory zhora + dáta tam, kam lúč dopadne na okraj mapy -->
@@ -470,7 +469,6 @@ body.lightmode .dots i.on{background:#C77800}
 </div>
 
 <div class="ovl" id="ovlHero">
-  <span class="kicker">MIB · TU-BA · interaktívna expozícia brownfieldov · web = pokračovanie</span>
   <h1><span class="lit">Zažni</span><span class="dim">mesto</span></h1>
   <div class="herorow">
     <p>Od nevyužitých území k živým štvrtiam.
@@ -1354,7 +1352,6 @@ const ovlHero=byId('ovlHero'),
       ovlObjav=byId('ovlObjav'),
       ovlPochop=byId('ovlPochop'),
       ovlWave=byId('ovlWave'),
-      hint=byId('hint'),
       bar=byId('bar');
 
 /* JEDNA réžia pohybu: všetko vchádza sprava a odchádza doľava (smer čítania príbehu),
@@ -1458,7 +1455,6 @@ let turnHovT=0,turnHov=0;
 function chores(t){
   const p=Ps;
   bar.style.width=(p*100)+'%';
-  hint.style.opacity=p<.02?1:0;
 
   /* 1 PRITIAHNI */
   const h=1-ss(clamp(aP('pritiahni')*1.15));
