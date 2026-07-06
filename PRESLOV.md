@@ -66,7 +66,7 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 > Tri pózy = tri stavy: spí — bez zámeru, zíva — drieme, bdie — zámer v registri.
 > Prvého zobudím dotykom — presne toto na expozícii urobí hlas návštevníka. Realita a želanie sa nemiešajú.
 
-**OTOČKA** *(model sa sám otočí o 360° — dá sa aj potiahnuť rukou, HUD ukazuje stupne)*
+**OTOČKA** *(model príde zdola v prednom pohľade — POTIAHNI kdekoľvek a otoč si ho sám, HUD ukazuje stupne; popisky vyskočia na prechod myšou)*
 > Expozícia z každej strany: model, tablety, dotyková obrazovka pri hrane, návštevník.
 > Pokojne si ju otočte — obraz sa dá ťahať.
 
