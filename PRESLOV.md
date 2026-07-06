@@ -64,7 +64,7 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 **OBOR** *(tri pózy vedľa seba; na SPIACEHO KLIKNÚŤ — zobudí sa + chime)*
 > Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
 > Tri pózy = tri stavy: spí — bez zámeru, zíva — drieme, bdie — zámer v registri.
-> Prvého zobudím dotykom — presne toto na expozícii urobí hlas návštevníka. Realita a želanie sa nemiešajú.
+> Prvého zobudím dotykom — presne toto urobí hlas návštevníka vo VÍZII. V realite obra budí len register; realita a želanie sa nemiešajú.
 
 **OTOČKA** *(model príde zdola v prednom pohľade — POTIAHNI kdekoľvek a otoč si ho sám, HUD ukazuje stupne; popisky vyskočia na prechod myšou)*
 > Expozícia z každej strany: model, tablety, dotyková obrazovka pri hrane, návštevník.
