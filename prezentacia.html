@@ -40,8 +40,9 @@ a{color:inherit}
   transform:translateX(-104%);will-change:transform,opacity;
   box-shadow:0 0 90px rgba(0,0,0,.4);
 }
-.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.68);   /* priesvitnejší — film presvitá ako podmaz */
-  -webkit-backdrop-filter:blur(14px) saturate(115%);backdrop-filter:blur(14px) saturate(115%)}
+.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.72)}   /* priesvitný podmaz — BEZ backdrop-filter!
+   Pohybujúci sa fullscreen backdrop-blur nad hrajúcim videom = re-blur každý frame = sekanie prelivu aj videa.
+   Blur nesie samotné video (chapvid filter), panel je len mliečne sklo. */
 #panelR{z-index:6}  /* prichádza PONAD spodný sheet — biela nadväzuje bez tmavého bliku */
 /* light mode obsahu na bielych paneloch */
 .ovl.light .head b{color:#101426}
@@ -1432,7 +1433,7 @@ function deckUpdate(ovl,grid,apRaw,pop=false){
   });
 }
 
-const chapvid=byId('chapvid');let prevVv=0;
+const chapvid=byId('chapvid');let prevVv=0,lastVF='';
 /* kurzorový parallax — plynulé dobiehanie */
 let MX=0,MY=0,SMX=0,SMY=0;
 addEventListener('pointermove',e=>{MX=e.clientX/innerWidth-.5;MY=e.clientY/innerHeight-.5;},{passive:true});
@@ -1635,7 +1636,9 @@ function chores(t){
   const vv=vSpan<=0?0:ss(Math.min(1,(1-vSpan)*3.4));
   const blurK=ss(clamp(aP('tuba')*1.6));
   chapvid.style.opacity=vv.toFixed(3);
-  chapvid.style.filter=blurK>.02?`blur(${(blurK*5).toFixed(1)}px) brightness(${(1-.22*blurK).toFixed(2)}) saturate(1.08)`:'none';
+  /* blur KVANTOVANÝ na .5px kroky + zápis len pri zmene — plynulý rast polomeru re-rastruje video každý frame */
+  const vFilt=blurK>.02?`blur(${(Math.round(blurK*10)/2).toFixed(1)}px) brightness(${(Math.round((1-.22*blurK)*25)/25).toFixed(2)}) saturate(1.08)`:'none';
+  if(vFilt!==lastVF){chapvid.style.filter=vFilt;lastVF=vFilt;}
   chapvid.style.transform=`translateY(${((1-eVid)*100).toFixed(2)}%) scale(${(1.02+vSpan*.06).toFixed(3)})`;
   if(!REDUCED){
     if(vv>.04){
