@@ -40,8 +40,8 @@ a{color:inherit}
   transform:translateX(-104%);will-change:transform,opacity;
   box-shadow:0 0 90px rgba(0,0,0,.4);
 }
-.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.88);
-  -webkit-backdrop-filter:blur(18px) saturate(115%);backdrop-filter:blur(18px) saturate(115%)}
+.wpanelB{transform:translateY(104%);background:rgba(244,242,238,.68);   /* priesvitnejší — film presvitá ako podmaz */
+  -webkit-backdrop-filter:blur(14px) saturate(115%);backdrop-filter:blur(14px) saturate(115%)}
 #panelR{z-index:6}  /* prichádza PONAD spodný sheet — biela nadväzuje bez tmavého bliku */
 /* light mode obsahu na bielych paneloch */
 .ovl.light .head b{color:#101426}
@@ -91,9 +91,7 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 .chanband b{font-family:var(--fd);font-size:13.5px;color:#F4F2EE;display:block}
 .chanband span{font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;color:#9a9dae;text-transform:uppercase;display:block;margin-top:2px}
 #ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
-#ovlTuba .deckimg img{max-height:36vh}                  /* 5 kariet rolí potrebuje výšku — render mierne nižší */
-#ovlTuba .head{margin-bottom:14px}
-#ovlTuba .head b{font-size:clamp(30px,3.8vw,58px)}
+#ovlTuba .head{margin-bottom:30px}                      /* bez renderu — texty cez celý screen, headline naplno */
 #ovlLegenda .head{margin-bottom:8px}
 #ovlLegenda .head b{font-size:clamp(30px,3.6vw,54px)}   /* hutnejší titul — specimen tabuľka potrebuje výšku */
 /* pravidlo z prototypu — oči obra (reálna legenda obrazovky) */
@@ -694,7 +692,6 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 9 · TU-BA naživo + médiá -->
 <div class="ovl light mid" id="ovlTuba">
   <div class="deck">
-    <div class="deckimg"><img src="assets/tuba-priestor.png" alt="Priestor TU-BA: projektory, fyzický model, tablety/AR, dotyková obrazovka, stena budúcnosti"></div>
     <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
     <div class="grid grid4" id="gridTuba">
       <div class="card"><h3>Model je mapa.</h3><p>Zobrazuje priestor a stavy — svetlo zhora, jedna spoločná scéna pre všetkých v miestnosti. Sám nekoná: je čistý výstup.</p><span class="src">projekčný mapping · číta scénu</span></div>

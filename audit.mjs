@@ -90,7 +90,9 @@ ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-
 ok('reduced-motion = okamžitý krok bez animovaného dojazdu',PRE.includes('prefers-reduced-motion')&&PRE.includes('if(REDUCED)Ps=target')&&PRE.includes('let Ps=0;'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
 ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti'));
-ok('rendre zapracované (vrstvy·TU-BA·finále hrad) + obor = 3 SVG pózy',['vrstvy-l0.png','tuba-priestor.png','hrad-okno.png'].every(s=>PRE.includes(s))&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
+ok('rendre zapracované (vrstvy·finále hrad; TU-BA render žije v DM, slide rolí je textový nad priesvitným panelom) + obor = 3 SVG pózy',
+  ['vrstvy-l0.png','hrad-okno.png'].every(s=>PRE.includes(s))&&!PRE.includes('tuba-priestor.png')
+  &&src('index.html').includes('tuba-priestor.png')&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
 ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("QS.get('step')")&&PRE.includes('pointerleave'));
 ok('VRSTVY = render rozrezaný na 4 animované vrstvy (fokus + hit-test + popisy)',['vrstvy-l0.png','vrstvy-l1.png','vrstvy-l2.png','vrstvy-l3.png'].every(s=>PRE.includes(s))&&PRE.includes('vstackUpdate')&&PRE.includes('valpha')&&PRE.includes('VST.foc')&&!PRE.includes('vrstvy-projekcie.png'));
 const GLSRC=src('gl-src/city.js');
