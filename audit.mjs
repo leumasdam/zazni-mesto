@@ -118,6 +118,9 @@ ok('objav = všetko DORMANTNÉ (13 obrov, indigo spí) — sedí s „čaká na 
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
   &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
+ok('filozofia nasadenia v DM: každé územie JE obor (silueta=typológia · oči=zámer) + mierka=pravidlo pozornosti (≥ 8 ha vždy · < 8 ha pri priblížení)',
+  src('index.html').includes('Kedy čo vidíš — filozofia nasadenia')&&src('index.html').includes('každé územie JE obor')
+  &&src('index.html').includes('pravidlo pozornosti')&&OBR.includes("['>=',['get','ha'],8]")&&OBR.includes('bf-obri-all'));
 ok('pochop = vlastníctvo číta územie samo: obrys + šrafa súkromných (\\, warm-white), žiadne ikony kľúčov + zhoda s manuálom',
   !PRE.includes('function drawKey')&&!PRE.includes('function keyMarkers')&&!PRE.includes('OWN_KEY')
   &&PRE.includes('Kto drží kľúč')&&PRE.includes("pl.p.own!=='private'")&&PRE.includes('st.own>.02')  /* šrafa súkromných v chanOverlay */

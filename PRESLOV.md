@@ -50,9 +50,16 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 
 ## medzihry · LEGENDA → OBOR → OTOČKA → VRSTVY → VIDEO → TU-BA → ŠKÁLOVATEĽNOSŤ
 
-**LEGENDA** *(biely panel zľava, karty vystúpajú zdola)*
+**LEGENDA** *(biely panel zľava, riadky specimen tabuľky vystúpajú zdola)*
 > Tu je celý slovník: štyri stavy svetla — spí, drieme, prebúdza sa, žije — a päť kanálov,
 > ktoré sa nikdy nebijú: farba, ikona, vzor, obrys, mierka. Nič sa nefarbí ručne, všetko číta register.
+>
+> Filozofia je jednoduchá: **ikona nie je značka pridaná k parcele — každé územie JE obor.**
+> Parcela nesie tiché kanály: farba = stav, vzor = riziko, obrys = vlastníctvo.
+> Obor jej dáva tvár: silueta = typológia (fabrika, silo, kasáreň…), oči = zámer, telo preberá stavovú farbu.
+> A mierka je pravidlo pozornosti, nie ďalšia grafika: 13 obrov nad 8 hektárov vidno z diaľky vždy,
+> tá stovka menších sa vynorí až pri priblížení — preto sa scéna nikdy nezahltí.
+> Farba patrí stavu, je to jediný animovaný kanál — všetko ostatné hovorí tvarom. Preto sa to nikdy nebije.
 
 **OBOR** *(tri pózy vedľa seba; na SPIACEHO KLIKNÚŤ — zobudí sa + chime)*
 > Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
