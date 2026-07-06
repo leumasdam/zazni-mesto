@@ -674,9 +674,10 @@ body.lightmode .dots i.on{background:#C77800}
         <span class="vhint">prejdi vrstvou — popis</span>
       </div>
       <div class="grid vcards" id="gridVrstvy">
-        <div class="card vk"><h3><i style="background:#5A61B5"></i>STAVY — svetlo</h3><p>Základná vrstva: jas parcely = miera života. Spí → drieme → prebúdza sa → žije, priamo z registra.</p><span class="src">polia ZAMER · P_VYUZITIE · 113 polygónov</span></div>
-        <div class="card vk"><h3><i style="background:#E84B8A"></i>RIZIKO — šrafy</h3><p>15 environmentálnych záťaží ako vzor, nie farba. Preto sa vrstvy nikdy nebijú — každá má vlastný grafický atribút.</p><span class="src">pole KONTAMIN · SEZ_POPIS</span></div>
-        <div class="card vk"><h3><i style="background:#F59E0B"></i>TYPOLÓGIA + MENOVKY</h3><p>Ikony obrov a mená 13 území nad 8 ha. Mierka ikony = význam územia.</p><span class="src">pole PR_VYU_POP · VYMERA_HA</span></div>
+        <!-- poradie kariet = poradie vrstiev NA OBRÁZKU zhora nadol -->
+        <div class="card vk"><h3><i style="background:#F59E0B"><svg width="11" height="11" viewBox="0 0 48 48" stroke="#FFF6E3" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/></svg></i>TYPOLÓGIA + MENOVKY</h3><p>Ikony obrov a mená 13 území nad 8 ha. Mierka ikony = význam územia.</p><span class="src">pole PR_VYU_POP · VYMERA_HA</span></div>
+        <div class="card vk"><h3><i style="background:repeating-linear-gradient(45deg,#FFE4EF 0 3px,#E84B8A 3px 5.5px)"></i>RIZIKO — šrafy</h3><p>15 environmentálnych záťaží ako vzor, nie farba. Preto sa vrstvy nikdy nebijú — každá má vlastný grafický atribút.</p><span class="src">pole KONTAMIN · SEZ_POPIS</span></div>
+        <div class="card vk"><h3><i style="background:linear-gradient(135deg,#3B4285,#5A61B5 55%,#8B91DD)"></i>STAVY — svetlo</h3><p>Základná vrstva: jas parcely = miera života. Spí → drieme → prebúdza sa → žije, priamo z registra.</p><span class="src">polia ZAMER · P_VYUZITIE · 113 polygónov</span></div>
         <div class="card vk rule"><p><b>Jedno pravidlo scény:</b> projektory kreslia len dáta. Vrstvy sa zapínajú z dotykovej obrazovky — a rovnaké tokeny číta model, tablet aj web.</p></div>
       </div>
     </div>
@@ -908,25 +909,26 @@ if(vstage){
     }else VST.tipT=0;
   });
   vstage.addEventListener('pointerleave',()=>{VST.foc=-1;VST.tipT=0;});
-  /* karty vpravo ovládajú fokus vrstiev (karta i → vrstva i+1) */
+  /* karty vpravo ovládajú fokus vrstiev — poradie kariet zrkadlí obrázok zhora nadol (karta i → vrstva 3-i) */
   [...document.querySelectorAll('#gridVrstvy .card.vk:not(.rule)')].forEach((card,i)=>{
     if(i>2)return;
-    card.addEventListener('pointerenter',()=>{VST.foc=i+1;});
-    card.addEventListener('pointerleave',()=>{if(VST.foc===i+1)VST.foc=-1;});
+    card.addEventListener('pointerenter',()=>{VST.foc=3-i;});
+    card.addEventListener('pointerleave',()=>{if(VST.foc===3-i)VST.foc=-1;});
   });
 }
-const VFLOAT=[0,.9,2.3,3.4];                       /* dýchanie: indigo minimálne (nesie prekryv mesta) */
 const VLIFT=[0,3,9,14];                            /* fokus: vyzdvihnutie vrstvy */
 function vstackUpdate(vp,t){
   if(!vstage)return;
   if(vp<=0||vp>=1){vstage.style.visibility='hidden';return;}
   vstage.style.visibility='visible';
+  /* float aj parallax JEDNOTNÉ pre všetky rezy — PNG sú registrované rezy JEDNÉHO renderu,
+     per-vrstvové rozdiely rozbíjali lícovanie (biele linky medzi plátmi) */
+  const fl=REDUCED?0:Math.sin(t*.0002)*1.6;
+  const px=REDUCED?0:SMX*2.4, py=REDUCED?0:SMY*1.6;
   for(let i=0;i<4;i++){
     const en=ss(clamp(vp*4-.3*i));                 /* mesto → stavy → riziko → typológia, dosadne pri dojazde */
     const tgt=VST.foc===i?1:(VST.foc>0&&i>0?-1:0); /* fokus stlmí len ostatné VRSTVY, mesto nechá */
     VST.fk[i]+=(tgt-VST.fk[i])*.1;
-    const fl=REDUCED?0:Math.sin(t*.0002+i*1.9)*VFLOAT[i];
-    const px=REDUCED?0:SMX*(i*1.6), py=REDUCED?0:SMY*(i*1.1);
     const y=-(1-en)*(34+i*26)+fl+py-Math.max(0,VST.fk[i])*VLIFT[i];
     vlays[i].style.transform=`translate(${px.toFixed(1)}px,${y.toFixed(1)}px)`;
     vlays[i].style.opacity=(en*(1-Math.max(0,-VST.fk[i])*.55)).toFixed(3);
