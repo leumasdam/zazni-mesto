@@ -977,7 +977,7 @@ function polyState(pl){
 
 /* KROK 02 — projektor NASVIETI konkrétnych hrdinov registra (obri ≥ 8 ha):
    hľadáčikové rohy + obrys podľa vlastníctva + menovka — presne jazyk manuálu. */
-let o2T0=0,o2Prev=0,o3T0=0,o3Prev=0,HEROES=null,HEROK=null;
+let o2T0=0,o2Prev=0,HEROES=null;
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 /* VLASTNÍCTVO = obrys (manuál): mesto plná · súkromník prerušovaná · mix bodkovaná */
 const OWN_DASH={city:null,private:[8,5],mixed:[2.5,4.5]};
@@ -1008,6 +1008,29 @@ function chanOverlay(P,st){
       cx.beginPath();
       const hgt=y1-y0;
       for(let d=x0-hgt;d<x1;d+=6.5){cx.moveTo(d,y1);cx.lineTo(d+hgt,y0);}
+      cx.stroke();cx.restore();
+    }
+  }
+  /* VLASTNÍCTVO = šrafa: súkromník (56 parciel — polovica mapy) sa šrafuje warm-white,
+     opačný sklon (\) než ružová šrafa rizika (/) — dva kanály sa nemiešajú. Obrys ostáva navrchu. */
+  if(st.own>.02){
+    cx.strokeStyle='#FFE9B8';cx.lineJoin='round';
+    for(const pl of POLY){
+      if(pl.p.own!=='private')continue;
+      let vis=true,x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+      cx.beginPath();
+      for(const r of pl.rings){
+        r.forEach((c,i)=>{const q=P(c[0],c[1]);if(!q.vis)vis=false;
+          if(q.x<x0)x0=q.x;if(q.x>x1)x1=q.x;if(q.y<y0)y0=q.y;if(q.y>y1)y1=q.y;
+          i?cx.lineTo(q.x,q.y):cx.moveTo(q.x,q.y);});
+        cx.closePath();
+      }
+      if(!vis||x1-x0<3)continue;
+      cx.save();cx.clip();
+      cx.globalAlpha=Math.min(1,.42+st.own*.5);cx.lineWidth=1.2;   /* čitateľné aj v ustálenom stave, silnejšie počas pulzu */
+      cx.beginPath();
+      const hgt=y1-y0;
+      for(let d=x0-hgt;d<x1;d+=6){cx.moveTo(d,y0);cx.lineTo(d+hgt,y1);}   /* 135° \ , hustejšie */
       cx.stroke();cx.restore();
     }
   }
@@ -1088,37 +1111,8 @@ function heroMarkers(P,st){
   cx.textAlign='left';
 }
 
-/* KĽÚČ — „kto drží kľúč" (POCHOP). VLASTNÍCTVO číta oblúk kľúča rovnakou rečou ako obrys v manuáli
-   (tvar, nie farba — farba je vyhradená STAVU): plný = verejné (mesto/štát) · čiarkovaný = súkromník · bodkovaný = mix.
-   Farba vždy warm-white #FFE9B8 (kanál vlastníctva), nikdy amber (to je stav „prebúdza sa"). */
-const OWN_KEY={city:null,state:null,private:[3.4,2.6],other:[3.4,2.6],mixed:[1.3,2.8]};
-function drawKey(g,X,Y,S,a,dash){
-  if(a<=.01)return;
-  g.save();g.globalAlpha=a;g.translate(X,Y);g.scale(S/34,S/34);
-  g.strokeStyle='#FFE9B8';g.lineWidth=3;g.lineCap='round';g.lineJoin='round';
-  if(dash)g.setLineDash(dash);
-  g.beginPath();g.arc(0,-9,6.5,0,6.283);g.stroke();              /* oko kľúča = vlastníctvo (plný/čiarka/bodka) */
-  g.setLineDash([]);
-  g.beginPath();g.moveTo(0,-2.5);g.lineTo(0,14);                 /* driek + zuby vždy plné */
-  g.moveTo(0,14);g.lineTo(5.5,14);g.moveTo(0,9.5);g.lineTo(3.8,9.5);
-  g.stroke();g.restore();
-}
-/* POCHOP — kľúč na každom význačnom území; oblúk kľúča = vlastník (jazyk manuálu) */
-function keyMarkers(P,st){
-  if(st.own<=.02)return;
-  if(!HEROK)HEROK=POLY.filter(pl=>pl.p.ha>=4).sort((a,b)=>b.p.ha-a.p.ha);   /* kľúče na širšej vzorke — ukáž rozloženie vlastníctva */
-  const final=st.tt>=1e5;
-  cx.save();cx.setTransform(DPR,0,0,DPR,0,0);cx.globalAlpha=1;
-  for(let i=0;i<HEROK.length;i++){
-    const pl=HEROK[i];
-    const e=final?1:ss(clamp((st.tt-450-i*65)/540));
-    if(e<=0)continue;
-    const q=P(pl.cx,pl.cy);if(!q.vis)continue;
-    const S=19*(.72+.28*e);
-    drawKey(cx,q.x,q.y,S,e*.92,OWN_KEY[pl.p.own]);
-  }
-  cx.globalAlpha=1;cx.restore();
-}
+/* POCHOP — vlastníctvo číta územie samo: obrys (OWN_DASH) + šrafa súkromných (chanOverlay).
+   Žiadne kľúče na mape — obrys a šrafa nesú signál priamo na parcele. */
 
 /* ---------- kreslenie ---------- */
 function draw(t){
@@ -1156,13 +1150,6 @@ function draw(t){
   o2Prev=apO;
   const pres02=ss(clamp(apO*2))*(1-ss(clamp(aP('pochop')*2.2)));   /* prítomnosť kroku 02 */
   const tt02=REDUCED?1e5:(o2T0?t-o2T0:0);
-  /* KROK 03 POCHOP — kľúče vlastníctva; časovanie od príchodu (o3T0) */
-  const apPo=aP('pochop');
-  if(apPo>.35&&o3Prev<=.35)o3T0=t;
-  if(apPo<=.02)o3T0=0;
-  o3Prev=apPo;
-  const pres03=ss(clamp(apPo*2))*(1-ss(clamp(aP('predstav')*2.2)));
-  const tt03=REDUCED?1e5:(o3T0?t-o3T0:0);
   const breath=(REDUCED||!o2T0||tt02>2000)?0:Math.sin(Math.PI*tt02/2000); /* jeden spoločný nádych, 2 s */
   const br2=breath*pres02;
   /* VLASTNÍCTVO = obrys: puls v POCHOP, potom ostáva tichý kanál (manuál: kanály sa kombinujú) */
@@ -1191,8 +1178,7 @@ function draw(t){
       cx.fillStyle='#FFF6E3';cx.fillText(pl.p.n.toUpperCase(),q.x,q.y+S*.55+6);
       cx.textAlign='left';cx.globalAlpha=1;
     }
-    chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,t});
-    keyMarkers((x,y)=>GL.project(x,y),{own:pres03,tt:tt03,t});
+    chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,own:ownK,t});
     return lit;
   }
 
@@ -1285,8 +1271,7 @@ function draw(t){
     cx.textAlign='left';cx.globalAlpha=1;cx.restore();
   }
   const P2=(x,y)=>({x:(x*BASE+OX)*zoom+VW/2*(1-zoom)+camX*VW,y:(y*BASE+OY)*zoom+VH/2*(1-zoom)+camY*VH,vis:true});
-  chanOverlay(P2,{pres:pres02,tt:tt02,risk:riskK,t});
-  keyMarkers(P2,{own:pres03,tt:tt03,t});
+  chanOverlay(P2,{pres:pres02,tt:tt02,risk:riskK,own:ownK,t});
   return lit;
 }
 
