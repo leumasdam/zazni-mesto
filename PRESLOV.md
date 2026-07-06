@@ -82,7 +82,14 @@ vrstvy jemne dýchajú — prejdi vrstvou alebo kartou = popis + vrstva sa vyzdv
 
 **TU-BA + MÉDIÁ** *(film sa rozostrí, nad ním anotovaný render priestoru + karty rolí)*
 > Priestor TU-BA v jednom obraze: projektory, fyzický model, tablety, dotyková obrazovka, stena budúcnosti.
-> Roly sú prísne: model je mapa, obrazovka dirigent, tablet ďalekohľad — a web, na ktorom sme, je pokračovanie.
+> Roly sú prísne — každé zariadenie má definované, čo zobrazuje a čo smie zmeniť:
+> **model je mapa** — svetlo zhora, spoločná scéna, sám nekoná;
+> **obrazovka je dirigent** — celé mesto v troch režimoch, jediná mení, čo svieti;
+> **tablet je ďalekohľad** — jedno územie zblízka, minulosť–dnes–budúcnosť, AR ponad model.
+> A prepojenie? Jeden dotyk, tri médiá: na tablete otvorím Filiálku, ťuknem „ukáž na modeli" —
+> obrazovka požiadavku potvrdí, projektor rozsvieti polygón, obor otvorí oči, zaznie chime.
+> Tablet scénu nikdy neprepíše, len prosí — preto ani plná miestnosť ľudí model nerozbije.
+> A web, na ktorom sme, je pokračovanie: hlasy z výstavy aj z domu padajú do jedného datasetu pre MIB.
 
 **ŠKÁLOVATEĽNOSŤ** *(biely panel zľava — svetlá bodka na záver)*
 > Prečo sa to nerozpadne: nové dáta = nový kanál, jeden zdroj pravdy, aktualizuje sa samo,

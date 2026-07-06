@@ -1052,6 +1052,27 @@ nav::-webkit-scrollbar{display:none}
     <p style="margin-top:var(--sp-2)"><a href="obrazovka.html" target="_blank" class="copy-btn" style="display:inline-block;text-decoration:none">Otvoriť na celú obrazovku ↗</a></p>
     <p class="mono">Ergonomika: ciele min. 56 px, panel vrstiev vľavo (pravák stojí bokom, netieni modelu), časová os na spodnej hrane = najbližšie k rukám. Hlasovania sa ukladajú — expozícia zbiera preferencie verejnosti pre MIB (fáza 1: participácia).</p>
 
+    <div class="card" style="margin-top:var(--sp-4)">
+      <h3 style="margin-top:0">Kto čo robí — a ako sa rozprávajú</h3>
+      <p style="font-size:14px;color:var(--text-mid);max-width:74ch">Jedna scéna, štyri vrstvy zážitku. Aby sa nikdy nerozbila, roly sú prísne:
+      každé zariadenie má definované, <b style="color:var(--text-hi)">čo zobrazuje</b> a <b style="color:var(--text-hi)">čo smie zmeniť</b>.
+      Hierarchia je jednosmerná — model číta, obrazovka rozhoduje, tablet prosí.</p>
+      <table style="margin-top:var(--sp-2)">
+        <tr><td class="mono" style="width:210px;white-space:nowrap">FYZICKÝ MODEL</td>
+            <td><b style="color:var(--text-hi)">zobrazuje:</b> priestor + stavy svetlom zhora — model JE mapa, spoločná scéna pre celú miestnosť · <b style="color:var(--text-hi)">smie:</b> nič — čistý výstup, číta scénu od dirigenta</td></tr>
+        <tr><td class="mono" style="white-space:nowrap">DOTYKOVÁ OBRAZOVKA</td>
+            <td><b style="color:var(--text-hi)">zobrazuje:</b> celé mesto v troch režimoch (Pulz · Objav · Vízia), zoznam 113 území a detail · <b style="color:var(--text-hi)">smie:</b> JEDINÁ mení scénu modelu — vrstvy, filtre, čas; je master websocketu</td></tr>
+        <tr><td class="mono" style="white-space:nowrap">TABLETY / AR</td>
+            <td><b style="color:var(--text-hi)">zobrazuje:</b> jedno územie zblízka — karta minulosť · dnes · budúcnosť, AR vrstvy cez kameru ponad model · <b style="color:var(--text-hi)">smie:</b> hlasovať a poslať request „ukáž na modeli" — scénu neprepíše, rozhoduje dirigent</td></tr>
+        <tr><td class="mono" style="white-space:nowrap">WEB</td>
+            <td><b style="color:var(--text-hi)">zobrazuje:</b> to isté doma — QR z výstavy vedie na scroll-story a mapu · <b style="color:var(--text-hi)">smie:</b> hlasovať; hlasy z výstavy aj z webu padajú do jedného datasetu pre MIB</td></tr>
+      </table>
+      <p style="font-size:14px;color:var(--text-mid);margin-top:var(--sp-2);max-width:74ch"><b style="color:var(--text-hi)">Handshake — jeden dotyk, tri médiá:</b>
+      tablet (detail Filiálky) → request „ukáž na modeli" → obrazovka potvrdí a prepne scénu → projektor rozsvieti polygón na modeli,
+      obor otvorí oči (wake.spring 450 ms), zaznie chime. Požiadavky z tabletov sa <b style="color:var(--text-hi)">radia do frontu a highlight svieti 8 s</b>;
+      dirigent ich môže kedykoľvek prebiť. Preto viacero návštevníkov naraz scénu nikdy nerozbije — model hovorí vždy jedným hlasom.</p>
+    </div>
+
     <h3 style="margin-top:var(--sp-6)">Priestor — otočka okolo expozície</h3>
     <p class="lead">Expozícia z každej strany: fyzický model s projekciou, tablety na ramenách,
     dotyková obrazovka pri hrane. 25 snímok, 360° — <strong>ťahaj obraz a otoč si ju sám</strong>, inak sa točí sama.</p>

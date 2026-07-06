@@ -91,6 +91,9 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 .chanband b{font-family:var(--fd);font-size:13.5px;color:#F4F2EE;display:block}
 .chanband span{font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;color:#9a9dae;text-transform:uppercase;display:block;margin-top:2px}
 #ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
+#ovlTuba .deckimg img{max-height:36vh}                  /* 5 kariet rolí potrebuje výšku — render mierne nižší */
+#ovlTuba .head{margin-bottom:14px}
+#ovlTuba .head b{font-size:clamp(30px,3.8vw,58px)}
 #ovlLegenda .head{margin-bottom:8px}
 #ovlLegenda .head b{font-size:clamp(30px,3.6vw,54px)}   /* hutnejší titul — specimen tabuľka potrebuje výšku */
 /* pravidlo z prototypu — oči obra (reálna legenda obrazovky) */
@@ -683,10 +686,12 @@ body.lightmode .dots i.on{background:#C77800}
   <div class="deck">
     <div class="deckimg"><img src="assets/tuba-priestor.png" alt="Priestor TU-BA: projektory, fyzický model, tablety/AR, dotyková obrazovka, stena budúcnosti"></div>
     <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
-    <div class="grid" id="gridTuba">
-      <div class="card"><h3>Model je mapa.</h3><p>Scéna pre všetkých — priestor, stavy, svetlo. Nič ju nesupluje.</p><span class="src">projekčný mapping · kalibrácia raz</span></div>
-      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Jediná mení, čo svieti — vrstvy, filtre, čas. Tablet je ďalekohľad: detail, AR minulosť·dnes·budúcnosť; scénu neprepíše, vie len poprosiť „ukáž na modeli".</p><span class="src">websocket · master scény</span></div>
+    <div class="grid grid4" id="gridTuba">
+      <div class="card"><h3>Model je mapa.</h3><p>Zobrazuje priestor a stavy — svetlo zhora, jedna spoločná scéna pre všetkých v miestnosti. Sám nekoná: je čistý výstup.</p><span class="src">projekčný mapping · číta scénu</span></div>
+      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Zobrazuje celé mesto v troch režimoch: Pulz · Objav · Vízia. Jediná smie meniť, čo svieti na modeli — vrstvy, filtre, čas.</p><span class="src">master scény · websocket</span></div>
+      <div class="card"><h3>Tablet je ďalekohľad.</h3><p>Zobrazuje jedno územie zblízka — minulosť · dnes · budúcnosť a AR ponad model. Scénu neprepíše: hlasuje a prosí „ukáž na modeli".</p><span class="src">request → dirigent · hlas → dataset</span></div>
       <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy vedie presne na túto stránku — mesto si rozsvietiš doma. Hlasy sa ukladajú ako dataset pre MIB.</p><span class="src">1. fáza metodiky: participácia</span></div>
+      <div class="card" style="grid-column:1/-1"><p style="margin:0"><b style="color:#C77800">Jeden dotyk, tri médiá:</b> na tablete otvoríš Filiálku → ťukneš „ukáž na modeli" → obrazovka požiadavku potvrdí a prepne scénu → projektor rozsvieti polygón na modeli, obor otvorí oči (450 ms), zaznie chime. Požiadavky z tabletov sa radia a svietia 8 s — posledné slovo má vždy dirigent, preto sa scéna nikdy nerozbije.</p><span class="src">websocket · jedna scéna · žiadne kolízie</span></div>
     </div>
   </div>
 </div>
@@ -700,7 +705,7 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
       <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
       <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 63 kontrol</span></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 64 kontrol</span></div>
     </div>
   </div>
 </div>
