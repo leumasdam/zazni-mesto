@@ -93,7 +93,8 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 .chanband span{font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;color:#9a9dae;text-transform:uppercase;display:block;margin-top:2px}
 #ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
 #ovlTuba .head{margin-bottom:30px}                      /* bez renderu — texty cez celý screen, headline naplno */
-#ovlSkal{background:#F6EFEA}                            /* bg slidu = presná bg farba slucka.png */
+#ovlSkal{background:#F6EFEA;align-items:flex-start;padding-top:80px}   /* bg = farba slucka.png; kotva zhora — headline sa nebije s brand barom */
+#ovlSkal .deckimg img{max-height:36vh}
 #ovlSkal .deckimg img{mix-blend-mode:normal}            /* multiply by zhodné bg stmavil — obrázok splýva natívne */
 #ovlLegenda .head{margin-bottom:8px}
 #ovlLegenda .head b{font-size:clamp(30px,3.6vw,54px)}   /* hutnejší titul — specimen tabuľka potrebuje výšku */
@@ -711,12 +712,13 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 10 · ŠKÁLOVATEĽNOSŤ -->
 <div class="ovl light mid" id="ovlSkal">
   <div class="deck">
-    <span class="ghost">09</span><div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Nástroj, nie výstava</b></div>
+    <span class="ghost">09</span><div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Výstava, ktorá ostane nástrojom</b></div>
     <div class="grid grid4" id="gridSkal">
-      <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>nové dáta = nový kanál, nie prerábka celku.</p></div>
-      <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>dizajn tokeny číta projekcia, obrazovka, tablet aj web.</p></div>
-      <div class="card"><div class="num">2r</div><h3>auto-aktualizácia</h3><p>stavy sú mapované na polia registra — expozícia sa prekreslí sama.</p></div>
-      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>zajtra nájomné bývanie či zeleň — vymení sa dataset, jazyk ostáva.</p><span class="src">kvalitu stráži audit · 64 kontrol</span></div>
+      <div class="card"><div class="num">5</div><h3>kanálov bez kolízií</h3><p>Stav, typológia, riziko, vlastníctvo a význam majú každý vlastný vizuálny jazyk. Preto sa vrstvy dajú kombinovať bez chaosu.</p></div>
+      <div class="card"><div class="num">1</div><h3>zdroj pravdy</h3><p>Register a dizajn tokeny určujú rovnaký význam pre model, obrazovku, tablet aj web.</p></div>
+      <div class="card"><div class="num">AUTO</div><h3>aktualizácia dát</h3><p>Keď sa zmení register, zmení sa aj mapa, svetlo a detail územia. Expozícia sa vie prekresliť sama.</p></div>
+      <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>Dnes brownfieldy. Zajtra bývanie, zeleň, klíma alebo mobilita. Jazyk ostáva, mení sa dataset.</p></div>
+      <div class="src" style="grid-column:1/-1;text-align:center;letter-spacing:.14em;color:#75788C">audit · 64 kontrol · tokeny · mapovanie polí · kontrola vrstiev</div>
     </div>
     <div class="deckimg" style="margin-top:22px"><img src="assets/slucka.png" alt="Zážitková slučka: Pritiahni · Objav · Pochop · Predstav si · Zapoj sa — 5 krokov, 4 minúty, jeden rozsvietený obor" loading="lazy"></div>
   </div>
