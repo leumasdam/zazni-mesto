@@ -26,7 +26,7 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 ## 2 · OBJAV *(karty sa stierajú zľava, čísla nabiehajú)*
 
 > Najprv rozsah. Stotrinásť brownfieldov — a číslo klesá, v 2019 ich bolo 131:
-> 26 sa odvtedy prebudilo a vyradilo, 8 nových pribudlo. Dokopy 580 hektárov — osemsto futbalových ihrísk.
+> 39 sa odvtedy vyradilo — 26 z nich sa naozaj vrátilo na trh — a 22 nových pribudlo. Dokopy 580 hektárov — osemsto futbalových ihrísk.
 > Trinásť z nich sú obri nad osem hektárov: Dynamitka-Istrochem, Rázsochy, Filiálka, Vojenská nemocnica, kaštieľ v Rusovciach.
 
 ## 3 · POCHOP *(súkromným územiam sa rozžiaria obrysy)*
@@ -118,8 +118,9 @@ vrstvy jemne dýchajú — prejdi vrstvou alebo kartou = popis + vrstva sa vyzdv
 
 ## Rýchle odpovede na pravdepodobné otázky
 
-- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 62 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
+- **Odkiaľ sú dáta?** Živé z ArcGIS služby MIB (BF_aktualizácia_2022) + OSM. Konzistenciu stráži audit — 64 automatických kontrol (vrátane toho, že choreografia svetla na mape zodpovedá motion tokenom manuálu).
 - **Prečo hlasovanie, nie je to gýč?** Je to 1. fáza vašej metodiky (participácia) v hravom obale; výstup je dataset preferencií.
+- **„Obri" — to sú tie významné brownfieldy z koncepcie?** Nie, a zámerne to nemiešam. „Významný brownfield" je vaša oficiálna kategória — 16 území vybraných pre pamiatkovú a industriálnu hodnotu, pokojne aj pod 0,5 ha. „Obor ≥ 8 ha" je čisto expozičné pravidlo pozornosti: veľké územia majú menovku a väčší symbol, aby návštevník čítal mierku mesta. Rozdiel je zadefinovaný aj v manuáli.
 - **Prečo brownfieldy na obrazovke svietia, keď majú byť zhasnuté?** Stavy SÚ stupnica zhasnutia (jas = život). Na modeli svieti mesto a diery mlčia; obrazovka figúru obráti, aby sa dalo klikať.
 - **Prečo „rozsvecovanie"?** Doslova: každý dotyk rozsvieti kus modelu. Symbolicky: prvé, čo brownfield potrebuje, je pozornosť — register ukazuje, že územia so zámerom sa reálne prebúdzajú (26 vyradených od 2019). „Nerozsvecujete fabriku. Rozsvecujete jej príbeh."
 - **Obor má otvorené oči — prečo?** Len ak má územie zámer v registri. Hlasy budia obrov výhradne vo VÍZII. Realita a želanie sa nemiešajú.

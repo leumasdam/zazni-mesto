@@ -18,7 +18,7 @@ Navrhnúť, ako zrozumiteľne, vizuálne a interaktívne komunikovať tému **br
 
 Z **Koncepcie rozvoja brownfieldov (MIB, 2026)** a registra BF (aktualizácia 2022):
 
-- **113 brownfieldov / 580 ha** (≈ 800 futbalových ihrísk); v 2019 to bolo 131 / 629 ha — 26 vyradených, 8 nových
+- **113 brownfieldov / 580 ha** (≈ 800 futbalových ihrísk); v 2019 to bolo 131 / 629 ha — 39 vyradených (26 z nich späť na trh), 22 nových
 - **13 obrov ≥ 8 ha** (Dynamitka-Istrochem, Rázsochy, Filiálka, Vojenská nemocnica, kaštieľ Rusovce…)
 - Vlastníctvo: **56 súkromných, 13 mesto, 11 štát, 8 mix** — najväčšia prekážka rozvoja
 - **15 s evidovanou envirozáťažou**, až 69 území / 511 ha s možnou kontamináciou
