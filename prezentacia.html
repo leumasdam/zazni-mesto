@@ -172,6 +172,10 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 .tubamark{position:fixed;top:14px;left:28px;right:28px;z-index:60;display:flex;align-items:center;gap:20px;
   font-family:var(--fd);font-weight:700;font-size:clamp(26px,3.8vw,54px);letter-spacing:.02em;color:var(--warm-100)}
 .tubamark i{display:block;flex:1;height:2px;background:currentColor;border-radius:99px;opacity:.85}
+/* ŽIVÝ PROTOTYP na plnej ploche: chrome prezentácie (TU—BA, footbar, počítadlo, bodky) uhne
+   kioskovému topbaru — ostávajú len šípky ďalej (koliesko chytá mapa iframe) */
+.tubamark,.footbar,#stepCtr,.dots{transition:opacity .35s}
+body.protoMode .tubamark,body.protoMode .footbar,body.protoMode #stepCtr,body.protoMode .dots{opacity:0;pointer-events:none}
 .tubamark .mid{font-size:13px;letter-spacing:.16em;font-weight:700;white-space:nowrap;transform:translateY(1px)}
 .tubamark .mid em{font-style:normal;color:var(--amber-300)}
 .hint{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:60;
@@ -1617,6 +1621,7 @@ function chores(t){
   op.style.visibility=prOn2?'visible':'hidden';
   op.style.pointerEvents=(apP2>.3&&apP2<.8)?'auto':'none';
   op.style.transform=`translateY(${((1-eP)*VH+ride(eZ)/100*VH).toFixed(1)}px)`;
+  document.body.classList.toggle('protoMode',eP>.92&&eZ<.08);   /* prototyp na plnej ploche → chrome uhne */
   const zp=eZ;
   const oz=byId('ovlZapoj');
   oz.style.opacity=zp>0?1:0;
