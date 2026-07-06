@@ -1624,27 +1624,12 @@ function loop(t){
 requestAnimationFrame(loop);
 
 /* ---------- vstupy: swipe / koliesko / klávesy / šípky / bodky ---------- */
-/* snd.tick z manuálu — 40 ms potvrdenie kroku, tesne nad prahom vnímania */
-let ACTX=null;
-function tick(){
-  if(REDUCED||SILENT)return;
-  try{
-    ACTX=ACTX||new (window.AudioContext||window.webkitAudioContext)();
-    const o=ACTX.createOscillator(),g=ACTX.createGain();
-    o.type='square';o.frequency.value=1900;
-    g.gain.setValueAtTime(.045,ACTX.currentTime);
-    g.gain.exponentialRampToValueAtTime(.0001,ACTX.currentTime+.04);
-    o.connect(g).connect(ACTX.destination);o.start();o.stop(ACTX.currentTime+.05);
-  }catch(e){}
-}
 let lastIn=0;
 function inputStep(d){
   const now=performance.now();
   if(now-lastIn<340)return;                     /* len debounce — vstup nečaká na animáciu */
   lastIn=now;
-  const before=STEP;
   goStep(STEP+(d>0?1:-1));
-  if(STEP!==before)tick();
 }
 addEventListener('wheel',e=>{e.preventDefault();if(Math.abs(e.deltaY)>=6)inputStep(e.deltaY);},{passive:false});
 let ty=null;
