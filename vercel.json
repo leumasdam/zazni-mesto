@@ -1,0 +1,5 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/prezentacia.html", "permanent": false }
+  ]
+}
