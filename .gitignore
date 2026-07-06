@@ -2,3 +2,6 @@ gl-src/node_modules/
 gl-src/package-lock.json
 
 .vercel
+
+# súkromný ťahák na pohovor — nepatrí na verejný web
+SCENAR.md
