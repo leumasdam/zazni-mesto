@@ -977,7 +977,7 @@ function polyState(pl){
 
 /* KROK 02 — projektor NASVIETI konkrétnych hrdinov registra (obri ≥ 8 ha):
    hľadáčikové rohy + obrys podľa vlastníctva + menovka — presne jazyk manuálu. */
-let o2T0=0,o2Prev=0,o3T0=0,o3Prev=0,HEROES=null;
+let o2T0=0,o2Prev=0,o3T0=0,o3Prev=0,HEROES=null,HEROK=null;
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 /* VLASTNÍCTVO = obrys (manuál): mesto plná · súkromník prerušovaná · mix bodkovaná */
 const OWN_DASH={city:null,private:[8,5],mixed:[2.5,4.5]};
@@ -1056,16 +1056,16 @@ function drawObor(g,X,Y,S,awake,a){
    Objav = všetko SPÍ → indigo obori so zavretými očami; menovka na najväčších. */
 function heroMarkers(P,st){
   if(st.pres<=.02)return;
-  if(!HEROES)HEROES=POLY.filter(pl=>pl.p.ha>=4).sort((a,b)=>b.p.ha-a.p.ha);   /* významné územia, najväčšie prvé */
+  if(!HEROES)HEROES=POLY.filter(pl=>pl.big).sort((a,b)=>b.p.ha-a.p.ha);   /* len 13 obrov ≥ 8 ha — čisté, nie preplnené */
   const final=st.tt>=1e5,placed=[];
   cx.globalAlpha=1;
   for(let i=0;i<HEROES.length;i++){
     const pl=HEROES[i];
-    const e=final?1:ss(clamp((st.tt-650-i*85)/560));    /* projektor ich nachádza postupne */
+    const e=final?1:ss(clamp((st.tt-650-i*90)/560));    /* projektor ich nachádza postupne */
     if(e<=0)continue;
     const q=P(pl.cx,pl.cy);if(!q.vis)continue;
-    const S=(11+Math.sqrt(pl.p.ha)*2.4)*(.74+.26*e);    /* mierka = výmera (manuál) + pop-in — menšie */
-    drawObor(cx,q.x,q.y,S,pl.p.plan===1,e);             /* REÁLNE dáta: bdie LEN ak má zámer v registri (plan=1) */
+    const S=(13+Math.sqrt(pl.p.ha)*2.4)*(.74+.26*e);    /* mierka = výmera (manuál) + pop-in */
+    drawObor(cx,q.x,q.y,S,false,e);                     /* OBJAV = všetko dormantné (SPÍ, indigo) — sedí s „čaká na svetlo"; kto má zámer sa odhalí až vo VLNE */
     /* MENOVKA — 7 najväčších, plain text ako na kiosku, bez prekryvu */
     if(i<7&&e>.5){
       const la=clamp((e-.5)/.5);
@@ -1106,11 +1106,11 @@ function drawKey(g,X,Y,S,a,dash){
 /* POCHOP — kľúč na každom význačnom území; oblúk kľúča = vlastník (jazyk manuálu) */
 function keyMarkers(P,st){
   if(st.own<=.02)return;
-  if(!HEROES)HEROES=POLY.filter(pl=>pl.p.ha>=4).sort((a,b)=>b.p.ha-a.p.ha);
+  if(!HEROK)HEROK=POLY.filter(pl=>pl.p.ha>=4).sort((a,b)=>b.p.ha-a.p.ha);   /* kľúče na širšej vzorke — ukáž rozloženie vlastníctva */
   const final=st.tt>=1e5;
   cx.save();cx.setTransform(DPR,0,0,DPR,0,0);cx.globalAlpha=1;
-  for(let i=0;i<HEROES.length;i++){
-    const pl=HEROES[i];
+  for(let i=0;i<HEROK.length;i++){
+    const pl=HEROK[i];
     const e=final?1:ss(clamp((st.tt-450-i*65)/540));
     if(e<=0)continue;
     const q=P(pl.cx,pl.cy);if(!q.vis)continue;

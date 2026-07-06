@@ -110,10 +110,11 @@ ok('131→113 aritmetika vysvetlená (26 von · 8 dnu) + ŽIJE mimo 113',
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
-ok('objav = obori s REÁLNYM stavom (bdie LEN plan===1) + menovky; jazyk manuálu (budova s tvárou)',
+ok('objav = všetko DORMANTNÉ (13 obrov, indigo spí) — sedí s „čaká na svetlo"; zámer sa odhalí až vo vlne',
   PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Toto všetko čaká na svetlo')
   &&PRE.includes('function heroMarkers')&&PRE.includes('function drawObor')&&PRE.includes('OBOR_BODY')
-  &&PRE.includes('S,pl.p.plan===1,e)')&&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));
+  &&PRE.includes('drawObor(cx,q.x,q.y,S,false,e)')&&PRE.includes('pl=>pl.big).sort')
+  &&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
   &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
