@@ -697,13 +697,13 @@ body.lightmode .dots i.on{background:#C77800}
 <!-- 9 · TU-BA naživo + médiá -->
 <div class="ovl light mid" id="ovlTuba">
   <div class="deck">
-    <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri vrstvy</b></div>
+    <span class="ghost">08</span><div class="head"><span>08 · Kto čo hrá</span><b>Jedna scéna, štyri roly</b></div>
     <div class="grid grid4" id="gridTuba">
-      <div class="card"><h3>Model je mapa.</h3><p>Zobrazuje priestor a stavy — svetlo zhora, jedna spoločná scéna pre všetkých v miestnosti. Sám nekoná: je čistý výstup.</p><span class="src">projekčný mapping · číta scénu</span></div>
-      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Zobrazuje celé mesto v troch režimoch: Pulz · Objav · Vízia. Jediná smie meniť, čo svieti na modeli — vrstvy, filtre, čas.</p><span class="src">master scény · websocket</span></div>
-      <div class="card"><h3>Tablet je ďalekohľad.</h3><p>Zobrazuje jedno územie zblízka — minulosť · dnes · budúcnosť a AR ponad model. Scénu neprepíše: hlasuje a prosí „ukáž na modeli".</p><span class="src">request → dirigent · hlas → dataset</span></div>
-      <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy vedie presne na túto stránku — mesto si rozsvietiš doma. Hlasy sa ukladajú ako dataset pre MIB.</p><span class="src">1. fáza metodiky: participácia</span></div>
-      <div class="card" style="grid-column:1/-1"><p style="margin:0"><b style="color:#C77800">Jeden dotyk, tri médiá:</b> na tablete otvoríš Filiálku → ťukneš „ukáž na modeli" → obrazovka požiadavku potvrdí a prepne scénu → projektor rozsvieti polygón na modeli, obor otvorí oči (450 ms), zaznie chime. Požiadavky z tabletov sa radia a svietia 8 s — posledné slovo má vždy dirigent, preto sa scéna nikdy nerozbije.</p><span class="src">websocket · jedna scéna · žiadne kolízie</span></div>
+      <div class="card"><h3>Model je mapa.</h3><p>Fyzický model zobrazuje mesto ako spoločnú scénu. Projektory naň premietajú stavy, vrstvy a výber území.</p><span class="src">projekčný mapping · číta scénu</span></div>
+      <div class="card"><h3>Obrazovka je dirigent.</h3><p>Hlavný pult výstavy: vyberá územia, zapína vrstvy a určuje, čo sa práve rozsvieti na modeli.</p><span class="src">master scény · websocket</span></div>
+      <div class="card"><h3>Tablet je detail.</h3><p>Pri modeli ukazuje konkrétne územie zblízka — jeho minulosť, dnešný stav, dáta a možnú víziu.</p><span class="src">AR · detail lokality · čas</span></div>
+      <div class="card"><h3>Web je pokračovanie.</h3><p>QR z výstavy otvorí tú istú lokalitu doma. Hlas a záujem sa ukladajú ako spätná väzba pre ďalšiu prácu.</p><span class="src">participácia · dataset</span></div>
+      <div class="card" style="grid-column:1/-1"><p style="margin:0"><b style="color:#C77800">Jeden dotyk, jedna scéna:</b> návštevník vyberie Filiálku na tablete → obrazovka požiadavku potvrdí → projektor rozsvieti polygón na modeli → web si odnesie rovnakú lokalitu domov.</p><span class="src">websocket · jedna scéna · žiadne kolízie</span></div>
     </div>
   </div>
 </div>

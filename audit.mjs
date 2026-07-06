@@ -121,8 +121,8 @@ ok('objav = všetko DORMANTNÉ (13 obrov, indigo spí) — sedí so „zhasnutý
 ok('kanály manuálu na mape: vlastníctvo=obrys (mesto plná · súkromník čiarkovaná · mix bodkovaná) + riziko=šrafy #E84B8A nad stavom',
   PRE.includes('OWN_DASH')&&PRE.includes('#E84B8A')&&PRE.includes('chanOverlay')
   &&src('gl-src/city.js').includes("own==='city'")&&src('gl-src/city.js').includes("own==='mixed'"));
-ok('roly zariadení definované: model=mapa · obrazovka=dirigent · tablet=ďalekohľad + handshake „jeden dotyk, tri médiá" (prezentácia + DM tabuľka)',
-  PRE.includes('Tablet je ďalekohľad.')&&PRE.includes('Jeden dotyk, tri médiá')
+ok('roly zariadení definované: model=mapa · obrazovka=dirigent · tablet=detail + handshake „jeden dotyk, jedna scéna" (prezentácia + DM tabuľka)',
+  PRE.includes('Tablet je detail.')&&PRE.includes('Jeden dotyk, jedna scéna')
   &&src('index.html').includes('Kto čo robí — a ako sa rozprávajú')&&src('index.html').includes('ukáž na modeli'));
 ok('filozofia nasadenia v DM: každé územie JE obor (silueta=typológia · oči=zámer) + mierka=pravidlo pozornosti (≥ 8 ha vždy · < 8 ha pri priblížení)',
   src('index.html').includes('Kedy čo vidíš — filozofia nasadenia')&&src('index.html').includes('každé územie JE obor')

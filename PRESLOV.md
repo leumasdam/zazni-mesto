@@ -85,7 +85,7 @@ vrstvy jemne dýchajú — prejdi vrstvou alebo kartou = popis + vrstva sa vyzdv
 > Roly sú prísne — každé zariadenie má definované, čo zobrazuje a čo smie zmeniť:
 > **model je mapa** — svetlo zhora, spoločná scéna, sám nekoná;
 > **obrazovka je dirigent** — celé mesto v troch režimoch, jediná mení, čo svieti;
-> **tablet je ďalekohľad** — jedno územie zblízka, minulosť–dnes–budúcnosť, AR ponad model.
+> **tablet je detail** — jedno územie zblízka, minulosť–dnes–budúcnosť, AR ponad model.
 > A prepojenie? Jeden dotyk, tri médiá: na tablete otvorím Filiálku, ťuknem „ukáž na modeli" —
 > obrazovka požiadavku potvrdí, projektor rozsvieti polygón, obor otvorí oči, zaznie chime.
 > Tablet scénu nikdy neprepíše, len prosí — preto ani plná miestnosť ľudí model nerozbije.
