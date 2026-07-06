@@ -167,6 +167,13 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 }
 #proto .badge .dot{width:8px;height:8px;border-radius:50%;background:#5AE07A;box-shadow:0 0 10px #5AE07A}
 #proto .badge small{font-family:var(--fm);font-size:9.5px;color:var(--text-low);font-weight:400}
+/* prototyp na plnej ploche: badge povie hint a SÁM zmizne (neprekrýva UI kiosku);
+   šípky sa presunú do voľného ľavého rohu (vpravo dole má kiosk Legendu) a stlmia */
+body.protoMode #proto .badge{animation:badgeAway .5s ease 5.5s forwards}
+@keyframes badgeAway{to{opacity:0;visibility:hidden;transform:translateX(-50%) translateY(12px)}}
+.steps-ui{transition:opacity .3s,transform .3s}
+body.protoMode .steps-ui{left:20px;right:auto;opacity:.5}
+body.protoMode .steps-ui:hover{opacity:1}
 
 /* ============ chrome ============ */
 .bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(139,145,221,.12)}
@@ -715,7 +722,7 @@ body.lightmode .dots i.on{background:#C77800}
   <div id="proto" style="position:absolute;inset:0">
     <iframe src="obrazovka.html" title="Živý prototyp expozície" loading="lazy"></iframe>
     <div class="badge">
-      <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — klikaj priamo do prototypu · ďalej šípkami vpravo dole</span>
+      <span style="display:flex;gap:12px;align-items:center"><span class="dot"></span>ŽIVÉ DEMO — klikaj priamo do prototypu · ďalej šípkami vľavo dole</span>
       <small>pipeline: ArcGIS → GeoJSON → MapLibre · snímky Esri + GKÚ · fotky Wikimedia (produkčne pasport MIB) · hlasy → dataset</small>
     </div>
   </div>
