@@ -120,7 +120,7 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 
 /* obor kapitola */
 #ovlObor{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(36px,6.2vw,92px);line-height:1;letter-spacing:-.025em;margin-bottom:26px}
+#ovlObor h2{font-family:var(--fd);font-weight:700;font-size:clamp(28px,3.9vw,58px);line-height:1;letter-spacing:-.025em;margin-bottom:34px;white-space:nowrap}   /* jeden riadok — hviezdou slidu sú OBRI */
 #ovlObor .oborbox{transition:transform .45s cubic-bezier(.34,1.56,.64,1),filter .45s ease-out}  /* wake.spring 450 ms */
 #ovlObor .oborbox.awake{filter:drop-shadow(0 0 60px rgba(245,158,11,.4));transform:scale(1.05)}
 #ovlObor .sub{font-family:var(--fm);font-size:12px;color:var(--text-mid);margin-top:16px;max-width:60ch;line-height:1.7}
@@ -365,10 +365,10 @@ body.lightmode .dots i.on{background:#C77800}
 }
 
 /* rad troch obrov: SPÍ (klikací) · ZÍVA · BDIE */
-.oborrow{display:flex;gap:clamp(28px,6vw,110px);align-items:flex-end;justify-content:center;margin:8px 0 4px}
+.oborrow{display:flex;gap:clamp(24px,5.4vw,96px);align-items:flex-end;justify-content:center;margin:8px 0 4px}
 .oborpose{display:flex;flex-direction:column;align-items:center;gap:4px}
-.oborpose svg{width:min(24vh,220px);height:min(24vh,220px)}
-.oborpose b{font-family:var(--fd);font-size:16px;letter-spacing:.08em;color:#B9BEF0;margin-top:6px}
+.oborpose svg{width:min(36vh,330px);height:min(36vh,330px)}   /* obri = hviezdy slidu */
+.oborpose b{font-family:var(--fd);font-size:18px;letter-spacing:.08em;color:#B9BEF0;margin-top:6px}
 .oborpose span{font-family:var(--fm);font-size:10px;letter-spacing:.1em;color:var(--text-low);text-transform:uppercase}
 .oborpose:not(#oborBig){opacity:.92}
 #oborBig{cursor:pointer;transition:filter .8s}
@@ -566,8 +566,9 @@ body.lightmode .dots i.on{background:#C77800}
       </div>
       <div class="card protoline">
         <svg width="42" height="36" viewBox="12 22 72 58"><rect x="24" y="24" width="8" height="16" fill="#454CA0"/><path d="M18 78V46l14-10v10l14-10v10l14-10v42z" fill="#454CA0" stroke="#8B91DD" stroke-width="2" stroke-linejoin="round"/><g stroke="#C9CDF4" stroke-width="3" stroke-linecap="round" fill="none"><path d="M34 60h7M50 60h7"/><path d="M42 70q4 3 8 0"/></g></svg>
+        <svg width="42" height="36" viewBox="12 22 72 58"><rect x="24" y="24" width="8" height="16" fill="#17B3A3"/><path d="M18 78V46l14-10v10l14-10v10l14-10v42z" fill="#17B3A3" stroke="#0C8578" stroke-width="2" stroke-linejoin="round"/><g stroke="#E9FFFB" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M34 60h7"/><circle cx="53.5" cy="60" r="3"/><ellipse cx="46" cy="70" rx="3.5" ry="4.5"/></g></svg>
         <svg width="42" height="36" viewBox="12 22 72 58"><rect x="24" y="24" width="8" height="16" fill="#F59E0B"/><path d="M18 78V46l14-10v10l14-10v10l14-10v42z" fill="#F59E0B" stroke="#C77800" stroke-width="2" stroke-linejoin="round"/><circle cx="37.5" cy="60" r="3.2" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.2" fill="#FFF6E3"/><path d="M40 69q6 5 12 0" stroke="#FFF6E3" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
-        <p><b>Pravidlo z prototypu:</b> oči obra — zavreté = bez zámeru · otvorené = známy zámer. Vo Vízii ich otvárajú aj hlasy návštevníkov. <span class="src">legenda obrazovky</span></p>
+        <p><b>Jazyk obra:</b> oči čítajú stav — zavreté = spí · zíva = drieme · otvorené = zámer v registri. Vo Vízii ich otvárajú aj hlasy návštevníkov. <span class="src">legenda obrazovky</span></p>
       </div>
     </div>
   </div>
@@ -575,7 +576,7 @@ body.lightmode .dots i.on{background:#C77800}
 
 <!-- 7 · OBOR -->
 <div class="ovl" id="ovlObor">
-  <h2>Každý brownfield<br>je <span style="color:var(--warm-100)">spiaci obor</span></h2>
+  <h2>Každý brownfield je <span style="color:var(--warm-100)">spiaci obor</span></h2>
   <div class="oborrow">
     <div class="oborpose oborbox" id="oborBig">
       <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
