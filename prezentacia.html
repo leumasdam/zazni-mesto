@@ -1162,6 +1162,7 @@ function draw(t){
   const ownPulse0=Math.sin(clamp(ownA0)*Math.PI);
   const HB=1+(1-clamp(p*14))*.6;                 /* hero pulz */
   const wave=aP('predstav');
+  const waveP=ss(clamp(wave*1.8));   /* vlna preberá scénu → sekundárne kanály (šrafy) ustúpia, ostane stav+obri */
   /* KROK 02 — príbeh: spoločný NÁDYCH (113 sa nadýchne) → projektor NASVIETI hrdinov (obri ≥ 8 ha).
      Časovanie beží od príchodu na krok (o2T0); návrat na krok prehrá sekvenciu znova. */
   const apO=aP('objav');
@@ -1172,10 +1173,10 @@ function draw(t){
   const tt02=REDUCED?1e5:(o2T0?t-o2T0:0);
   const breath=(REDUCED||!o2T0||tt02>2000)?0:Math.sin(Math.PI*tt02/2000); /* jeden spoločný nádych, 2 s */
   const br2=breath*pres02;
-  /* VLASTNÍCTVO = obrys: puls v POCHOP, potom ostáva tichý kanál (manuál: kanály sa kombinujú) */
-  const ownK=Math.max(ownPulse0*.95,ss(clamp(ownA0*2))*.34);
-  /* RIZIKO = vzor (manuál: „vzor leží VŽDY nad stavovou farbou") — šrafy žijú, odkedy sa mapa vynorí */
-  const riskK=ss(clamp(aP('objav')*1.6));
+  /* VLASTNÍCTVO = obrys+šrafa: patrí do POCHOPu — vo vlne MIZNE (inak sa obri kryjú so šrafou = kaša) */
+  const ownK=Math.max(ownPulse0*.95,ss(clamp(ownA0*2))*.34)*(1-waveP);
+  /* RIZIKO = vzor: ostáva čitateľné, ale vo vlne USTÚPI, aby nedominoval nad svetlom */
+  const riskK=ss(clamp(aP('objav')*1.6))*(1-waveP*.8);
 
   /* === WebGL vetva: mesto kreslí three.js s bloomom; 2D canvas ostáva len na menovky === */
   if(GL){
