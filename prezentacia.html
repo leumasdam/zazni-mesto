@@ -385,7 +385,7 @@ body.lightmode .dots i.on{background:#C77800}
   letter-spacing:.1em;min-width:44px;text-align:left}
 .turnhud .draghint{display:block;margin-top:5px;font-family:var(--fm);font-size:10px;letter-spacing:.2em;
   color:var(--text-low);text-transform:uppercase}
-.turnwrap{cursor:grab;touch-action:pan-y;pointer-events:auto}   /* .ovl má pointer-events:none — bez auto drag NEfunguje */
+.turnwrap{touch-action:pan-y}   /* drag/hover rieši window-level hit-test (kurzor nastavuje JS) */
 .turnwrap.grab{cursor:grabbing}
 .turnwrap::after{content:'';position:absolute;left:14%;right:14%;bottom:4%;height:7%;
   background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 70%);z-index:-1}
@@ -1422,18 +1422,26 @@ for(let i=0;i<TURN_N;i++){
   TURN[i]=im;
 }
 TURN[0].addEventListener('load',()=>{turncv.width=TURN[0].naturalWidth;turncv.height=TURN[0].naturalHeight;turnShown=-1;});
-let turnHovT=0,turnHov=0;   /* popisky s čiarami až na hover nad modelom */
+/* OTOČKA — drag aj hover na ÚROVNI OKNA s manuálnym hit-testom: nad slidom ležia ďalšie
+   fixed vrstvy a lokálne listenery eventy nikdy nedostali. Window ich dostane VŽDY. */
+let turnHovT=0,turnHov=0;
 {
-  const twz=document.querySelector('.turnwrap');
-  twz.addEventListener('pointerdown',e=>{dragX=e.clientX;twz.classList.add('grab');twz.setPointerCapture(e.pointerId);});
-  twz.addEventListener('pointermove',e=>{
-    if(dragX==null)return;
-    turnOff-=(e.clientX-dragX)/34;
-    dragX=e.clientX;
-  });
-  addEventListener('pointerup',()=>{dragX=null;twz.classList.remove('grab');});
-  twz.addEventListener('pointerenter',()=>{turnHovT=1;});
-  twz.addEventListener('pointerleave',()=>{turnHovT=0;});
+  const twz=document.querySelector('.turnwrap'),ovT=byId('ovlTurn');
+  const inTurn=e=>{
+    if(ovT.style.visibility==='hidden'||+ovT.style.opacity<.9)return false;   /* len keď je otočka naozaj na scéne */
+    const r=twz.getBoundingClientRect();
+    return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;
+  };
+  addEventListener('pointerdown',e=>{
+    if(e.button===0&&inTurn(e)){dragX=e.clientX;twz.classList.add('grab');e.preventDefault();}
+  },true);
+  addEventListener('pointermove',e=>{
+    const inside=inTurn(e);
+    turnHovT=inside?1:0;
+    if(dragX!=null){turnOff-=(e.clientX-dragX)/34;dragX=e.clientX;}
+    document.body.style.cursor=dragX!=null?'grabbing':(inside?'grab':'');
+  },true);
+  addEventListener('pointerup',()=>{dragX=null;twz.classList.remove('grab');document.body.style.cursor='';},true);
 }
 function chores(t){
   const p=Ps;
