@@ -632,7 +632,7 @@ body.lightmode .dots i.on{background:#C77800}
   <div class="turnwrap">
     <div class="turnhud">
       <span class="kicker">06 · Priestor<span class="deg" id="turnDeg">0°</span></span>
-      <span class="draghint">✋ potiahni obraz — otočíš si sám · popisky ukáže prechod myšou</span>
+      <span class="draghint">✋ potiahni kdekoľvek — otočíš si sám · popisky ukáže prechod myšou</span>
     </div>
     <canvas id="turncv" aria-label="Model expozície TU-BA — otočný pohľad"></canvas>
     <svg class="tlines" aria-hidden="true">
@@ -1427,11 +1427,9 @@ TURN[0].addEventListener('load',()=>{turncv.width=TURN[0].naturalWidth;turncv.he
 let turnHovT=0,turnHov=0;
 {
   const twz=document.querySelector('.turnwrap'),ovT=byId('ovlTurn');
-  const inTurn=e=>{
-    if(ovT.style.visibility==='hidden'||+ovT.style.opacity<.9)return false;   /* len keď je otočka naozaj na scéne */
-    const r=twz.getBoundingClientRect();
-    return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;
-  };
+  /* hit-zóna = CELÝ slide (rect 3D-transformovaného štvorca sa projektoval mimo obraz);
+     vynechaný len footer pás, aby šípky nemenili kurzor */
+  const inTurn=e=>ovT.style.visibility!=='hidden'&&+ovT.style.opacity>=.9&&e.clientY<innerHeight-64&&e.clientY>60;
   addEventListener('pointerdown',e=>{
     if(e.button===0&&inTurn(e)){dragX=e.clientX;twz.classList.add('grab');e.preventDefault();}
   },true);
