@@ -108,13 +108,13 @@ ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
     &&!IDX.includes('16 významných')&&!IDX.includes('významný BF (16)');
 })());
 ok('131→113 aritmetika PODĽA KONCEPCIE 2026: 39 vyradených (26 z nich = kat. A, vrátili sa na trh = ŽIJE) + 22 nových + ŽIJE mimo 113',
-  PRE.includes('39 vyradilo (26 z nich sa naozaj prebudilo a vrátilo na trh) a 22 nových')&&PRE.includes('mimo 113')
+  PRE.includes('ubudlo 39 území — 26 z nich sa naozaj prebudilo')&&PRE.includes('aj 22 nových')&&PRE.includes('mimo 113')
   &&!PRE.includes('8 nových pribudlo'));
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
   &&PRE.includes('HLAND')&&PRE.includes('Math.tan(ang*Math.PI/180)*yl'));
-ok('objav = všetko DORMANTNÉ (13 obrov, indigo spí) — sedí s „čaká na svetlo"; zámer sa odhalí až vo vlne',
-  PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Toto všetko čaká na svetlo')
+ok('objav = všetko DORMANTNÉ (13 obrov, indigo spí) — sedí so „zhasnutými miestami"; zámer sa odhalí až vo vlne',
+  PRE.includes('o2T0')&&PRE.includes('breath')&&PRE.includes('Mesto má 113 zhasnutých miest')
   &&PRE.includes('function heroMarkers')&&PRE.includes('function drawObor')&&PRE.includes('OBOR_BODY')
   &&PRE.includes('drawObor(cx,q.x,q.y,S,false,e)')&&PRE.includes('pl=>pl.big).sort')
   &&!PRE.includes('ŠTVOREC 2,4')&&src('gl-src/city.js').includes('st.br'));

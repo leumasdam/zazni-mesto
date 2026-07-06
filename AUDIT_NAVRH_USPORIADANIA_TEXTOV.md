@@ -229,7 +229,7 @@ Navrhované členenie manuálu:
 
 - Ak sa všetko hýbe rovnako “slávnostne”, stráca sa hierarchia.
 - Dlhé dojazdy sú krásne na nahrávke, ale v rozhovore môžu pôsobiť ako oneskorenie.
-- Zvuk je pekný detail, ale na pohovore ho odporúčam mať vypnutý, kým si si istý miestnosťou.
+- ~~Zvuk je pekný detail, ale na pohovore ho odporúčam mať vypnutý.~~ (Neaktuálne — zvuk prechodov bol z prezentácie odstránený úplne.)
 
 ### Odporúčané tempo
 
@@ -241,7 +241,7 @@ Navrhované členenie manuálu:
 
 Odporúčané URL pre istotu:
 
-`prezentacia.html?lite=1&silent=1`
+`prezentacia.html?lite=1` *(parameter `silent` neexistuje — zvuk bol odstránený)*
 
 Plná verzia:
 
