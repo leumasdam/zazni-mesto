@@ -94,12 +94,13 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 #ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
 #ovlTuba .head{margin-bottom:30px}                      /* bez renderu — texty cez celý screen, headline naplno */
 #ovlSkal{background:#F6EFEA;align-items:flex-start;padding-top:80px}   /* bg = farba slucka.png; kotva zhora — headline sa nebije s brand barom */
-/* pipeline „1 zdroj pravdy": register → tokeny → 4 výstupy, amber dátové pulzy */
-.pipe{max-width:1060px;margin:30px auto 0;text-align:center}
-.pipe svg{width:min(100%,1020px);height:auto;display:block;margin:0 auto}
-.pipecap{display:block;margin-top:10px;font-family:var(--fm);font-size:11px;letter-spacing:.1em;color:#75788C}
-@media (prefers-reduced-motion:reduce){.pipe .pdots{visibility:hidden}}
-@media (max-height:820px){.pipe svg{width:min(100%,860px)}}
+/* pipeline „1 zdroj pravdy": cinematic video — okraje sa rozplynú do papierového pozadia (žiadny rám) */
+.pipe{max-width:1100px;margin:8px auto 0;text-align:center}
+.pipe video{width:min(100%,1040px);height:auto;display:block;margin:0 auto;
+  -webkit-mask-image:radial-gradient(118% 104% at 50% 48%,#000 55%,transparent 92%);
+          mask-image:radial-gradient(118% 104% at 50% 48%,#000 55%,transparent 92%)}
+.pipecap{display:block;margin-top:2px;font-family:var(--fm);font-size:11px;letter-spacing:.12em;color:#75788C}
+@media (max-height:840px){.pipe video{width:min(100%,820px)}}
 #ovlSkal .deckimg img{max-height:36vh}
 #ovlSkal .deckimg img{mix-blend-mode:normal}            /* multiply by zhodné bg stmavil — obrázok splýva natívne */
 #ovlLegenda .head{margin-bottom:8px}
@@ -725,35 +726,11 @@ body.lightmode .dots i.on{background:#C77800}
       <div class="card"><div class="num">AUTO</div><h3>aktualizácia dát</h3><p>Keď sa zmení register, zmení sa aj mapa, svetlo a detail územia. Expozícia sa vie prekresliť sama.</p></div>
       <div class="card"><div class="num">∞</div><h3>ďalšie témy</h3><p>Dnes brownfieldy. Zajtra bývanie, zeleň, klíma alebo mobilita. Jazyk ostáva, mení sa dataset.</p></div>
     </div>
-    <!-- PIPELINE: dôkaz kariet „1 zdroj pravdy" a „AUTO" — dátový pulz beží z registra do všetkých výstupov -->
+    <!-- PIPELINE: dôkaz kariet „1 zdroj pravdy" a „AUTO" — dáta tečú z registra svetelnými káblami do výstupov -->
     <div class="pipe">
-      <svg viewBox="0 0 1000 224" role="img" aria-label="Jeden zdroj pravdy: register MIB cez dizajn tokeny napája model, obrazovku, tablet aj web">
-        <path d="M196 112 H 336" fill="none" stroke="#3B4285" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
-        <path d="M528 112 C 620 112 640 32 800 32"  fill="none" stroke="#3B4285" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
-        <path d="M528 112 C 620 112 640 86 800 86"  fill="none" stroke="#3B4285" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
-        <path d="M528 112 C 620 112 640 138 800 138" fill="none" stroke="#3B4285" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
-        <path d="M528 112 C 620 112 640 192 800 192" fill="none" stroke="#3B4285" stroke-width="1.4" stroke-dasharray="5 6" opacity=".55"/>
-        <g transform="translate(20,80)"><rect x="4" y="4" width="176" height="64" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="176" height="64" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/>
-          <text x="88" y="28" text-anchor="middle" style="font-family:var(--fd);font-weight:700;font-size:14px" fill="#0B0E1A">REGISTER MIB</text>
-          <text x="88" y="46" text-anchor="middle" style="font-family:var(--fm);font-size:9px;letter-spacing:.08em" fill="#75788C">113 polygónov · 27 polí</text></g>
-        <g transform="translate(340,80)"><rect x="4" y="4" width="188" height="64" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="188" height="64" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/>
-          <text x="94" y="28" text-anchor="middle" style="font-family:var(--fd);font-weight:700;font-size:14px" fill="#0B0E1A">DIZAJN TOKENY</text>
-          <text x="94" y="46" text-anchor="middle" style="font-family:var(--fm);font-size:9px;letter-spacing:.04em" fill="#75788C">farba · vzor · obrys · ikona · mierka</text></g>
-        <g style="font-family:var(--fd);font-weight:700;font-size:13px" fill="#0B0E1A">
-          <g transform="translate(806,6)"><rect x="3" y="3" width="174" height="50" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="174" height="50" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/><text x="87" y="24" text-anchor="middle">MODEL</text><text x="87" y="39" text-anchor="middle" style="font-family:var(--fm);font-weight:400;font-size:8.5px" fill="#75788C">projekcia svetla</text></g>
-          <g transform="translate(806,60)"><rect x="3" y="3" width="174" height="50" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="174" height="50" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/><text x="87" y="24" text-anchor="middle">OBRAZOVKA</text><text x="87" y="39" text-anchor="middle" style="font-family:var(--fm);font-weight:400;font-size:8.5px" fill="#75788C">dirigent expozície</text></g>
-          <g transform="translate(806,112)"><rect x="3" y="3" width="174" height="50" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="174" height="50" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/><text x="87" y="24" text-anchor="middle">TABLET</text><text x="87" y="39" text-anchor="middle" style="font-family:var(--fm);font-weight:400;font-size:8.5px" fill="#75788C">AR lupa nad modelom</text></g>
-          <g transform="translate(806,166)"><rect x="3" y="3" width="174" height="50" rx="10" fill="#0B0E1A" opacity=".1"/><rect width="174" height="50" rx="10" fill="#FFFCF8" stroke="#3B4285" stroke-width="1.6"/><text x="87" y="24" text-anchor="middle">WEB</text><text x="87" y="39" text-anchor="middle" style="font-family:var(--fm);font-weight:400;font-size:8.5px" fill="#75788C">odnes si mesto domov</text></g>
-        </g>
-        <g class="pdots">
-          <circle r="4.5" fill="#F59E0B"><animateMotion dur="2.2s" begin="0s"   repeatCount="indefinite" path="M196 112 H 336"/></circle>
-          <circle r="4"   fill="#F59E0B"><animateMotion dur="2.6s" begin=".3s" repeatCount="indefinite" path="M528 112 C 620 112 640 32 800 32"/></circle>
-          <circle r="4"   fill="#F59E0B"><animateMotion dur="2.6s" begin=".9s" repeatCount="indefinite" path="M528 112 C 620 112 640 86 800 86"/></circle>
-          <circle r="4"   fill="#F59E0B"><animateMotion dur="2.6s" begin="1.5s" repeatCount="indefinite" path="M528 112 C 620 112 640 138 800 138"/></circle>
-          <circle r="4"   fill="#F59E0B"><animateMotion dur="2.6s" begin="2.1s" repeatCount="indefinite" path="M528 112 C 620 112 640 192 800 192"/></circle>
-        </g>
-      </svg>
-      <span class="pipecap">Jedna zmena v registri prebehne celou expozíciou sama — model, obrazovka, tablet aj web čítajú tie isté tokeny.</span>
+      <video id="pipeVid" src="assets/pipeline.mp4" autoplay muted loop playsinline preload="metadata"
+        aria-label="Jeden zdroj pravdy: dáta tečú z registra cez dizajn tokeny svetelnými káblami do modelu, obrazovky, tabletu aj webu"></video>
+      <span class="pipecap">register mib → dizajn tokeny → model · obrazovka · tablet · web — jedna zmena v registri prebehne celou expozíciou sama</span>
     </div>
     <div class="src" style="text-align:center;letter-spacing:.14em;color:#75788C;margin-top:12px;display:block">audit · 65 kontrol · tokeny · mapovanie polí · kontrola vrstiev</div>
   </div>
@@ -817,6 +794,9 @@ body.lightmode .dots i.on{background:#C77800}
    spí (indigo·pulz) → drieme (teal) → prebúdza sa (amber) → žije (teplá biela)
    ============================================================ */
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* reduced-motion: pipeline video zastaviť na peknej snímke namiesto slučky */
+if(REDUCED){const pv=document.getElementById('pipeVid');
+  if(pv){pv.autoplay=false;pv.addEventListener('loadeddata',()=>{pv.currentTime=4;pv.pause();},{once:true});}}
 const _idc={};const byId=s=>_idc[s]||(_idc[s]=document['getElementById'](s));   /* DOM cache — chores beží 60×/s */
 const QS=new URL(location).searchParams;
 const LITE=QS.has('lite');                         /* fail-safe prezentácia: ?lite=1 vypne GL, zrno, častice */

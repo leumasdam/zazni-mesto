@@ -134,9 +134,9 @@ ok('pochop = vlastníctvo číta územie samo: obrys + šrafa súkromných (\\, 
 ok('výkon+a11y: DOM cache, particle gate (reduced-motion + light), väčšie dot targety, bez mŕtveho panelL',
   PRE.includes('const byId')&&PRE.includes('window.__light')&&PRE.includes('animation-duration:.001s')
   &&PRE.includes('background-clip:content-box')&&!PRE.includes('id="panelL"'));
-ok('skal = pipeline 1 zdroj pravdy (register → tokeny → model·obrazovka·tablet·web, amber pulzy, reduced-motion fallback)',
-  PRE.includes('REGISTER MIB')&&PRE.includes('DIZAJN TOKENY')&&PRE.includes('animateMotion')
-  &&PRE.includes('pipecap')&&PRE.includes('.pipe .pdots{visibility:hidden}'));
+ok('skal = pipeline video 1 zdroj pravdy (splýva s pozadím cez mask, autoplay muted loop, reduced-motion pauza na snímke)',
+  PRE.includes('pipeline.mp4')&&PRE.includes('mask-image:radial-gradient')&&PRE.includes('pipecap')
+  &&PRE.includes('pipeVid')&&PRE.includes('pv.currentTime=4;pv.pause()')&&!PRE.includes('animateMotion'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */
