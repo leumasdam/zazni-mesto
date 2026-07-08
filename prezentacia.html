@@ -91,16 +91,57 @@ body.lightmode .brand em,body.lightmode .tubamark .mid em{color:#C77800}
 .cdm em.big{width:22px;height:22px;border-radius:var(--rad);border:1.5px solid #8B91DD}
 .chanband b{font-family:var(--fd);font-size:13.5px;color:#F4F2EE;display:block}
 .chanband span{font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;color:#9a9dae;text-transform:uppercase;display:block;margin-top:2px}
-#ovlLegenda{align-items:flex-start;padding-top:84px}    /* vzduch pod brand barom — headline sa nebije s logom */
+#ovlLegenda{align-items:flex-start;padding-top:clamp(120px,15vh,190px)}    /* väčší vzduch pod brand barom — content posunutý nižšie */
 #ovlTuba .head{margin-bottom:30px}                      /* bez renderu — texty cez celý screen, headline naplno */
-#ovlSkal{background:#F6EFEA;align-items:flex-start;padding-top:80px}   /* bg = farba slucka.png; kotva zhora — headline sa nebije s brand barom */
+#ovlSkal{background:#F6EFEA;align-items:flex-start;padding-top:clamp(120px,18vh,220px)}   /* content nižšie, bližšie k stredu nad full-bleed renderom */
 /* pipeline „1 zdroj pravdy": cinematic video — okraje sa rozplynú do papierového pozadia (žiadny rám) */
+/* pipeline = ZMRAZENÝ render (frame 0, celá scéna) + CSS kamera: jemný zoom na lampu vľavo → smooth pan doprava */
+.pipeWrap{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  -webkit-mask-image:radial-gradient(200% 145% at 50% 50%,#000 84%,transparent 100%);
+          mask-image:radial-gradient(200% 145% at 50% 50%,#000 84%,transparent 100%)}
+.pipeBg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
+  transform-origin:0 0;opacity:.92;will-change:transform;
+  transform:translate(-2.5%,-2.5%) scale(1.05)}                          /* pokojový stav = úvodný celok (žiadny blik konca pri príchode) */
+#ovlSkal.go .pipeBg{animation:pipeCam 22s cubic-bezier(.45,0,.15,1) forwards}   /* kamera sa spúšťa až príchodom na slide; easing platí per-zastávka */
+/* kamerová túra so zastávkami: celok → lampa → server → kryštál (každý o kúsok bližšie) → presun na tablety a telefón */
+@keyframes pipeCam{
+  0%   {transform:translate(-2.5%,-2.5%) scale(1.05)}   /* celok — nadýchnutie */
+  9%   {transform:translate(-.75%,-26%) scale(1.55)}    /* 1 · lampa (register) */
+  19%  {transform:translate(-.75%,-26%) scale(1.55)}
+  30%  {transform:translate(-30%,-40.4%) scale(1.7)}    /* 2 · server (tokeny) — o kúsok bližšie */
+  40%  {transform:translate(-30%,-40.4%) scale(1.7)}
+  51%  {transform:translate(-58%,-48.5%) scale(1.85)}   /* 3 · kryštál — ešte bližšie */
+  61%  {transform:translate(-58%,-48.5%) scale(1.85)}
+  74%  {transform:translate(-70%,-37%) scale(1.7)}      /* 4 · presun na tablety a telefón */
+  87%  {transform:translate(-70%,-37%) scale(1.7)}
+  100% {transform:translate(-45%,-24.5%) scale(1.45)}   /* dovzdych — širší záber zariadení */
+}
+/* karty sú zosynchronizované s kamerou: keď kamera stojí na objekte, rozsvieti sa jeho karta
+   (lampa=1 zdroj pravdy · server=AUTO · kryštál=5 kanálov · zariadenia=∞); len bg/border/shadow — transform patrí deckUpdate */
+#ovlSkal.go #gridSkal .card:nth-child(2){animation:spotA 22s cubic-bezier(.45,0,.15,1) forwards}
+#ovlSkal.go #gridSkal .card:nth-child(3){animation:spotB 22s cubic-bezier(.45,0,.15,1) forwards}
+#ovlSkal.go #gridSkal .card:nth-child(1){animation:spotC 22s cubic-bezier(.45,0,.15,1) forwards}
+#ovlSkal.go #gridSkal .card:nth-child(4){animation:spotD 22s cubic-bezier(.45,0,.15,1) forwards}
+@keyframes spotA{0%,5%,24%,100%{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);box-shadow:0 14px 40px rgba(16,20,38,.10)}
+  9%,19%{background:#fff;border-color:rgba(245,158,11,.65);box-shadow:0 26px 64px -10px rgba(199,120,0,.38)}}
+@keyframes spotB{0%,26%,45%,100%{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);box-shadow:0 14px 40px rgba(16,20,38,.10)}
+  30%,40%{background:#fff;border-color:rgba(245,158,11,.65);box-shadow:0 26px 64px -10px rgba(199,120,0,.38)}}
+@keyframes spotC{0%,47%,66%,100%{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);box-shadow:0 14px 40px rgba(16,20,38,.10)}
+  51%,61%{background:#fff;border-color:rgba(245,158,11,.65);box-shadow:0 26px 64px -10px rgba(199,120,0,.38)}}
+@keyframes spotD{0%,70%,92%,100%{background:rgba(255,255,255,.8);border-color:rgba(16,20,38,.08);box-shadow:0 14px 40px rgba(16,20,38,.10)}
+  74%,87%{background:#fff;border-color:rgba(245,158,11,.65);box-shadow:0 26px 64px -10px rgba(199,120,0,.38)}}
+@media (prefers-reduced-motion:reduce){
+  .pipeBg{animation:none!important;transform:none}
+  #ovlSkal.go #gridSkal .card{animation:none!important}
+}
+/* papierový závoj — softne video a drží čitateľnosť textu */
+.pipeVeil{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(246,239,234,.62) 0%,rgba(246,239,234,.14) 34%,transparent 56%,rgba(246,239,234,.2) 100%)}
+#ovlSkal .deck{position:relative;z-index:1}
+/* drobný text nad renderom — papierový halo pre čitateľnosť */
+#ovlSkal .pipecap,#ovlSkal .deck>.src{text-shadow:0 1px 9px rgba(246,239,234,.96),0 0 3px rgba(246,239,234,.92)}
 .pipe{max-width:1100px;margin:8px auto 0;text-align:center}
-.pipe video{width:min(100%,1040px);height:auto;display:block;margin:0 auto;
-  -webkit-mask-image:radial-gradient(118% 104% at 50% 48%,#000 55%,transparent 92%);
-          mask-image:radial-gradient(118% 104% at 50% 48%,#000 55%,transparent 92%)}
 .pipecap{display:block;margin-top:2px;font-family:var(--fm);font-size:11px;letter-spacing:.12em;color:#75788C}
-@media (max-height:840px){.pipe video{width:min(100%,820px)}}
 #ovlSkal .deckimg img{max-height:36vh}
 #ovlSkal .deckimg img{mix-blend-mode:normal}            /* multiply by zhodné bg stmavil — obrázok splýva natívne */
 #ovlLegenda .head{margin-bottom:8px}
@@ -539,12 +580,11 @@ body.lightmode .dots i.on{background:#C77800}
 <div class="ovl" id="ovlWave">
   <div class="note" id="waveNote">04 · Predstav si — svetlo ide mestom od východu</div>
   <div class="wavehud">
-    <div class="cnt"><span id="litN">0</span><small> / 113 svieti</small></div>
+    <div class="cnt"><span id="litN">0</span><small id="litLbl"> / 66 sa prebúdza</small></div>
+    <!-- vlna má LEN 2 stavy (register-first: zámer áno/nie) — plné 4 stavy vysvetľuje Legenda -->
     <div class="states">
       <span class="st st1" id="hs1"><i></i>SPÍ</span>
-      <span class="st st2" id="hs2"><i></i>DRIEME</span>
       <span class="st st3" id="hs3"><i></i>PREBÚDZA SA</span>
-      <span class="st st4" id="hs4"><i></i>ŽIJE</span>
     </div>
   </div>
 </div>
@@ -718,6 +758,9 @@ body.lightmode .dots i.on{background:#C77800}
 
 <!-- 10 · ŠKÁLOVATEĽNOSŤ -->
 <div class="ovl light mid" id="ovlSkal">
+  <div class="pipeWrap"><video id="pipeVid" class="pipeBg" src="assets/pipeline.mp4" muted playsinline preload="auto"
+    aria-label="Jeden zdroj pravdy: dáta tečú z registra cez dizajn tokeny svetelnými káblami do modelu, obrazovky, tabletu aj webu"></video></div>
+  <div class="pipeVeil"></div>
   <div class="deck">
     <span class="ghost">09</span><div class="head"><span>09 · Prečo sa to nerozpadne</span><b>Výstava, ktorá ostane nástrojom</b></div>
     <div class="grid grid4" id="gridSkal">
@@ -728,8 +771,6 @@ body.lightmode .dots i.on{background:#C77800}
     </div>
     <!-- PIPELINE: dôkaz kariet „1 zdroj pravdy" a „AUTO" — dáta tečú z registra svetelnými káblami do výstupov -->
     <div class="pipe">
-      <video id="pipeVid" src="assets/pipeline.mp4" autoplay muted loop playsinline preload="metadata"
-        aria-label="Jeden zdroj pravdy: dáta tečú z registra cez dizajn tokeny svetelnými káblami do modelu, obrazovky, tabletu aj webu"></video>
       <span class="pipecap">register mib → dizajn tokeny → model · obrazovka · tablet · web — jedna zmena v registri prebehne celou expozíciou sama</span>
     </div>
     <div class="src" style="text-align:center;letter-spacing:.14em;color:#75788C;margin-top:12px;display:block">audit · 65 kontrol · tokeny · mapovanie polí · kontrola vrstiev</div>
@@ -794,9 +835,9 @@ body.lightmode .dots i.on{background:#C77800}
    spí (indigo·pulz) → drieme (teal) → prebúdza sa (amber) → žije (teplá biela)
    ============================================================ */
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
-/* reduced-motion: pipeline video zastaviť na peknej snímke namiesto slučky */
-if(REDUCED){const pv=document.getElementById('pipeVid');
-  if(pv){pv.autoplay=false;pv.addEventListener('loadeddata',()=>{pv.currentTime=4;pv.pause();},{once:true});}}
+/* pipeline = zmrazený render: video stojí na frame 0 (celá scéna), kameru robí CSS pipeCam */
+{const pv=document.getElementById('pipeVid');
+  if(pv){pv.addEventListener('loadeddata',()=>{try{pv.currentTime=0;pv.pause();}catch(e){}},{once:true});}}
 const _idc={};const byId=s=>_idc[s]||(_idc[s]=document['getElementById'](s));   /* DOM cache — chores beží 60×/s */
 const QS=new URL(location).searchParams;
 const LITE=QS.has('lite');                         /* fail-safe prezentácia: ?lite=1 vypne GL, zrno, častice */
@@ -901,6 +942,10 @@ const VINFO=[
   `STAVY · ${VCNT.awake} so zámerom svieti, ${N-VCNT.awake} spí — jas číta register`,
   `RIZIKO · ${VCNT.sez} envirozáťaží — šrafy sú vzor, nie farba`,
   `TYPOLÓGIA · ikony a menovky, ${VCNT.big} obrov ≥ 8 ha`];
+/* wave HUD hovorí pravdu kroku: počty z registra, nie hardcode */
+byId('litLbl').textContent=` / ${VCNT.awake} sa prebúdza`;
+byId('hs1').innerHTML=`<i></i>SPÍ · ${N-VCNT.awake}`;
+byId('hs3').innerHTML=`<i></i>PREBÚDZA SA · ${VCNT.awake}`;
 /* hit-test: alfa kanály vrstiev vo zmenšených canvasoch */
 const VA_W=240,VA_H=161;
 const valpha=vlays.map(()=>null);
@@ -1024,6 +1069,11 @@ function goStep(i,manual=true){
   chase=.075/(s.slow||1);
   arrivedFor=-1;
   FL=REDUCED?0:1;                                 /* projektorový pulz zospodu */
+  /* prechod NA krok s filmom = film od nuly už POČAS príchodu (nie snap po dojazde) */
+  if(s.n&&(s.n.includes('film')||s.n.startsWith('TU-BA'))){
+    const cv=byId('chapvid');
+    if(cv){try{cv.currentTime=0;}catch(e){}}
+  }
   stepHud();
 }
 /* footer HUD: bodky + počítadlo krokov (vľavo dole) */
@@ -1039,6 +1089,13 @@ const AUTO=+(QS.get('auto')||0);
 const JZP=QS.get('jz');   /* debug: zmraz push vlna→legenda na hodnote */
 function onArrive(){
   const s=STEPS[STEP];
+  /* skál slide: zmrazený frame 0 + CSS kamera vždy od lampy vľavo pri KAŽDOM vstupe (z 10 aj z 12); mimo slidu sa vráti na štart */
+  {const pv=byId('pipeVid'),ov=byId('ovlSkal');
+   if(pv){try{pv.currentTime=0;pv.pause();}catch(e){}}
+   if(ov){
+     ov.classList.remove('go');
+     if(s.n&&s.n.toLowerCase().includes('kálovate')){void ov.offsetWidth;ov.classList.add('go');}   /* kamera + spotlight kariet vždy od začiatku */
+   }}
   if(s.autoHalf&&!REDUCED){
     /* dvojfázový odchod: po náhľade PRÍLIV zdola do polovice (mäkký), nádych, potom vytlačí celé.
        Akýkoľvek manuálny vstup sekvenciu zruší (goStep manual čistí autoT). */
@@ -1317,7 +1374,7 @@ function draw(t){
   let lit=0;
   for(const pl of POLY){
     const s=polyState(pl);
-    if(s>.05)lit++;   /* „svieti" = svetlo dorazilo (odhalené v stave), nie nutne biele */
+    if(pl.p.plan===1&&s>.4)lit++;   /* register-first: rátame len tie, čo sa NAOZAJ prebúdzajú (zámer v registri) */
     /* glow pod prebudenými */
     if(s>.4){
       const g=clamp((s-.4)/.6);
@@ -1529,8 +1586,8 @@ function chores(t){
   const wv=aP('predstav');
   ovlWave.style.opacity=Math.sin(clamp(wv)*Math.PI).toFixed(3);
   byId('litN').textContent=window.__lit||0;
-  const stg=wv*4;
-  [['hs1',0],['hs2',1],['hs3',2],['hs4',3]].forEach(([id,i])=>{
+  const stg=wv*2.2;
+  [['hs1',0],['hs3',1]].forEach(([id,i])=>{
     byId(id).classList.toggle('on',stg>i*.9);
   });
   byId('waveNote').textContent=

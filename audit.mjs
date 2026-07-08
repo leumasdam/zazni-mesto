@@ -89,7 +89,10 @@ ok('rampa stavov spí→drieme→prebúdza→žije',PRE.includes('[[59,66,133],[
 ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-a.cx'));
 ok('reduced-motion = okamžitý krok bez animovaného dojazdu',PRE.includes('prefers-reduced-motion')&&PRE.includes('if(REDUCED)Ps=target')&&PRE.includes('let Ps=0;'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
-ok('počítadlo rozsvietených',PRE.includes('litN')&&PRE.includes('/ 113 svieti'));
+ok('počítadlo vlny = register-first: ráta len prebúdzajúce sa + HUD má len 2 stavy vlny s počtami z dát',
+  PRE.includes('litN')&&PRE.includes('sa prebúdza')&&PRE.includes('pl.p.plan===1&&s>.4')
+  &&!PRE.includes('/ 113 svieti')&&!PRE.includes('id="hs2"')&&!PRE.includes('id="hs4"')
+  &&src('gl-src/city.js').includes('it.plan===1&&front>.5'));
 ok('rendre zapracované (vrstvy·finále hrad; TU-BA render žije v DM, slide rolí je textový nad priesvitným panelom) + obor = 3 SVG pózy',
   ['vrstvy-l0.png','hrad-okno.png'].every(s=>PRE.includes(s))&&!PRE.includes('tuba-priestor.png')
   &&src('index.html').includes('tuba-priestor.png')&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
@@ -134,9 +137,10 @@ ok('pochop = vlastníctvo číta územie samo: obrys + šrafa súkromných (\\, 
 ok('výkon+a11y: DOM cache, particle gate (reduced-motion + light), väčšie dot targety, bez mŕtveho panelL',
   PRE.includes('const byId')&&PRE.includes('window.__light')&&PRE.includes('animation-duration:.001s')
   &&PRE.includes('background-clip:content-box')&&!PRE.includes('id="panelL"'));
-ok('skal = pipeline video 1 zdroj pravdy (splýva s pozadím cez mask, autoplay muted loop, reduced-motion pauza na snímke)',
+ok('skal = CSS kamerová túra nad zmrazeným pipeline renderom (celok → lampa → server → kryštál → zariadenia, reštart pri vstupe, reduced bez pohybu)',
   PRE.includes('pipeline.mp4')&&PRE.includes('mask-image:radial-gradient')&&PRE.includes('pipecap')
-  &&PRE.includes('pipeVid')&&PRE.includes('pv.currentTime=4;pv.pause()')&&!PRE.includes('animateMotion'));
+  &&PRE.includes('pipeVid')&&PRE.includes('pipeCam')&&PRE.includes('pv.currentTime=0;pv.pause()')
+  &&PRE.includes('scale(1.85)')&&!PRE.includes('animateMotion'));
 ok('počet kontrol v UI = skutočný počet auditu',(()=>{
   const m=PRE.match(/audit · (\d+) kontrol/);
   return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */

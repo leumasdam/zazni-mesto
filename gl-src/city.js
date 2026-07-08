@@ -179,7 +179,7 @@ function init(canvas,data){
          NIE všetko na bielu — zrkadlí polyState() v hlavnom súbore */
       const fr0=clamp((st.wave*1.55-it.t)*2.4),front=fr0*fr0*fr0*(fr0*(fr0*6-15)+10);
       const s=(it.plan===1?.72:.08)*front;
-      if(front>.5)lit++;                           /* „svieti" = svetlo dorazilo (odhalené) */
+      if(it.plan===1&&front>.5)lit++;              /* register-first: rátame len prebúdzajúce sa (zámer) — zrkadlí 2D */
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.00157+it.phase)):1;   /* pulse.slow — 4000 ms */
       const flick=(s>.2&&s<.55)?FLK[Math.floor((((st.t+it.phase*875)%5500)/5500)*8)]:1;
