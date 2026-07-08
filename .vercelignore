@@ -1,0 +1,12 @@
+# Vercel CLI nerešpektuje .gitignore — zrkadli tu všetko súkromné!
+
+# súkromný ťahák na pohovor
+SCENAR.md
+
+# projektový brain (pamäť + obhajoba)
+brain/
+
+# dev
+node_modules/
+gl-src/node_modules/
+.vercel
