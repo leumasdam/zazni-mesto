@@ -707,28 +707,37 @@ body.lightmode .dots i.on{background:#C77800}
     </div>
     <div class="oborpose">
       <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="48" cy="52" r="40" fill="rgba(245,158,11,.08)"/>
+        <defs>
+          <radialGradient id="glowAmber" cx="48" cy="54" r="42" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#F59E0B" stop-opacity=".55"/>
+            <stop offset=".45" stop-color="#F59E0B" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#F59E0B" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="48" cy="54" r="42" fill="url(#glowAmber)"/>
         <g stroke="#FFB94A" stroke-width="3">
           <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
         </g>
         <circle cx="37.5" cy="60" r="3.4" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.4" fill="#FFF6E3"/>
         <path d="M40 70q6 5 12 0" stroke="#FFF6E3" stroke-width="2.8"/>
-        <path d="M12 40l-6-4M84 40l6-4M48 8V2M22 16l-4-5M74 16l4-5" stroke="#FFB94A" stroke-width="2.4" opacity=".8"/>
       </svg>
       <b style="color:#FFB94A">PREBÚDZA SA</b><span>zámer v registri</span>
     </div>
     <div class="oborpose">
       <svg viewBox="0 0 96 96" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="48" cy="52" r="40" fill="rgba(255,233,184,.10)"/>
+        <defs>
+          <radialGradient id="glowWarm" cx="48" cy="54" r="46" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#FFE9B8" stop-opacity=".7"/>
+            <stop offset=".5" stop-color="#FFE9B8" stop-opacity=".2"/>
+            <stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="48" cy="54" r="46" fill="url(#glowWarm)"/>
         <g stroke="#FFE9B8" stroke-width="3">
           <path d="M18 78V46l14-10v10l14-10v10l14-10v42z"/><path d="M24 36V22h8v8"/>
         </g>
         <circle cx="37.5" cy="60" r="3.4" fill="#FFF6E3"/><circle cx="53.5" cy="60" r="3.4" fill="#FFF6E3"/>
         <path d="M39 69q7 6 14 0" stroke="#FFF6E3" stroke-width="2.8"/>
-        <g stroke="#FFE9B8" stroke-width="2.2" opacity=".75">
-          <path d="M6 78V66l6-5 6 5v12"/><path d="M78 78V68l5-4 5 4v10"/>
-        </g>
-        <path d="M28 52h6M42 46h6" stroke="#FFF6E3" stroke-width="2.4" opacity=".9"/>
       </svg>
       <b style="color:#FFE9B8">ŽIJE</b><span>vrátilo sa do mesta · mimo registra</span>
     </div>
