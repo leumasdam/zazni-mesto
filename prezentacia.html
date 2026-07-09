@@ -569,8 +569,8 @@ body.lightmode .dots i.on{background:#C77800}
         <span class="f"><i class="num" data-n="113">0</i> spiacich území</span>
         <span class="f"><i class="num" data-n="580">0<small> ha</small></i> nevyužitého potenciálu</span>
         <span class="f">≈ <i class="num" data-n="800">0</i> futbalových ihrísk</span>
-        <p class="trend">Nie sú to prázdne miesta na mape. Každé má svoju históriu, vlastníkov, limity aj možnú budúcnosť.</p>
-        <p class="trend">Od roku 2019 z registra ubudlo 39 území — 26 z nich sa naozaj prebudilo a vrátilo do života mesta. Pribudlo však aj 22 nových. Mesto sa mení, len pomaly; táto mapa ukazuje, kde sa dá začať.</p>
+        <span class="f">od 2019: <i class="num" data-n="26">0</i> prebudených</span>
+        <span class="f"><i class="num" data-n="22">0</i> nových pribudlo</span>
         <span class="src">register BF · MIB · aktualizácia 2022 · súčet 579,4 ha · prepočet 0,72 ha / ihrisko</span>
       </div>
     </div>
@@ -609,10 +609,12 @@ body.lightmode .dots i.on{background:#C77800}
   <div class="note" id="waveNote">04 · Predstav si — svetlo ide mestom od východu</div>
   <div class="wavehud">
     <div class="cnt"><span id="litN">0</span><small id="litLbl"> / 66 sa prebúdza</small></div>
-    <!-- vlna má LEN 2 stavy (register-first: zámer áno/nie) — plné 4 stavy vysvetľuje Legenda -->
+    <!-- 4 stavy z registra: SPÍ (S_VYUZITIE prázdne) · DRIEME (dočasné využitie) · PREBÚDZA SA (ZAMER) · ŽIJE (vyradené 2019+) -->
     <div class="states">
       <span class="st st1" id="hs1"><i></i>SPÍ</span>
+      <span class="st st2" id="hs2"><i></i>DRIEME</span>
       <span class="st st3" id="hs3"><i></i>PREBÚDZA SA</span>
+      <span class="st st4" id="hs4"><i></i>ŽIJE</span>
     </div>
   </div>
 </div>
@@ -626,14 +628,14 @@ body.lightmode .dots i.on{background:#C77800}
         <div class="card lexrow">
           <div class="lexdemo"><div class="parcel p-sleep"></div></div>
           <div class="lexname">SPÍ</div>
-          <div class="lexdesc"><p><b style="color:#101426">Nevyužité územie bez známeho zámeru.</b> Indigo a pomalý pulz. Miesto ešte čaká na prvý impulz.</p><span class="src">pole ZAMER prázdne · pulz 4 s</span></div>
-          <div class="lexnum"><i class="num" data-n="47">0</i><small>území spí</small></div>
+          <div class="lexdesc"><p><b style="color:#101426">Nevyužité územie bez známeho zámeru.</b> Indigo a pomalý pulz. Miesto ešte čaká na prvý impulz.</p><span class="src">S_VYUZITIE prázdne · pulz 4 s</span></div>
+          <div class="lexnum"><i class="num" data-n="34">0</i><small>území spí</small></div>
         </div>
         <div class="card lexrow">
           <div class="lexdemo"><div class="parcel p-temp"></div></div>
           <div class="lexname">DRIEME</div>
-          <div class="lexdesc"><p><b style="color:#101426">Miesto s dočasným životom.</b> Kultúra, sklady, služby alebo komunita. Svetlo sa občas mihne.</p><span class="src">P_VYUZITIE · flicker 5,5 s</span></div>
-          <div class="lexnum"><i>~</i><small>medzistupeň jasu</small></div>
+          <div class="lexdesc"><p><b style="color:#101426">Miesto s dočasným životom.</b> Sklady, parkoviská, zberný dvor, čiastočné využitie. Svetlo sa občas mihne.</p><span class="src">S_VYUZITIE · flicker 5,5 s</span></div>
+          <div class="lexnum"><i class="num" data-n="13">0</i><small>drieme</small></div>
         </div>
         <div class="card lexrow">
           <div class="lexdemo"><div class="parcel p-awake"></div></div>
@@ -644,8 +646,8 @@ body.lightmode .dots i.on{background:#C77800}
         <div class="card lexrow">
           <div class="lexdemo"><div class="parcel p-alive"></div></div>
           <div class="lexname">ŽIJE</div>
-          <div class="lexdesc"><p><b style="color:#101426">Územie, ktoré sa vrátilo do mesta.</b> Už nie je v registri brownfieldov. Svieti stabilne a splýva s okolím.</p><span class="src">vyradené od 2019 · warm</span></div>
-          <div class="lexnum"><i class="num" data-n="26">0</i><small>už mimo 113</small></div>
+          <div class="lexdesc"><p><b style="color:#101426">Územie, ktoré sa vrátilo do mesta.</b> Už nie je v registri brownfieldov. Svieti stabilne a splýva s okolím.</p><span class="src">vyradené z registra od 2019 · warm</span></div>
+          <div class="lexnum"><i class="num" data-n="26">0</i><small>vrátené</small></div>
         </div>
       </div>
       <div class="card chanband">
@@ -931,6 +933,13 @@ const POLY=F.map((f,i)=>{
 POLY.sort((a,b)=>b.cx-a.cx);                     /* východ → západ */
 POLY.forEach((pl,i)=>{pl.t=i/(N-1)*.82+((i*7)%10)/10*.12;});   /* prah prebudenia + jemný jitter */
 
+/* ŽIJE — 26 vyradených z registra od 2019: bez polygónu, len teplo-biele body
+   podľa reálnych centroidov z ArcGIS (BF_komplet). Svietia až po prevalení vlny. */
+const ZIJE=(BFGEO.zije||[]).map((z,i)=>{
+  const [x,y]=W2(z.lon,z.lat);
+  return {x,y,n:z.n||'',mc:z.mc||'',phase:(i*1.618)%(Math.PI*2),t:.85+((i*11)%10)/10*.14};
+});
+
 /* mestské svetlá (kontext) */
 const DOTS=[];{
   let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
@@ -989,17 +998,22 @@ const vstage=byId('vstage'),vwrap=byId('vwrap'),
 const vlays=[...document.querySelectorAll('.vlay')];
 const VST={foc:-1,fk:[0,0,0,0],tipO:0,tipT:0};
 const VCNT={awake:POLY.filter(pl=>pl.p.plan===1).length,
+            drieme:POLY.filter(pl=>pl.p.plan!==1&&pl.p.use===1).length,
+            sleep:POLY.filter(pl=>pl.p.plan!==1&&pl.p.use!==1).length,
+            zije:(BFGEO.zije||[]).length,
             sez:POLY.filter(pl=>pl.p.sez===1).length,
             big:POLY.filter(pl=>pl.big).length};
 const VINFO=[
   'fyzický model — projekčné plátno expozície',
-  `STAVY · ${VCNT.awake} so zámerom svieti, ${N-VCNT.awake} spí — jas číta register`,
+  `STAVY · ${VCNT.awake} so zámerom, ${VCNT.drieme} drieme, ${VCNT.sleep} spí — jas číta register`,
   `RIZIKO · ${VCNT.sez} envirozáťaží — šrafy sú vzor, nie farba`,
   `TYPOLÓGIA · ikony a menovky, ${VCNT.big} obrov ≥ 8 ha`];
 /* wave HUD hovorí pravdu kroku: počty z registra, nie hardcode */
 byId('litLbl').textContent=` / ${VCNT.awake} sa prebúdza`;
-byId('hs1').innerHTML=`<i></i>SPÍ · ${N-VCNT.awake}`;
+byId('hs1').innerHTML=`<i></i>SPÍ · ${VCNT.sleep}`;
+byId('hs2').innerHTML=`<i></i>DRIEME · ${VCNT.drieme}`;
 byId('hs3').innerHTML=`<i></i>PREBÚDZA SA · ${VCNT.awake}`;
+byId('hs4').innerHTML=`<i></i>ŽIJE · ${VCNT.zije}`;
 /* hit-test: alfa kanály vrstiev vo zmenšených canvasoch */
 const VA_W=240,VA_H=161;
 const valpha=vlays.map(()=>null);
@@ -1072,7 +1086,7 @@ if(!LITE&&!QS.get('nogl')&&window.ZazniGL){
     glcv=document.createElement('canvas');glcv.id='glcity';
     document.body.insertBefore(glcv,cv);
     GL=ZazniGL.init(glcv,{
-      polys:POLY.map(pl=>({pts:pl.rings[0],t:pl.t,phase:pl.phase,big:pl.big,own:pl.p.own,ha:pl.p.ha,plan:pl.p.plan,wy:pl.p.wy,cx:pl.cx,cy:pl.cy})),
+      polys:POLY.map(pl=>({pts:pl.rings[0],t:pl.t,phase:pl.phase,big:pl.big,own:pl.p.own,ha:pl.p.ha,plan:pl.p.plan,use:pl.p.use,wy:pl.p.wy,cx:pl.cx,cy:pl.cy})),
       boundary:boundaryW,dots:DOTS,W:WORLD_W,H:WORLD_H,ramp:RAMP,
       danube:(typeof DANUBE!=='undefined'?DANUBE.map(sg=>sg.map(([lo,la])=>W2(lo,la))):[])
     });
@@ -1168,8 +1182,8 @@ function onArrive(){
 /* stav polygónu: svetlo sa prevalí od východu (front) a parcela SADNE NA SVOJ REÁLNY STAV
    z registra — NIE všetko na bielu. Zámer (plan=1) sa graduje ČASOM z wy (rok prebudenia):
    skoré zámery (≤2027) svitajú takmer dobiela, stredné amber, vzdialené (≥2032) ešte tealovo driemu.
-   Bez zámeru = indigo „spí". Register-first ostáva: 66/47, farba len pridáva časovú os. */
-const ST_TARGET=pl=>pl.plan!==1?.08:(pl.wy<=2027?.93:pl.wy>=2032?.38:.72);
+   Bez zámeru + reálne dočasné využitie (use=1) = teal „drieme". Bez zámeru = indigo „spí". */
+const ST_TARGET=pl=>pl.plan!==1?(pl.use===1?.34:.08):(pl.wy<=2027?.93:pl.wy>=2032?.38:.72);
 function polyState(pl){
   const front=ss(clamp((aP('predstav')*1.55-pl.t)*2.4));   /* svetlo dorazí východ→západ */
   return ST_TARGET(pl.p)*front;
@@ -1396,6 +1410,27 @@ function draw(t){
       glLbl.push({txt:pl.p.n.toUpperCase(),x:q.x,y:q.y+S*.55+6,la,ha:pl.p.ha});
     }
     oborLabels(glLbl);
+    /* ŽIJE — 26 vrátených bodov na 2D overlay (v screen px) */
+    if(ZIJE.length){
+      const wvA=ss(clamp((wave*1.55-.85)*2.4));
+      const glob=Math.max(wvA, aP('jazyk')*.7, aP('obor')*.6, aP('vrstvy')*.5);
+      if(glob>.03){
+        for(let i=0;i<ZIJE.length;i++){
+          const z=ZIJE[i];
+          const q=GL.project(z.x,z.y);
+          if(!q.vis)continue;
+          const tw=.82+.18*Math.sin(t*.0011+z.phase);
+          const R=6;
+          cx.globalAlpha=glob*.55*tw;
+          cx.drawImage(GLOW,q.x-R*2,q.y-R*2,R*4,R*4);
+          cx.beginPath();cx.arc(q.x,q.y,1.6,0,6.283);
+          cx.fillStyle='rgba(255,246,227,.98)';
+          cx.globalAlpha=glob*tw;
+          cx.fill();
+        }
+        cx.globalAlpha=1;
+      }
+    }
     chanOverlay((x,y)=>GL.project(x,y),{pres:pres02,tt:tt02,risk:riskK,own:ownK,t});
     return lit;
   }
@@ -1468,6 +1503,27 @@ function draw(t){
       cx.lineWidth=(pl.big?1.6:1)*px;cx.stroke();
     }
     cx.globalAlpha=1;
+  }
+
+  /* ŽIJE — 26 vyradených od 2019: teplo-biele body bez polygónu, svietia stabilne,
+     rozsvecujú sa po prechode vlny (t > 0.85). Splývajú s mestom — o kúsok jasnejšie než kontext. */
+  if(ZIJE.length){
+    const wvA=ss(clamp((aP('predstav')*1.55-.85)*2.4));
+    const glob=Math.max(wvA, aP('jazyk')*.7, aP('obor')*.6, aP('vrstvy')*.5);
+    if(glob>.03){
+      for(let i=0;i<ZIJE.length;i++){
+        const z=ZIJE[i];
+        const tw=.82+.18*Math.sin(t*.0011+z.phase);
+        const r=.008;
+        cx.globalAlpha=glob*.75*tw;
+        cx.drawImage(GLOW,z.x-r,z.y-r,r*2,r*2);
+        cx.beginPath();cx.arc(z.x,z.y,.0022,0,6.283);
+        cx.fillStyle='rgba(255,246,227,.95)';
+        cx.globalAlpha=glob*tw;
+        cx.fill();
+      }
+      cx.globalAlpha=1;
+    }
   }
 
   /* menovky + OBORI veľkých (≥ 8 ha) — plná budova s tvárou, prebúdza sa ako ju zasiahne svetlo (jazyk manuálu) */
@@ -1643,13 +1699,15 @@ function chores(t){
   ovlWave.style.opacity=Math.sin(clamp(wv)*Math.PI).toFixed(3);
   byId('litN').textContent=window.__lit||0;
   const stg=wv*2.2;
-  [['hs1',0],['hs3',1]].forEach(([id,i])=>{
-    byId(id).classList.toggle('on',stg>i*.9);
+  /* 4 stavy sa rozsvecujú postupne s vlnou */
+  [['hs1',0],['hs2',.5],['hs3',1],['hs4',1.6]].forEach(([id,thr])=>{
+    byId(id).classList.toggle('on',stg>thr*.6);
   });
   byId('waveNote').textContent=
-    wv<.33?'04 · Predstav si — svetlo ide mestom od východu'
-    :wv<.66?'register first: 66 so zámerom sa prebúdza (amber)'
-    :'66 so zámerom — odtieň = čas: skoré svitajú dobiela · vzdialené ešte driemu (teal) · 47 spí (indigo)';
+    wv<.28?'04 · Predstav si — svetlo ide mestom od východu'
+    :wv<.55?`${VCNT.awake} so zámerom sa prebúdza (amber) · ${VCNT.drieme} drieme (teal)`
+    :wv<.8?`${VCNT.sleep} spí (indigo) · odtieň amber = čas do prebudenia`
+    :`${VCNT.zije} vrátených žije — teplá biela splýva s mestom`;
 
   /* ============ JEDNOTNÝ PUSH SYSTÉM ============
      Každý slide VYTLÁČA predchádzajúci v kontakte hrán (Framer push).

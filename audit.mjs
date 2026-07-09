@@ -93,13 +93,14 @@ ok('rampa stavov spí→drieme→prebúdza→žije',PRE.includes('[[59,66,133],[
 ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-a.cx'));
 ok('reduced-motion = okamžitý krok bez animovaného dojazdu',PRE.includes('prefers-reduced-motion')&&PRE.includes('if(REDUCED)Ps=target')&&PRE.includes('let Ps=0;'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
-ok('počítadlo vlny = register-first: ráta len prebúdzajúce sa + HUD má len 2 stavy vlny s počtami z dát',
+ok('počítadlo vlny = register-first: ráta len prebúdzajúce sa + HUD má 4 stavy (SPÍ · DRIEME · PREBÚDZA SA · ŽIJE) s reálnymi počtami',
   PRE.includes('litN')&&PRE.includes('sa prebúdza')&&PRE.includes('pl.p.plan===1&&frontW>.5')
-  &&!PRE.includes('/ 113 svieti')&&!PRE.includes('id="hs2"')&&!PRE.includes('id="hs4"')
+  &&PRE.includes('id="hs1"')&&PRE.includes('id="hs2"')&&PRE.includes('id="hs3"')&&PRE.includes('id="hs4"')
+  &&PRE.includes('VCNT.drieme')&&PRE.includes('VCNT.zije')
   &&src('gl-src/city.js').includes('it.plan===1&&front>.5'));
-ok('vlna: časová gradácia stavu z wy (≤2027 svitá · stred amber · ≥2032 drieme) zrkadlená v 2D aj GL + HUD ju pomenúva',
+ok('vlna: časová gradácia stavu z wy (≤2027 svitá · stred amber · ≥2032 drieme) zrkadlená v 2D aj GL',
   PRE.includes('pl.wy<=2027?.93:pl.wy>=2032?.38:.72')&&src('gl-src/city.js').includes('it.wy<=2027?.93:it.wy>=2032?.38:.72')
-  &&src('vendor/zazni-gl.js').includes('2027')&&PRE.includes('odtieň = čas'));
+  &&src('vendor/zazni-gl.js').includes('2027'));
 ok('rendre zapracované (vrstvy·finále hrad; DM bez otočky a TU-BA renderov — čistý pre zadávateľa) + obor rad',
   ['vrstvy-l0.png','hrad-okno.png'].every(s=>PRE.includes(s))&&!PRE.includes('tuba-priestor.png')
   &&!src('index.html').includes('tuba-priestor.png')&&!src('index.html').includes('jadro obhajoby')&&PRE.includes('oborrow')&&!PRE.includes('obri-clay.png'));
@@ -114,16 +115,17 @@ const GLSRC=src('gl-src/city.js');
 ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
   PRE.includes('.00157')&&PRE.includes('%5500')&&PRE.includes('cubic-bezier(.34,1.56,.64,1)')&&PRE.includes('pulseSleep 4s')
   &&GLSRC.includes('.00157')&&GLSRC.includes('%5500')&&OBR.includes('performance.now()/640'));
-ok('vlna sadne na REÁLNY stav registra (gradovaný časom wy), NIE všetko biele — zrkadlené v GL',
-  PRE.includes('ST_TARGET')&&PRE.includes('pl.plan!==1?.08:')&&!PRE.includes('vízia rozsvieti aj 47')
-  &&GLSRC.includes('it.plan!==1?.08:'));
+ok('vlna sadne na REÁLNY stav registra (bez zámeru = indigo/teal podľa use, so zámerom = gradovaný časom wy) — zrkadlené v GL',
+  PRE.includes('ST_TARGET')&&PRE.includes('pl.plan!==1?(pl.use===1?.34:.08)')&&!PRE.includes('vízia rozsvieti aj 47')
+  &&GLSRC.includes('it.plan!==1?(it.use===1?.34:.08)'));
 ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
   const IDX=src('index.html');
   return big.length===13&&!PRE.includes('16 BF')&&!PRE.includes('Šestnásť')&&PRE.includes('13 obrov ≥ 8 ha')
     &&!IDX.includes('16 významných')&&!IDX.includes('významný BF (16)');
 })());
-ok('131→113 aritmetika PODĽA KONCEPCIE 2026: 39 vyradených (26 z nich = kat. A, vrátili sa na trh = ŽIJE) + 22 nových + ŽIJE mimo 113',
-  PRE.includes('ubudlo 39 území — 26 z nich sa naozaj prebudilo')&&PRE.includes('aj 22 nových')&&PRE.includes('mimo 113')
+ok('131→113 aritmetika PODĽA KONCEPCIE 2026: 26 prebudených od 2019 (ŽIJE, mimo 113) + 22 nových pribudlo + 13 aktuálne DRIEME (S_VYUZITIE)',
+  PRE.includes('26">0</i> prebudených')&&PRE.includes('22">0</i> nových pribudlo')
+  &&PRE.includes('13">0</i><small>drieme</small>')&&PRE.includes('26">0</i><small>vrátené</small>')
   &&!PRE.includes('8 nových pribudlo'));
 ok('hero = projektorové pódium: mapa odsunutá nižšie, 2 pohyblivé lúče zhora, dáta na dopade',
   PRE.includes('heroDrop')&&PRE.includes('heroFx')&&PRE.includes('hbeam')&&PRE.includes('hchip')
