@@ -292,9 +292,9 @@ footer{padding:var(--sp-6) 0;border-top:1px solid var(--night-700);color:var(--t
 footer a{color:var(--indigo-300)}
 
 /* ---------- hĺbkový parallax: svetlá mesta · polygóny registra · svetelné orby ---------- */
-html{background:var(--night-900);scroll-snap-type:y proximity}
+html{background:var(--night-900)}
 body{background:transparent}
-section,header.hero,footer{scroll-snap-align:start}
+
 #bgfx{
   position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
   background:
@@ -313,147 +313,88 @@ section,header.hero,footer{scroll-snap-align:start}
   filter:blur(2px);
 }
 #bgVeil{top:0;height:100%;background:radial-gradient(ellipse 100% 80% at 50% 30%, rgba(11,14,26,.22), rgba(11,14,26,.58))}
-@media (prefers-reduced-motion:reduce){html{scroll-snap-type:none}}
+
 
 /* nav */
 nav{
   position:sticky;top:0;z-index:50;background:rgba(11,14,26,.85);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--night-700);
 }
-nav .wrap{display:flex;gap:var(--sp-2);align-items:center;padding-top:14px;padding-bottom:14px;overflow-x:auto}
+nav .wrap{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:center;padding-top:12px;padding-bottom:12px}
 nav .logo{font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.04em;white-space:nowrap}
 nav .logo em{font-style:normal;color:var(--amber-300)}
 nav a{color:var(--text-mid);text-decoration:none;font-size:13px;font-family:var(--font-mono);white-space:nowrap}
 nav a:hover{color:var(--warm-100)}
 
 /* ============================================================
-   MIB THEME — urban identita: biely papier, štvorcový grid,
-   indigo + koral, všetko hranaté. Tmavé demá = exponáty.
+   FILMOVÁ VRSTVA — jeden jazyk s prezentáciou:
+   nočné mesto + svetlo, obria typografia, ghost numerály, zrno.
    ============================================================ */
-:root{
-  --mib:#332F9E;
-  --mib-ink:#17172B;
-  --mib-sub:#4E4E66;
-  --mib-low:#8B8B9F;
-  --coral:#E8574A;
-  --paper:#FFFFFF;
+/* blueprint polygóny registra na pozadí — tlmené indigo linky v noci */
+#bgMid path{fill:none;stroke:var(--indigo-500);stroke-width:1.2;opacity:.2}
+
+/* filmové zrno nad všetkým */
+#grain{position:fixed;inset:-120%;z-index:70;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainMove 9s steps(9) infinite}
+@keyframes grainMove{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-5%,-2%)}80%{transform:translate(4%,4%)}100%{transform:translate(0,0)}}
+@media(prefers-reduced-motion:reduce){#grain{animation:none}}
+
+/* brand bar — TU ——— ZAŽNI MESTO ——— BA, rovnaký rám ako prezentácia */
+.brandbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:20px;
+  padding:16px clamp(20px,3vw,44px) 10px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,7,15,.88) 30%,rgba(5,7,15,0))}
+.brandbar::before{content:'';position:fixed;top:0;left:0;right:0;height:3px;background:var(--amber-500)}
+.brandbar b{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,2.8vw,42px);color:var(--text-hi)}
+.brandbar i{flex:1;height:1.5px;background:rgba(244,242,255,.26)}
+.brandbar span{font-family:var(--font-mono);font-size:11px;letter-spacing:.3em;color:var(--text-hi);white-space:nowrap}
+.brandbar span em{font-style:normal;color:var(--amber-300)}
+
+nav{top:72px;margin-top:76px;background:rgba(5,7,15,.7);border-bottom:1px solid rgba(255,255,255,.07)}
+
+/* sekcie — veľkorysý rytmus + obrí ghost numerál ako v prezentácii */
+body{counter-reset:sec}
+section{counter-increment:sec;position:relative;padding:calc(var(--sp-10) + 28px) 0;border-top:0;overflow:clip}
+section::before{
+  content:counter(sec,decimal-leading-zero);
+  position:absolute;top:0;right:-.5vw;z-index:0;pointer-events:none;
+  font-family:var(--font-display);font-weight:700;line-height:.8;
+  font-size:clamp(180px,23vw,360px);color:transparent;
+  -webkit-text-stroke:1.5px rgba(139,145,221,.16);
 }
-html{background:var(--paper)}
-body{color:var(--mib-ink)}
-#bgfx{background:var(--paper)}
-#bgFar{background-image:
-  linear-gradient(rgba(232,87,74,.16) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(232,87,74,.16) 1px,transparent 1px);
-  background-size:26px 26px}
-#bgNear{background-image:
-  linear-gradient(rgba(51,47,158,.10) 1.5px,transparent 1.5px),
-  linear-gradient(90deg,rgba(51,47,158,.10) 1.5px,transparent 1.5px);
-  background-size:156px 156px;filter:none}
-#bgMid path{fill:none!important;stroke:#332F9E;stroke-width:1.4;opacity:.28;animation:none!important}
-#bgVeil{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15) 30%,rgba(255,255,255,.6))}
+section>.wrap{position:relative;z-index:1}
+h2{font-size:clamp(34px,4.6vw,64px);letter-spacing:-.015em;color:var(--text-hi);max-width:22ch}
+h3{color:var(--warm-300)}
+.kicker{font-size:12px}
 
-/* HRANATÉ */
-.card,.tag,.chip,.stage,.loc-card,.icon-cell,.obor,.copy-btn,pre,.ramp,.ramp div,
-.state-demo,.parcel,.channel .swatchbox,.legend .sw,.imgcard,.fig{border-radius:0!important}
+/* glass karty — rovnaká hmota ako karty prezentácie */
+.card,.icon-cell,.obor,.loc-card{
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);
+  backdrop-filter:blur(14px) saturate(120%);
+  box-shadow:0 16px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05)}
+.stage,pre{background:rgba(3,5,12,.72);border:1px solid rgba(255,255,255,.08)}
+.state-demo{background:rgba(3,5,12,.6)}
 
-/* chrome */
-nav{background:rgba(255,255,255,.94);border-bottom:2px solid var(--mib)}
-nav a{color:var(--mib-sub)}
-nav a:hover{color:var(--mib)}
-nav .logo{color:var(--mib-ink)}
-nav .logo em{color:var(--coral)}
-h2{color:var(--mib)}
-h3,h4{color:var(--mib-ink)}
-.kicker{color:var(--coral)}
-p.lead{color:var(--mib-sub)}
-p.lead strong,p.lead b{color:var(--mib-ink)!important}
-section{border-top:1px solid rgba(51,47,158,.18)}
-body>section .mono,section>.wrap>p.mono{color:var(--mib-low)}
-.tag{border:1.5px solid var(--mib);color:var(--mib);font-weight:500}
-.tag a{color:var(--coral)!important}
+/* hero — obrí titul fill + outline pod projektorovým svetlom */
+header.hero{min-height:96vh}
+.hero h1{font-size:clamp(72px,14.5vw,220px);line-height:.88;letter-spacing:-.03em}
+.hero h1 .lit{color:var(--warm-100);text-shadow:0 0 90px rgba(255,233,184,.5),0 0 34px rgba(255,233,184,.3)}
+.hero h1 .dim{color:transparent;-webkit-text-stroke:2.5px var(--indigo-500)}
+header.hero::after{content:'';position:absolute;left:50%;top:-38%;width:120vw;height:92%;transform:translateX(-50%);
+  background:radial-gradient(ellipse 46% 62% at 50% 0%,rgba(245,158,11,.10),transparent 65%);pointer-events:none}
+.hero .sub{font-size:19px}
 
-/* karty = biely dokument s indigo rámom a MIB tieňom */
-.card{background:#fff;border:1.5px solid rgba(51,47,158,.28);color:var(--mib-ink);
-  box-shadow:6px 6px 0 rgba(51,47,158,.10)}
-.card p,.channel p{color:var(--mib-sub)!important}
-.card .mono,.channel .mono{color:var(--mib-low)}
-.channel h4{color:var(--mib-ink)}
-.card .tok,.card .sttok{color:var(--coral)}
-
-/* tabuľky */
-table th{color:var(--coral);border-bottom:2px solid var(--mib)}
-table td{color:var(--mib-sub);border-bottom:1px solid rgba(51,47,158,.15)}
-table td:first-child{color:var(--mib-ink)}
-.type-row{border-bottom:1px solid rgba(51,47,158,.15)}
-.type-row span{color:var(--mib-ink)}
-.type-row .mono{color:var(--mib-low)}
-
-/* tmavé exponáty — noc v MIB ráme */
-.stage,.state-demo,pre,.icon-cell,.obor,.loc-card{border:1.5px solid var(--mib)!important;box-shadow:6px 6px 0 rgba(51,47,158,.14)}
-.icon-cell,.obor{background:var(--night-900)}
-.icon-cell .nm,.obor .nm{color:var(--warm-100)}
-.icon-cell .mono,.obor .hint{color:var(--indigo-300)}
-pre{background:var(--night-950);color:#B4B7D4}
-.loc-card{background:var(--night-800)}
-.loc-card h4{color:var(--text-hi)}
-.state-card p{color:var(--mib-sub)!important}
-.state-name{color:var(--mib-ink)}
-
-/* hranaté koralové buttony (MIB filter štýl) */
-.copy-btn,.chip{
-  border-radius:0!important;background:var(--coral);color:#fff;border:none;
-  text-transform:uppercase;letter-spacing:.06em;font-weight:700;box-shadow:none;
-}
-.copy-btn:hover,.chip:hover{background:#d24437;box-shadow:none;color:#fff;border:none}
-.chip .dot{background:#fff!important}
-.chip.on{background:var(--mib);color:#fff;border:none}
-
-/* hero — MIB dokument s červeným rastrom */
-.hero-bg{display:none}
-header.hero{background:
-  linear-gradient(rgba(232,87,74,.13) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(232,87,74,.13) 1px,transparent 1px);
-  background-size:26px 26px}
-.hero h1 .lit{color:var(--mib);text-shadow:none}
-.hero h1 .dim{color:transparent;-webkit-text-stroke:2.5px var(--coral)}
-.hero .sub{color:var(--mib-sub)}
-.hero .sub strong{color:var(--mib-ink)!important}
-.hero .meta .tag{border-color:var(--mib)}
-
-.legend .li{color:var(--mib-sub)}
-.timeline-demo .tl-year{color:var(--mib-ink)}
-
-/* footer = MIB indigo s modrou mriežkou */
-footer{
-  background:
-    linear-gradient(rgba(130,140,255,.22) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(130,140,255,.22) 1px,transparent 1px),
-    var(--mib);
-  background-size:32px 32px,32px 32px,auto;
-  color:rgba(255,255,255,.88);border-top:none;padding:64px 0;
-}
-footer a{color:#fff}
-footer img{border-radius:0!important}
-
-/* rendre ako exponáty na papieri */
+/* rendre — tmavé exponáty */
 .renders{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-top:var(--sp-3)}
 @media(max-width:860px){.renders{grid-template-columns:1fr}}
-.render-card{margin:0;background:#fff;border:1.5px solid var(--mib);box-shadow:6px 6px 0 rgba(51,47,158,.10);padding:10px 10px 6px;
-  transition:transform .25s ease,box-shadow .25s ease}
-.render-card:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 rgba(51,47,158,.14)}
-.render-card img{display:block;width:100%}
-.render-card figcaption{font-family:var(--font-mono);font-size:10.5px;color:#4a4d66;letter-spacing:.05em;line-height:1.65;padding:10px 4px 6px}
+.render-card{margin:0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--r-l);overflow:hidden;padding:10px 10px 6px;transition:transform .25s,border-color .25s}
+.render-card:hover{transform:translateY(-4px);border-color:rgba(255,185,74,.4)}
+.render-card img{display:block;width:100%;border-radius:calc(var(--r-l) - 6px)}
+.render-card figcaption{font-family:var(--font-mono);font-size:10.5px;color:var(--text-mid);letter-spacing:.05em;line-height:1.65;padding:10px 6px 6px}
 
-/* otočka — interaktívny exponát */
-.turnstage{position:relative;display:flex;align-items:center;justify-content:center;
-  cursor:grab;user-select:none;touch-action:pan-y;padding:26px 0 34px;overflow:hidden}
-.turnstage.grab{cursor:grabbing}
-.turnstage img{width:min(60vh,640px);max-width:94%;pointer-events:none;
-  filter:drop-shadow(0 26px 44px rgba(0,0,0,.5))}
-.turnstage .deghud{position:absolute;top:14px;right:18px;font-family:var(--font-mono);
-  font-size:12px;color:var(--amber-300);letter-spacing:.12em}
-.turnstage .turnhint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
-  font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-low)}
+footer{border-top:1px solid rgba(255,255,255,.08);padding:56px 0;color:var(--text-low)}
+footer a{color:var(--amber-300)}
 
 nav{scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}
@@ -466,6 +407,9 @@ nav::-webkit-scrollbar{display:none}
 </head>
 <body>
 
+<div id="grain" aria-hidden="true"></div>
+<div class="brandbar" aria-hidden="true"><b>TU</b><i></i><b>BA</b></div>
+
 <div id="bgfx" aria-hidden="true">
   <canvas id="bgFar"></canvas>
   <svg id="bgMid"></svg>
@@ -475,7 +419,6 @@ nav::-webkit-scrollbar{display:none}
 
 <nav>
   <div class="wrap">
-    <span class="logo">ZAŽNI <em>MESTO</em> · manuál v0.2</span>
     <a href="#princip">01 Princíp</a>
     <a href="#farby">02 Farby</a>
     <a href="#stavy">03 Stavy</a>
@@ -499,8 +442,9 @@ nav::-webkit-scrollbar{display:none}
     <span class="kicker">Dizajn manuál · Interaktívna expozícia brownfieldov · TU-BA · MIB</span>
     <h1><span class="lit">Zažni</span><br><span class="dim">mesto</span></h1>
     <p class="sub">Bratislava má <strong style="color:var(--warm-100)">113 zhasnutých miest</strong> s rozlohou 580 hektárov.
-    Tento manuál definuje vizuálny jazyk, ktorým ich fyzický model mesta, projekcia,
-    dotyková obrazovka a tablety spoločne rozprávajú — a rozsvecujú.</p>
+    Mapa nemá byť len katalóg opustených miest — má byť verejný nástroj na pochopenie
+    mestského potenciálu a bariér. Tento manuál definuje vizuálny jazyk, ktorým ich fyzický model,
+    projekcia, dotyková obrazovka a tablety spoločne rozprávajú — a rozsvecujú.</p>
     <div class="meta">
       <span class="tag">v0.2 · koncept</span>
       <span class="tag">živé dáta: ArcGIS register BF (113 polygónov)</span>
@@ -787,37 +731,11 @@ nav::-webkit-scrollbar{display:none}
       </div>
     </div>
 
-    <h3 style="margin-top:var(--sp-6)">Spiaci obri — hravá vrstva tých istých ikon</h3>
-    <p class="lead">Pre verejný priestor a deti: každá typológia je „obor", ktorý spí.
-    Zavreté oko = spí, otvorené = žije. Klikni / dotkni sa a zobuď ho — presne táto interakcia beží na tabletoch a v hlasovaní.</p>
-    <div class="grid g4">
-      <div class="obor" onclick="this.classList.toggle('awake')">
-        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M8 38V22l8-6v6l8-6v6l8-6v22z"/><path d="M12 16V8h5v6"/></svg>
-        <div class="eyes"><span></span><span></span></div>
-        <span class="nm">Obor Fabrika</span><span class="hint">klikni = zobuď</span>
-      </div>
-      <div class="obor" onclick="this.classList.toggle('awake')">
-        <svg width="56" height="56" viewBox="0 0 48 48"><rect x="12" y="10" width="24" height="24" rx="7"/><path d="M12 26h24"/><rect x="18" y="15" width="12" height="7" rx="2"/><path d="M14 40l-3 4M34 40l3 4"/></svg>
-        <div class="eyes"><span></span><span></span></div>
-        <span class="nm">Obor Stanica</span><span class="hint">klikni = zobuď</span>
-      </div>
-      <div class="obor" onclick="this.classList.toggle('awake')">
-        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M14 40V16l10-8 10 8v24z"/><path d="M14 24h20"/></svg>
-        <div class="eyes"><span></span><span></span></div>
-        <span class="nm">Obor Kasáreň</span><span class="hint">klikni = zobuď</span>
-      </div>
-      <div class="obor" onclick="this.classList.toggle('awake')">
-        <svg width="56" height="56" viewBox="0 0 48 48"><path d="M10 40V20a7 7 0 0 1 14 0v20z"/><path d="M28 40V24a6 6 0 0 1 12 0v16z"/></svg>
-        <div class="eyes"><span></span><span></span></div>
-        <span class="nm">Obor Silo</span><span class="hint">klikni = zobuď</span>
-      </div>
-    </div>
-
-    <h3 style="margin-top:var(--sp-6)">Character sheet — tri pózy obra</h3>
+    <h3 style="margin-top:var(--sp-6)">Character sheet — pózy obra</h3>
     <p class="lead">Ilustračný smer pre plagáty, vstupný panel a AR: obor = budova s tvárou.
-    Tri pózy zodpovedajú stavom — telo je vždy silueta typológie, mení sa len tvár a aura.
-    Ukázané na Fabrike; rovnaká gramatika platí pre všetkých 8 obrov.</p>
-    <div class="grid g3">
+    Pózy zodpovedajú stavom jazyka svetla — telo je vždy silueta typológie, mení sa len tvár a aura.
+    Ukázané na Fabrike; rovnaká gramatika platí pre všetkých 8 obrov. Presne táto interakcia (dotyk = zobudenie) beží na tabletoch a v hlasovaní.</p>
+    <div class="grid g4">
       <div class="card" style="text-align:center">
         <svg width="150" height="150" viewBox="0 0 96 96" style="fill:none;stroke-linecap:round;stroke-linejoin:round">
           <path d="M18 78V46l14-10v10l14-10v10l14-10v42z" stroke="var(--indigo-500)" stroke-width="3"/>
@@ -839,7 +757,7 @@ nav::-webkit-scrollbar{display:none}
           <ellipse cx="46" cy="71" rx="4" ry="5.5" stroke="var(--teal-300)" stroke-width="2.6"/>
           <path d="M24 22q-3-6 2-9M32 22q3-6-2-9" stroke="var(--teal-300)" stroke-width="2" opacity=".6"/>
         </svg>
-        <div class="state-name" style="font-size:16px">ZÍVA</div>
+        <div class="state-name" style="font-size:16px">DRIEME</div>
         <span class="mono" style="font-size:11px">jedno oko otvorené · ústa O · para z komína</span>
       </div>
       <div class="card" style="text-align:center">
@@ -852,19 +770,26 @@ nav::-webkit-scrollbar{display:none}
           <path d="M40 70q6 5 12 0" stroke="var(--warm-100)" stroke-width="2.8"/>
           <path d="M12 40l-6-4M84 40l6-4M48 8v-6M22 16l-4-5M74 16l4-5" stroke="var(--amber-300)" stroke-width="2.4" opacity=".8"/>
         </svg>
-        <div class="state-name" style="font-size:16px">BDIE</div>
+        <div class="state-name" style="font-size:16px">PREBÚDZA SA</div>
         <span class="mono" style="font-size:11px">oči bodky + úsmev · lúče · plná aura svetla</span>
+      </div>
+      <div class="card" style="text-align:center">
+        <svg width="150" height="150" viewBox="0 0 96 96" style="fill:none;stroke-linecap:round;stroke-linejoin:round">
+          <circle cx="48" cy="52" r="40" fill="rgba(255,233,184,.08)"/>
+          <path d="M18 78V46l14-10v10l14-10v10l14-10v42z" stroke="var(--warm-300)" stroke-width="3"/>
+          <path d="M24 36V22h8v8" stroke="var(--warm-300)" stroke-width="3"/>
+          <circle cx="37" cy="60" r="3.4" fill="var(--warm-100)" stroke="none"/>
+          <circle cx="53" cy="60" r="3.4" fill="var(--warm-100)" stroke="none"/>
+          <path d="M39 69q7 6 14 0" stroke="var(--warm-100)" stroke-width="2.8"/>
+          <g stroke="var(--warm-300)" stroke-width="2.2" opacity=".7"><path d="M6 78V66l6-5 6 5v12"/><path d="M78 78V68l5-4 5 4v10"/></g>
+          <path d="M28 52h6M42 46h6" stroke="var(--warm-100)" stroke-width="2.4" opacity=".9"/>
+        </svg>
+        <div class="state-name" style="font-size:16px">ŽIJE</div>
+        <span class="mono" style="font-size:11px">stabilná žiara · okná svietia · splýva s mestom</span>
       </div>
     </div>
     <p class="mono" style="margin-top:var(--sp-2)">Gramatika tváre: oči = stav (čiarka / jedno oko / bodky) · ústa = energia · aura = jas okolia. Tvár sa vždy kreslí DO siluety typológie, nikdy mimo — obor ostáva budovou.</p>
 
-    <h3 style="margin-top:var(--sp-6)">Clay štúdia — obri v hmote</h3>
-    <p class="lead">Rovnaká gramatika prenesená do 3D: podklad pre fyzické artefakty expozície —
-    figúrky pri modeli, foto-point, suveníry. Telo je vždy mesto (strechy, veže, stromy), mení sa len tvár.</p>
-    <div class="renders">
-      <figure class="render-card"><img src="assets/typologie.png" alt="8 clay typológií obrov" loading="lazy"><figcaption>8 typológií v hline — jedna rodina, jeden vizuálny jazyk</figcaption></figure>
-      <figure class="render-card"><img src="assets/obri-clay.png" alt="Clay obor v troch stavoch: spí, zíva, bdie" loading="lazy"><figcaption>tri stavy viečok: SPÍ = bez zámeru · ZÍVA = drieme (dočasné využitie) · BDIE = zámer v registri</figcaption></figure>
-    </div>
   </div>
 </section>
 
@@ -1076,18 +1001,6 @@ nav::-webkit-scrollbar{display:none}
       dirigent ich môže kedykoľvek prebiť. Preto viacero návštevníkov naraz scénu nikdy nerozbije — model hovorí vždy jedným hlasom.</p>
     </div>
 
-    <h3 style="margin-top:var(--sp-6)">Priestor — otočka okolo expozície</h3>
-    <p class="lead">Expozícia z každej strany: fyzický model s projekciou, tablety na ramenách,
-    dotyková obrazovka pri hrane. 25 snímok, 360° — <strong>ťahaj obraz a otoč si ju sám</strong>, inak sa točí sama.</p>
-    <div class="stage turnstage" id="mturn">
-      <img id="mturnimg" src="assets/seq/turn/frame-0.png" alt="Otočný pohľad na model expozície TU-BA" draggable="false">
-      <span class="deghud" id="mturnDeg">0°</span>
-      <span class="turnhint">✋ ťahaj — otočíš</span>
-    </div>
-    <div class="renders">
-      <figure class="render-card"><img src="assets/tuba-priestor.png" alt="Anotovaný render priestoru TU-BA" loading="lazy"><figcaption>jedna scéna, štyri vrstvy zážitku: projektory · fyzický model · tablety/AR · dotyková obrazovka · stena budúcnosti</figcaption></figure>
-      <figure class="render-card"><img src="assets/tablet-ar.png" alt="Tablet nad modelom so spiacim územím" loading="lazy"><figcaption>tablet = detail — minulosť · dnes · vízia nad konkrétnym spiacim územím; scénu neprepíše, vie len poprosiť „ukáž na modeli"</figcaption></figure>
-    </div>
   </div>
 </section>
 
@@ -1096,8 +1009,8 @@ nav::-webkit-scrollbar{display:none}
   <div class="wrap">
     <span class="kicker">12 · Tokeny → Figma</span>
     <h2>Jeden JSON, štyri médiá</h2>
-    <p class="lead">Formát Tokens Studio — importuješ do Figmy cez plugin Tokens Studio (Figma Tokens)
-    a rovnaký súbor číta projekčná appka, obrazovka, tablet aj web. Toto je jadro obhajoby škálovateľnosti.</p>
+    <p class="lead">Jeden zdrojový súbor dizajnových tokenov — rovnaké farby, písma a pravidlá
+    číta Figma, projekčná appka, obrazovka, tablet aj web.</p>
     <button class="copy-btn" onclick="copyTokens(this)">Skopírovať JSON</button>
     <pre id="tokensJson">{
   "global": {

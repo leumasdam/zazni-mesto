@@ -109,7 +109,7 @@ function init(canvas,data){
         dash=new THREE.LineLoop(lg,lm);dash.computeLineDistances();scene.add(dash);
       }
     }catch(e){/* degenerovaný polygón — preskoč */}
-    items.push({mesh,dash,own:p.own,t:p.t,phase:p.phase,big:p.big,plan:p.plan,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
+    items.push({mesh,dash,own:p.own,t:p.t,phase:p.phase,big:p.big,plan:p.plan,wy:p.wy,cx:p.cx,cy:p.cy,col:new THREE.Color(),prevS:0});
   }
 
   /* ramp helper (rovnaké čísla ako 2D verzia — ramp príde z hlavného súboru) */
@@ -178,7 +178,8 @@ function init(canvas,data){
       /* svetlo dorazí (front) → parcela sadne na SVOJ REÁLNY STAV (amber prebúdza / indigo spí),
          NIE všetko na bielu — zrkadlí polyState() v hlavnom súbore */
       const fr0=clamp((st.wave*1.55-it.t)*2.4),front=fr0*fr0*fr0*(fr0*(fr0*6-15)+10);
-      const s=(it.plan===1?.72:.08)*front;
+      const stT=it.plan!==1?.08:(it.wy<=2027?.93:it.wy>=2032?.38:.72);   /* časová gradácia z wy — zrkadlí ST_TARGET (pozor: st je parameter frame!) */
+      const s=stT*front;
       if(it.plan===1&&front>.5)lit++;              /* register-first: rátame len prebúdzajúce sa (zámer) — zrkadlí 2D */
       if(!it.mesh)continue;
       const pulse=s<.15?(.5+.28*Math.sin(st.t*.00157+it.phase)):1;   /* pulse.slow — 4000 ms */

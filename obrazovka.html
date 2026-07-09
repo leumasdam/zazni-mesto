@@ -476,15 +476,16 @@ const BBOX=FEATS.map(f=>{
 
 /* ---------- stav aplikácie ---------- */
 let mode='pulz', farba='stav', year=2026, selIdx=null, query='';
-const F={sez:null,own:null,size:0,cls:null};                 /* filtre — kombinovateľné */
+const F={sez:null,own:null,size:0,cls:null,plan:null};       /* filtre — kombinovateľné (plan: 'wake'/'sleep') */
 const O={sez:true,labels:true,b3d:true,obri:true};            /* prekryvy — kombinovateľné */
-function activeFilters(){return (F.sez?1:0)+(F.own?1:0)+(F.size?1:0)+(F.cls?1:0);}
+function activeFilters(){return (F.sez?1:0)+(F.own?1:0)+(F.size?1:0)+(F.cls?1:0)+(F.plan?1:0);}
 function matchesFilter(p){
   if(query&&!(p.n+' '+p.mc).toLowerCase().includes(query.toLowerCase()))return false;
   if(F.sez&&!p.sez)return false;
   if(F.own&&p.own!==F.own)return false;
   if(F.size&&p.ha<F.size)return false;
   if(F.cls&&p.cls!==F.cls)return false;
+  if(F.plan&&(F.plan==='wake'?p.plan!==1:p.plan!==0))return false;
   return true;
 }
 function matchedIds(){return FEATS.filter(f=>matchesFilter(f.properties)).map(f=>f.properties.id);}
@@ -1091,6 +1092,9 @@ function fopt(group,val,label){
 function renderFilterPop(){
   const el=document.getElementById('popFilter');
   el.innerHTML=`
+    <h4>Stav zámeru</h4><div class="fgroup">
+      ${fopt('plan',null,'Všetky')}${fopt('plan','wake',`🌅 Prebúdzajú sa (${N_PLAN})`)}${fopt('plan','sleep',`😴 Spia (${N_SLEEP})`)}
+    </div>
     <h4>Envirozáťaž</h4><div class="fgroup">
       ${fopt('sez',null,'Všetky')}${fopt('sez',true,'⚠ Len kontaminované (15)')}
     </div>
@@ -1117,7 +1121,7 @@ function renderFilterPop(){
     document.getElementById('popFilter').classList.add('open');
   }));
   el.querySelector('#popClear').addEventListener('click',()=>{
-    F.sez=null;F.own=null;F.size=0;F.cls=null;
+    F.sez=null;F.own=null;F.size=0;F.cls=null;F.plan=null;
     renderFilterPop();renderStack();renderDocks();repaint();
   });
 }

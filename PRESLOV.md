@@ -61,9 +61,9 @@ Mechanika = koncept: scroll doslova rozsvecuje 113 skutočných polygónov regis
 > tá stovka menších sa vynorí až pri priblížení — preto sa scéna nikdy nezahltí.
 > Farba patrí stavu, je to jediný animovaný kanál — všetko ostatné hovorí tvarom. Preto sa to nikdy nebije.
 
-**OBOR** *(tri pózy vedľa seba; na SPIACEHO KLIKNÚŤ — zobudí sa + chime)*
+**OBOR** *(štyri pózy vedľa seba = 4 stavy jazyka svetla; na SPIACEHO KLIKNÚŤ — zobudí sa + chime)*
 > Aby tomu rozumelo aj dieťa: každý brownfield je spiaci obor — to, čím miesto bolo, kým zaspalo.
-> Tri pózy = tri stavy: spí — bez zámeru, zíva — drieme, bdie — zámer v registri.
+> Štyri pózy = štyri stavy legendy: spí — bez zámeru, drieme — dočasné využitie (zíva), prebúdza sa — zámer v registri, žije — vrátilo sa do mesta (už mimo registra).
 > Prvého zobudím dotykom — presne toto urobí hlas návštevníka vo VÍZII. V realite obra budí len register; realita a želanie sa nemiešajú.
 
 **OTOČKA** *(model príde zdola v prednom pohľade — POTIAHNI kdekoľvek a otoč si ho sám, HUD ukazuje stupne; popisky vyskočia na prechod myšou)*

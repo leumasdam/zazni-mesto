@@ -55,6 +55,10 @@ ok(`filter „Štát (11)"`,grab(/Štát \((\d+)\)/)===own.state);
 ok(`filter „Mix (8)"`,grab(/Mix \((\d+)\)/)===own.mixed);
 ok(`filter „A (51)"`,grab(/A \((\d+)\)/)===cls.A);
 ok(`legenda „B (48)" „C (11)" „D (3)"`,OBR.includes(`B (${cls.B})`)&&OBR.includes(`C (${cls.C})`)&&OBR.includes(`D (${cls.D})`));
+ok('filter stavu zámeru: prebúdzajú sa/spia z dát (N_PLAN/N_SLEEP), match cez plan, kombinovateľný + clear',
+  OBR.includes('Stav zámeru')&&OBR.includes('Prebúdzajú sa (${N_PLAN})')&&OBR.includes('Spia (${N_SLEEP})')
+  &&OBR.includes("F.plan&&(F.plan==='wake'?p.plan!==1:p.plan!==0)")&&OBR.includes('F.cls=null;F.plan=null')
+  &&OBR.includes('(F.cls?1:0)+(F.plan?1:0)'));
 ok(`štatistika „13 území nad 8 ha"`,OBR.includes('<b>13</b>území nad 8 ha')&&big.length===13);
 ok(`splash „113 / 580 ha / 15"`,OBR.includes('<b>113</b>')&&OBR.includes('<b>580 ha</b>')&&OBR.includes('<b>15</b>'));
 
@@ -90,21 +94,29 @@ ok('svetelná vlna od východu (sort podľa cx)',PRE.includes('sort((a,b)=>b.cx-
 ok('reduced-motion = okamžitý krok bez animovaného dojazdu',PRE.includes('prefers-reduced-motion')&&PRE.includes('if(REDUCED)Ps=target')&&PRE.includes('let Ps=0;'));
 ok('CTA + odkazy na kiosk/manuál',PRE.includes('Rozsvietiť mesto')&&PRE.includes('obrazovka.html')&&PRE.includes('index.html'));
 ok('počítadlo vlny = register-first: ráta len prebúdzajúce sa + HUD má len 2 stavy vlny s počtami z dát',
-  PRE.includes('litN')&&PRE.includes('sa prebúdza')&&PRE.includes('pl.p.plan===1&&s>.4')
+  PRE.includes('litN')&&PRE.includes('sa prebúdza')&&PRE.includes('pl.p.plan===1&&frontW>.5')
   &&!PRE.includes('/ 113 svieti')&&!PRE.includes('id="hs2"')&&!PRE.includes('id="hs4"')
   &&src('gl-src/city.js').includes('it.plan===1&&front>.5'));
-ok('rendre zapracované (vrstvy·finále hrad; TU-BA render žije v DM, slide rolí je textový nad priesvitným panelom) + obor = 3 SVG pózy',
+ok('vlna: časová gradácia stavu z wy (≤2027 svitá · stred amber · ≥2032 drieme) zrkadlená v 2D aj GL + HUD ju pomenúva',
+  PRE.includes('pl.wy<=2027?.93:pl.wy>=2032?.38:.72')&&src('gl-src/city.js').includes('it.wy<=2027?.93:it.wy>=2032?.38:.72')
+  &&src('vendor/zazni-gl.js').includes('2027')&&PRE.includes('odtieň = čas'));
+ok('rendre zapracované (vrstvy·finále hrad; DM bez otočky a TU-BA renderov — čistý pre zadávateľa) + obor rad',
   ['vrstvy-l0.png','hrad-okno.png'].every(s=>PRE.includes(s))&&!PRE.includes('tuba-priestor.png')
-  &&src('index.html').includes('tuba-priestor.png')&&PRE.includes('oborrow')&&PRE.includes('ZÍVA')&&!PRE.includes('obri-clay.png'));
+  &&!src('index.html').includes('tuba-priestor.png')&&!src('index.html').includes('jadro obhajoby')&&PRE.includes('oborrow')&&!PRE.includes('obri-clay.png'));
+ok('obor kapitola = 4 pózy zjednotené s legendou (SPÍ · DRIEME · PREBÚDZA SA · ŽIJE), žiadne staré názvy ZÍVA/BDIE',
+  (PRE.match(/class="oborpose/g)||[]).length===4
+  &&PRE.includes('DRIEME</b>')&&PRE.includes('PREBÚDZA SA</b>')&&PRE.includes('ŽIJE</b>')
+  &&!PRE.includes('>ZÍVA<')&&!PRE.includes('>BDIE<')&&PRE.includes("'PREBÚDZA SA ✓'")
+  &&(PRE.match(/viewBox="12 22 72 58"/g)||[]).length===4&&PRE.includes('zíva = drieme · otvorené = prebúdza sa'));
 ok('interakcie: drag otočka + deep-link ?step + magnetické CTA',PRE.includes('turnOff')&&PRE.includes("QS.get('step')")&&PRE.includes('pointerleave'));
 ok('VRSTVY = render rozrezaný na 4 animované vrstvy (fokus + hit-test + popisy)',['vrstvy-l0.png','vrstvy-l1.png','vrstvy-l2.png','vrstvy-l3.png'].every(s=>PRE.includes(s))&&PRE.includes('vstackUpdate')&&PRE.includes('valpha')&&PRE.includes('VST.foc')&&!PRE.includes('vrstvy-projekcie.png'));
 const GLSRC=src('gl-src/city.js');
 ok('choreografia svetla = tokeny manuálu (pulse.slow 4 s · flicker.temp 5,5 s · wake.spring 450 ms)',
   PRE.includes('.00157')&&PRE.includes('%5500')&&PRE.includes('cubic-bezier(.34,1.56,.64,1)')&&PRE.includes('pulseSleep 4s')
   &&GLSRC.includes('.00157')&&GLSRC.includes('%5500')&&OBR.includes('performance.now()/640'));
-ok('vlna sadne na REÁLNY stav registra (amber prebúdza / indigo spí), NIE všetko biele — zrkadlené v GL',
-  PRE.includes('ST_TARGET')&&PRE.includes('pl.plan===1?.72:.08')&&!PRE.includes('vízia rozsvieti aj 47')
-  &&GLSRC.includes('it.plan===1?.72:.08'));
+ok('vlna sadne na REÁLNY stav registra (gradovaný časom wy), NIE všetko biele — zrkadlené v GL',
+  PRE.includes('ST_TARGET')&&PRE.includes('pl.plan!==1?.08:')&&!PRE.includes('vízia rozsvieti aj 47')
+  &&GLSRC.includes('it.plan!==1?.08:'));
 ok('obri konzistentne 13 ≥ 8 ha — žiadne „16 významných" nikde',(()=>{
   const IDX=src('index.html');
   return big.length===13&&!PRE.includes('16 BF')&&!PRE.includes('Šestnásť')&&PRE.includes('13 obrov ≥ 8 ha')
@@ -137,14 +149,12 @@ ok('pochop = vlastníctvo číta územie samo: obrys + šrafa súkromných (\\, 
 ok('výkon+a11y: DOM cache, particle gate (reduced-motion + light), väčšie dot targety, bez mŕtveho panelL',
   PRE.includes('const byId')&&PRE.includes('window.__light')&&PRE.includes('animation-duration:.001s')
   &&PRE.includes('background-clip:content-box')&&!PRE.includes('id="panelL"'));
-ok('skal = CSS kamerová túra nad zmrazeným pipeline renderom (celok → lampa → server → kryštál → zariadenia, reštart pri vstupe, reduced bez pohybu)',
-  PRE.includes('pipeline.mp4')&&PRE.includes('mask-image:radial-gradient')&&PRE.includes('pipecap')
+ok('skal = kamerová slučka nad pipeline renderom s callout popiskami manuálu (celok → lampa → server → kryštál → zariadenia → celok, loop bez strihu, reduced = statická infografika)',
+  PRE.includes('pipeline.mp4')&&PRE.includes('mask-image:radial-gradient')&&PRE.includes('pipeLabels')
   &&PRE.includes('pipeVid')&&PRE.includes('pipeCam')&&PRE.includes('pv.currentTime=0;pv.pause()')
-  &&PRE.includes('scale(1.85)')&&!PRE.includes('animateMotion'));
-ok('počet kontrol v UI = skutočný počet auditu',(()=>{
-  const m=PRE.match(/audit · (\d+) kontrol/);
-  return m&&+m[1]===pass+fail+1;   /* +1 = táto kontrola */
-})(),`v UI ${(PRE.match(/audit · (\d+) kontrol/)||[])[1]}, reálne ${pass+fail+1}`);
+  &&PRE.includes('scale(1.6)')&&!PRE.includes('animateMotion')&&!PRE.includes('pipecap')
+  &&/100%\s*\{transform:translate\(4\.9%,-17\.6%\) scale\(1\.38\)\}/.test(PRE)          /* koniec = štartový zoom = bezšvový loop; zoom-out celok je predposledná zastávka */
+  &&PRE.includes('register MIB · 113 území')&&PRE.includes('dizajn tokeny</b>'));
 
 console.log(`\n${'='.repeat(46)}\nVÝSLEDOK: ${pass} ✓ · ${fail} ✗\n`);
 process.exit(fail?1:0);
